@@ -1,9 +1,9 @@
 baseurl = "/"
 languageCode = "en-us"
-title = "Hugo XMag"
-theme = "hugo-xmag"
+title = "Lin's Blog"
+theme = "Lin's Blog"
 googleAnalytics = ""
-disqusShortname = ""
+disqusShortname = ""`
 ignoreFiles = ["\\.Rmd$", "_files$", "_cache$"]
 preserveTaxonomyNames = true
 footnotereturnlinkcontents = "↩"
@@ -12,7 +12,8 @@ enableEmoji = true
 paginate = 6
 
 [permalinks]
-    post = "/post/:year/:month/:day/:slug/"
+    post1 = "Lin's Blog"
+    post = "Well come to Lin's Blog!"
 
 [[menu.main]]
     name = "Home"
@@ -38,7 +39,7 @@ paginate = 6
     description = "A website built through Rstudio and blogdown."
     summary_length = 300
     github_edit = "https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/"
-    footer = "&copy; [Lin](https://yihui.name) | [Github](https://github.com/NSYSUHermit) | [Rpubs](https://rpubs.com/JupiterHenry)"
+    footer = "&copy; [Lin](https://biggo.com.tw) | [Github](https://github.com/NSYSUHermit) | [Rpubs](https://rpubs.com/JupiterHenry)"
 
 [params.text]
     back = "&larr; Back to Home"

@@ -1,0 +1,302 @@
+---
+title: 2019_THU_Big_Data_Preliminary
+author: HermitLin
+date: '2019-08-13'
+slug: 2019-thu-big-data-preliminary
+categories:
+  - R
+tags:
+  - blogdown
+  - R Markdown
+---
+
+
+
+<div id="read-data" class="section level1">
+<h1>Read data</h1>
+<p>說明:以下程式在資料目錄及其底下的txt檔架構不變下，只需要更改資料夾位置即可<br />
+例如:假設訓練資料「大數據競賽初賽資料(230測試數據)」位於D槽目錄下，<br />
+將path改成 path &lt;- “D:/大數據競賽初賽資料(230測試數據)/”即可</p>
+<pre class="r"><code>path &lt;- &quot;C:\\Users\\User\\OneDrive\\Lin\\NSYSU\\thu_bigdata\\thubigdata2019training-230\\&quot;</code></pre>
+<p>同理，更改測試資料夾位置即可
+例如:假設測試資料夾「thubigdata2019exam-722」位於C槽的user，
+將pathtest改成“C:/user/thubigdata2019exam-722/”即可</p>
+<pre class="r"><code>pathtest &lt;- &quot;C:\\Users\\User\\OneDrive\\Lin\\NSYSU\\thu_bigdata\\test_model\\&quot;</code></pre>
+<p>注意:
+1.須將位置中的斜線「」改成反斜線「/」，或是改成「\」也可以。
+2.資料夾位置最後記得加上反斜線「/」。</p>
+<p>程式執行方式:
+第一步：先全選所有程式碼(Ctrl + A)
+第二步：按下Ctrl + Enter鍵（點選此方塊中右上角的「Run」）即可。</p>
+<p>注意:
+1.由於此程式碼是從最一開始讀取txt檔到最後輸出測試資料的預測分類結果，所以會需要一些時間，視電腦設備好壞。
+2.預測分類結果位於下面方塊中，若對於程式碼有任何疑問歡迎指教。</p>
+</div>
+<div id="part2install-packages" class="section level1">
+<h1>Part2:Install packages</h1>
+<pre class="r"><code>necessary = c(&quot;readr&quot;,&quot;dplyr&quot;,&quot;plyr&quot;,&quot;randomForest&quot;)
+installed = necessary %in% installed.packages()[, &#39;Package&#39;]
+if (length(necessary[!installed]) &gt;=1)
+  install.packages(necessary[!installed])
+library(readr)
+library(plyr)
+library(randomForest)</code></pre>
+<pre><code>## randomForest 4.6-14</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+</div>
+<div id="part3data-processing" class="section level1">
+<h1>Part3:Data processing</h1>
+<div id="train-data" class="section level2">
+<h2>Train data</h2>
+<pre class="r"><code>txt= function(txt){
+  read_delim(txt,delim = &quot;\t&quot;,col_names = TRUE)[-1,]
+}
+
+
+site = c(&quot;G11&quot;,&quot;G15&quot;,&quot;G17&quot;,&quot;G19&quot;,&quot;G32&quot;,&quot;G34&quot;,&quot;G48&quot;,&quot;G49&quot;)
+
+for(i in 1:length(site)){
+  g11data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+  #G11
+  if(site[i]==&quot;G11&quot;){
+    for(k in 1:length(g11data)){
+      g11data[[k]] = apply(g11data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g11data[[i]]))){
+        num = nchar(colnames(g11data[[i]])[j])
+        colnames(g11data[[i]])[j] = substr(colnames(g11data[[i]])[j],5,num-2)
+      }
+    }
+    data = rbind.fill(as.data.frame(t(g11data[[1]][,-dim(g11data[[1]])[2]])))
+    for(l in c (2:23)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g11data[[l]][,-dim(g11data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+  #G15
+  else if(site[i]==&quot;G15&quot;){
+    g15data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+    for(k in 1:length(g15data)){
+      g15data[[k]] = apply(g15data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g15data[[i]]))){
+        num = nchar(colnames(g15data[[i]])[j])
+        colnames(g15data[[i]])[j] = substr(colnames(g15data[[i]])[j],5,num-2)
+      }
+    }
+    for(l in c (1:31)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g15data[[l]][,-dim(g15data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+  #G17
+  else if(site[i]==&quot;G17&quot;){
+    g17data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+    for(k in 1:length(g17data)){
+      g17data[[k]] = apply(g17data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g17data[[i]]))){
+        num = nchar(colnames(g17data[[i]])[j])
+        colnames(g17data[[i]])[j] = substr(colnames(g17data[[i]])[j],5,num-2)
+      }
+    }
+    for(l in c (1:16)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g17data[[l]][,-dim(g17data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+  #G19
+  else if(site[i] == &quot;G19&quot;){
+    g19data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+    for(k in 1:length(g19data)){
+      g19data[[k]] = apply(g19data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g19data[[i]]))){
+        num = nchar(colnames(g19data[[i]])[j])
+        colnames(g19data[[i]])[j] = substr(colnames(g19data[[i]])[j],5,num-2)
+      }
+    }
+    for(l in c (1:30)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g19data[[l]][,-dim(g19data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+  #G32
+  else if(site[i] == &quot;G32&quot;){
+    g32data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+    for(k in 1:length(g32data)){
+      g32data[[k]] = apply(g32data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g32data[[i]]))){
+        num = nchar(colnames(g32data[[i]])[j])
+        colnames(g32data[[i]])[j] = substr(colnames(g32data[[i]])[j],5,num-2)
+      }
+    }
+    for(l in c (1:32)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g32data[[l]][,-dim(g32data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+  #G34
+  else if(site[i] == &quot;G34&quot;){
+    g34data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+    for(k in 1:length(g34data)){
+      g34data[[k]] = apply(g34data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g34data[[i]]))){
+        num = nchar(colnames(g34data[[i]])[j])
+        colnames(g34data[[i]])[j] = substr(colnames(g34data[[i]])[j],5,num-2)
+      }
+    }
+    for(l in c (1:33)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g34data[[l]][,-dim(g34data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+  #G48
+  else if(site[i]==&quot;G48&quot;){
+    g48data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+    for(k in 1:length(g48data)){
+      g48data[[k]] = apply(g48data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g48data[[i]]))){
+        num = nchar(colnames(g48data[[i]])[j])
+        colnames(g48data[[i]])[j] = substr(colnames(g48data[[i]])[j],5,num-2)
+      }
+    }
+    for(l in c (1:31)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g48data[[l]][,-dim(g48data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+  #G49
+  else{
+    g49data = lapply(paste0(path = paste0(path,site[i],&quot;/&quot;),list.files(path = paste0(path,site[i],&quot;/&quot;), pattern = &quot;*.txt&quot;),sep=&quot;&quot;),txt)
+    for(k in 1:length(g49data)){
+      g49data[[k]] = apply(g49data[[k]],2,as.numeric)
+      for(j in 1 : length(colnames(g49data[[i]]))){
+        num = nchar(colnames(g49data[[i]])[j])
+        colnames(g49data[[i]])[j] = substr(colnames(g49data[[i]])[j],5,num-2)
+      }
+    }
+    for(l in c (1:34)){
+      data &lt;- rbind.fill(data,as.data.frame(t(g49data[[l]][,-dim(g49data[[l]])[2]])))
+    }
+    data[is.na(data)] &lt;- 0
+  }
+}
+
+a = rep(1,145)
+b = rep(2,207)
+c = rep(3,119)
+d = rep(4,238)
+e = rep(5,256)
+f = rep(6,264)
+g = rep(7,244)
+h = rep(8,272)
+data$y = c(a,b,c,d,e,f,g,h)</code></pre>
+</div>
+<div id="test-data" class="section level2">
+<h2>Test data</h2>
+<pre class="r"><code>g49 &lt;- list.files(path = pathtest, pattern = &quot;*.txt&quot;)
+g49data = lapply(paste0(path = pathtest,g49,sep=&quot;&quot;),txt)
+for(i in 1:length(g49data)){
+  g49data[[i]] = apply(g49data[[i]],2,as.numeric)
+  for(j in 1 : length(colnames(g49data[[i]]))){
+    num = nchar(colnames(g49data[[i]])[j])
+    colnames(g49data[[i]])[j] = substr(colnames(g49data[[i]])[j],5,num-2)
+  }
+}
+data1 = rbind.fill(as.data.frame(t(g49data[[1]])))
+for(i in c (2:36)){
+  data1 &lt;- rbind.fill(data1,as.data.frame(t(g49data[[i]])))
+}
+data1[is.na(data1)] &lt;- 0
+data1 &lt;- data1[-which(data1$V1== 0),]
+
+test = c(rep(1,5),rep(10,8),rep(11,8),rep(12,8),rep(13,8),rep(14,8),rep(15,8),rep(16,8),rep(17,8),rep(18,8),rep(19,8),rep(2,5),rep(20,8),rep(21,8),rep(22,8),rep(23,8),rep(24,8),rep(25,8),rep(26,8),rep(27,8),rep(28,8),rep(29,8),rep(3,8),rep(30,8),rep(31,8),rep(32,8),rep(33,8),rep(34,8),rep(35,8),rep(36,8),rep(4,6),rep(5,6),rep(6,8),rep(7,6),rep(8,8),rep(9,8))
+
+data1$test &lt;- test
+test = data1</code></pre>
+</div>
+</div>
+<div id="part4data-analyzing" class="section level1">
+<h1>Part4:Data analyzing</h1>
+<div id="randomforest" class="section level2">
+<h2>RandomForest</h2>
+<pre class="r"><code>zero = matrix(rep(0,42*276),ncol = 42)
+test = cbind(test,zero)
+colnames(test) = c(paste0(&quot;V&quot;,1:449))
+
+data$y = as.factor(data$y)
+machine = data$y
+label = as.integer(data$y)-1
+data$y = NULL
+
+model = randomForest(as.factor(label)~.,data= data,boos = TRUE)
+predran = predict(model,test)
+predran = as.numeric(data.frame(predran)[,1])
+
+for(i in 1:length(g49data)){
+  g49data[[i]] = apply(g49data[[i]],2,as.numeric)
+  for(j in 1 : length(colnames(g49data[[i]]))){
+    colnames(g49data[[i]])[j] = paste0(&quot;PTC&quot;,j)
+  }
+  if(table(is.na(g49data[[i]]))[[1]] != ncol(g49data[[i]])*nrow(g49data[[i]])){
+    g49data[[i]] = g49data[[i]][,-ncol(g49data[[i]])]
+  }
+}
+len = c()
+len = vector()
+for(i in 1:36){
+  len[i] = length(colnames(g49data[[i]]))
+}
+
+predran[which(predran == &quot;1&quot;)] = &quot;G11&quot;
+predran[which(predran == &quot;2&quot;)] = &quot;G15&quot;
+predran[which(predran == &quot;3&quot;)] = &quot;G17&quot;
+predran[which(predran == &quot;4&quot;)] = &quot;G19&quot;
+predran[which(predran == &quot;5&quot;)] = &quot;G32&quot;
+predran[which(predran == &quot;6&quot;)] = &quot;G34&quot;
+predran[which(predran == &quot;7&quot;)] = &quot;G48&quot;
+predran[which(predran == &quot;8&quot;)] = &quot;G49&quot;
+
+j = 0
+l = 1
+k = c(1,10:19,2,20:29,3,30:36,4:9)
+for(i in len){
+  j = i+j
+  print(paste0(&quot;第&quot;,k[l],&quot;筆測試資料是屬於&quot;,predran[j],&quot;機台&quot;))
+  l = l+1
+}</code></pre>
+<pre><code>## [1] &quot;第1筆測試資料是屬於G11機台&quot;
+## [1] &quot;第10筆測試資料是屬於G17機台&quot;
+## [1] &quot;第11筆測試資料是屬於G19機台&quot;
+## [1] &quot;第12筆測試資料是屬於G19機台&quot;
+## [1] &quot;第13筆測試資料是屬於G32機台&quot;
+## [1] &quot;第14筆測試資料是屬於G32機台&quot;
+## [1] &quot;第15筆測試資料是屬於G32機台&quot;
+## [1] &quot;第16筆測試資料是屬於G32機台&quot;
+## [1] &quot;第17筆測試資料是屬於G32機台&quot;
+## [1] &quot;第18筆測試資料是屬於G32機台&quot;
+## [1] &quot;第19筆測試資料是屬於G34機台&quot;
+## [1] &quot;第2筆測試資料是屬於G11機台&quot;
+## [1] &quot;第20筆測試資料是屬於G34機台&quot;
+## [1] &quot;第21筆測試資料是屬於G34機台&quot;
+## [1] &quot;第22筆測試資料是屬於G34機台&quot;
+## [1] &quot;第23筆測試資料是屬於G34機台&quot;
+## [1] &quot;第24筆測試資料是屬於G34機台&quot;
+## [1] &quot;第25筆測試資料是屬於G48機台&quot;
+## [1] &quot;第26筆測試資料是屬於G48機台&quot;
+## [1] &quot;第27筆測試資料是屬於G48機台&quot;
+## [1] &quot;第28筆測試資料是屬於G48機台&quot;
+## [1] &quot;第29筆測試資料是屬於G48機台&quot;
+## [1] &quot;第3筆測試資料是屬於G15機台&quot;
+## [1] &quot;第30筆測試資料是屬於G48機台&quot;
+## [1] &quot;第31筆測試資料是屬於G49機台&quot;
+## [1] &quot;第32筆測試資料是屬於G49機台&quot;
+## [1] &quot;第33筆測試資料是屬於G49機台&quot;
+## [1] &quot;第34筆測試資料是屬於G49機台&quot;
+## [1] &quot;第35筆測試資料是屬於G49機台&quot;
+## [1] &quot;第36筆測試資料是屬於G49機台&quot;
+## [1] &quot;第4筆測試資料是屬於G15機台&quot;
+## [1] &quot;第5筆測試資料是屬於G15機台&quot;
+## [1] &quot;第6筆測試資料是屬於G15機台&quot;
+## [1] &quot;第7筆測試資料是屬於G15機台&quot;
+## [1] &quot;第8筆測試資料是屬於G15機台&quot;
+## [1] &quot;第9筆測試資料是屬於G17機台&quot;</code></pre>
+</div>
+</div>
