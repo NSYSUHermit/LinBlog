@@ -1,7 +1,7 @@
 baseurl = "/"
 languageCode = "en-us"
-title = "Lin's Blog"
-theme = "Lin's Blog"
+title = "Hugo XMag"
+theme = "hugo-xmag"
 googleAnalytics = ""
 disqusShortname = ""
 ignoreFiles = ["\\.Rmd$", "_files$", "_cache$"]
@@ -38,7 +38,7 @@ paginate = 6
     description = "A website built through Rstudio and blogdown."
     summary_length = 300
     github_edit = "https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/"
-    footer = "&copy; [Yihui Xie](https://yihui.name) 2017 | [Github](https://github.com/yihui) | [Twitter](https://twitter.com/xieyihui)"
+    footer = "&copy; [Lin](https://yihui.name) | [Github](https://github.com/NSYSUHermit) | [Rpubs](https://rpubs.com/JupiterHenry)"
 
 [params.text]
     back = "&larr; Back to Home"
