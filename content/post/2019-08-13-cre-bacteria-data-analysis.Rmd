@@ -1,7 +1,7 @@
 ---
 title: CRE Bacteria Data Analysis
 author: Hermit
-date: '2019-08-13'
+date: '2019-04-24'
 slug: cre-bacteria-data-analysis
 categories:
   - R
