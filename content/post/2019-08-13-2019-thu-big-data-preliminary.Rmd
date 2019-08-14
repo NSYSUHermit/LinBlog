@@ -9,7 +9,7 @@ tags:
 categories:
 - R
 - Machine Learning
-thumbnail: "2019-08-13/擷取.jpg"
+thumbnail: "/post/2019-08-13-2019-thu-big-data-preliminary_files/擷取.JPG"
 ---
 
 I participated in the 2019 Donghae University Big Data Competition. In this article, I will show waht kind of the problem we should do and how I finish the work.
