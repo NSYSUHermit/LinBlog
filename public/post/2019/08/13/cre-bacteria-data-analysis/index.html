@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>CRE Bacteria Data Analysis | Lin&#39;s Blog</title>
+    <title>CRE Bacteria Data Analysis | Hugo XMag</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -15,7 +15,7 @@
     <nav class="header">
       <div class="banner">
 <a href="/" class="text">
-&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+&Hfr;&Ufr;&Gfr;&Ofr; &Xfr;&Mfr;&Afr;&Gfr;
 </a>
 </div>
 
@@ -98,6 +98,7 @@ head(data_csv[,1:5],10)</code></pre>
 </div>
 <div id="arrange" class="section level2">
 <h2>arrange</h2>
+<p>將資料轉置成我們要的方向，因為原資料的peak有1471種，其重要性以p value的大小為分別，這裡我只取前50大的種類，並且因為前面的46個觀察值是CRE，後面的49個則不是，因此在這裡幫前46比觀察值加入label，讓後續的分類可以更好進行。因此最終資料將呈現95比觀察值與51個變數(前50 peak 的解釋變數以及一個CRE類別反應變數)。</p>
 <pre class="r"><code>if (!require(tidyverse)) install.packages(&#39;tidyverse&#39;)</code></pre>
 <pre><code>## Loading required package: tidyverse</code></pre>
 <pre><code>## Warning: package &#39;tidyverse&#39; was built under R version 3.5.3</code></pre>
@@ -150,6 +151,9 @@ head(data[,c(1:5,51)],10)</code></pre>
 ## B1060429.067.CRE.KP 458382.1 136389.20  412460.2 294669.0 46850.84   1
 ## B1060522.013.CRE.KP 404748.2  97165.77  800137.4 134355.1     0.00   1
 ## B1060606.077.CRE.KP      0.0 237456.30  489450.3 317787.7     0.00   1</code></pre>
+<pre class="r"><code>#Plot the CRE type
+plot(data$CRE)</code></pre>
+<p><img src="/post/2019-08-13-cre-bacteria-data-analysis_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 </div>
 </div>
 <div id="bulid-the-classificators" class="section level1">
@@ -274,7 +278,6 @@ mean(nb_loocv_accuracy) # Accurary with LOOCV = 0.6947368</code></pre>
 <div id="logistic-regression" class="section level2">
 <h2>Logistic Regression</h2>
 <pre class="r"><code>lr_loocv_accuracy &lt;- vector()
-
 for(i in c(1:95)){
   train = data[-i, ]
   test  = data[i, ]
@@ -321,7 +324,7 @@ mean(lr_loocv_accuracy) # Accurary with LOOCV = 0.5157895</code></pre>
 
 <nav class="post-nav">
   <span class="nav-prev"><a href="/post/2019/08/13/2019-thu-big-data-preliminary/">&larr; 2019_THU_Big_Data_Preliminary</a></span>
-  <span class="nav-next"><a href="/post/2017/02/14/a-plain-markdown-post/">A Plain Markdown Post &rarr;</a></span>
+  <span class="nav-next"><a href="/post/2015/07/23/hello-r-markdown/">Hello R Markdown &rarr;</a></span>
 </nav>
 
 
@@ -348,7 +351,7 @@ mean(lr_loocv_accuracy) # Accurary with LOOCV = 0.5157895</code></pre>
     
   </ul>
   
-  <div class="copyright">&copy; <a href="https://yihui.name">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  <div class="copyright">&copy; <a href="https://yihui.name">Yihui Xie</a> 2017 | <a href="https://github.com/yihui">Github</a> | <a href="https://twitter.com/xieyihui">Twitter</a></div>
   
 </div>
 </footer>
