@@ -1,0 +1,3 @@
+"0","data_csv <- read.csv(""20180111_CRE_46-non-CRE_49_Intensity.csv"")"
+"0","#preview the origin data"
+"0","head(data_csv[,1:5],10)"

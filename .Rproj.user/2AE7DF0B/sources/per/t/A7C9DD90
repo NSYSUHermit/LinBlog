@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1565630851269.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2412539109",
+    "id" : "A7C9DD90",
+    "lastKnownWriteTime" : 1565630670,
+    "last_content_update" : 1565630670,
+    "path" : "C:/Users/User/OneDrive/Lin/Blog/LinBlog/config.toml",
+    "project_path" : "config.toml",
+    "properties" : {
+        "cursorPosition" : "46,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "toml"
+}

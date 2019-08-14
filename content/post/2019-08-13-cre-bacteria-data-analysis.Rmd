@@ -37,6 +37,7 @@ head(data_csv[,1:5],10)
 ```
 
 ## arrange
+將資料轉置成我們要的方向，因為原資料的peak有1471種，其重要性以p value的大小為分別，這裡我只取前50大的種類，並且因為前面的46個觀察值是CRE，後面的49個則不是，因此在這裡幫前46比觀察值加入label，讓後續的分類可以更好進行。因此最終資料將呈現95比觀察值與51個變數(前50 peak 的解釋變數以及一個CRE類別反應變數)。
 ```{r}
 if (!require(tidyverse)) install.packages('tidyverse')
 library(tidyverse)
@@ -63,6 +64,9 @@ data$CRE <- as.factor(c(rep(1,46),rep(0,49)))
 
 #preview front of 5 variables and CRE.
 head(data[,c(1:5,51)],10)
+
+#Plot the CRE type
+plot(data$CRE)
 ```
 
 # Bulid the Classificators
@@ -171,7 +175,6 @@ mean(nb_loocv_accuracy) # Accurary with LOOCV = 0.6947368
 ## Logistic Regression
 ```{r,warning= FALSE}
 lr_loocv_accuracy <- vector()
-
 for(i in c(1:95)){
   train = data[-i, ]
   test  = data[i, ]
