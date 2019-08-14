@@ -2,9 +2,6 @@
 title: "2019 THU Big Data Preliminary"
 author: "Hermit"
 date: '2019-08-13'
-description: I participated in the 2019 Donghae University Big Data Competition. In
-  this article, I will show waht kind of the problem we should do and how I finish
-  the work.
 slug: 2019 thu big data preliminary
 tags:
 - blogdown
@@ -13,7 +10,9 @@ categories:
 - R
 - Machine Learning
 ---
-# Description:
+I participated in the 2019 Donghae University Big Data Competition. In this article, I will show waht kind of the problem we should do and how I finish the work.
+
+This is contest Description:
 1.訓練數據(用於建立模型)
 此數據為建模用，數據為熱壓爐成化加工過程所量測的溫度數據，總共有 8 個 群組的數據。群組內的每一個檔案為同一機台在一段連續時間內所量測數據， 8 個群組共有紀錄 230 個量測數據檔案，每一個檔案包含有五個到八個溫度數據欄位。  
 
