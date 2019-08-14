@@ -1,6 +1,6 @@
 baseurl = "/"
 languageCode = "en-us"
-title = "Hugo XMag"
+title = "Lin's Blog"
 theme = "hugo-xmag"
 googleAnalytics = ""
 disqusShortname = ""
@@ -38,7 +38,7 @@ paginate = 6
     description = "A website built through Hugo and blogdown."
     summary_length = 300
     github_edit = "https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/"
-    footer = "&copy; [Yihui Xie](https://yihui.name) 2017 | [Github](https://github.com/yihui) | [Twitter](https://twitter.com/xieyihui)"
+    footer = "&copy; [Lin](https://biggo.com.tw) | [Github](https://github.com/NSYSUHermit) | [Rpubs](https://rpubs.com/JupiterHenry)"
 
 [params.text]
     back = "&larr; Back to Home"

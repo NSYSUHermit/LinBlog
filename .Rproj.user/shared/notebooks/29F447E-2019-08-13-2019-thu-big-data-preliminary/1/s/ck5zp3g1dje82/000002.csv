@@ -1,0 +1,7 @@
+"0","necessary = c(""readr"",""dplyr"",""plyr"",""randomForest"")"
+"0","installed = necessary %in% installed.packages()[, 'Package']"
+"0","if (length(necessary[!installed]) >=1)"
+"0","  install.packages(necessary[!installed])"
+"0","library(readr)"
+"0","library(plyr)"
+"0","library(randomForest)"
