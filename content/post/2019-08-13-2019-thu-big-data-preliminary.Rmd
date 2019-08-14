@@ -10,9 +10,8 @@ categories:
 - R
 - Machine Learning
 ---
-
 I participated in the 2019 Donghae University Big Data Competition. In this article, I will show waht kind of the problem we should do and how I finish the work.    
-![cover](/post/2019-08-13-2019-thu-big-data-preliminary_files/123.JPG){width=50% height=50%}  
+
 ※There is contest Description:  
 
 1.訓練數據(用於建立模型)
