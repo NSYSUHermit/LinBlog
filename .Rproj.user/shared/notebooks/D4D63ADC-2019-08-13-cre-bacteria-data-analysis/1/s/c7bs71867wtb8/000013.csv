@@ -1,4 +1,0 @@
-"0","#label CRE as factor"
-"0","data$CRE <- as.factor(c(rep(1,46),rep(0,49)))"
-"0","#preview front of 5 variables and CRE."
-"0","head(data[,c(1:5,51)],10)"

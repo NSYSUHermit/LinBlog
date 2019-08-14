@@ -1,2 +1,0 @@
-"0","temprature = as.numeric(data1[1,])"
-"0","plot(temprature,xlab = ""time"", xlim = c(0,225),col=""blue"")"
