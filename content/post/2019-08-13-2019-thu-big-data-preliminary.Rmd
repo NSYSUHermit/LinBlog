@@ -9,7 +9,7 @@ tags:
 categories:
 - R
 - Machine Learning
-thumbnail: "/post/2019-08-13-2019-thu-big-data-preliminary_files/擷取.JPG"
+thumbnail: "https://imgur.com/a/zxjJqMI"
 ---
 
 I participated in the 2019 Donghae University Big Data Competition. In this article, I will show waht kind of the problem we should do and how I finish the work.
@@ -28,13 +28,13 @@ I participated in the 2019 Donghae University Big Data Competition. In this arti
 
 資料型態為8個資料夾，分別代表8個不同分類，資料夾內有數個機台溫度的txt檔案，其呈現方式為垂直觀測資料，故我們先以R讀入大量txt資料，再將垂直格式轉為水平格式，並且幫各比溫度資料標記其所屬的分類，以1~8的factor為代稱，以方便我們做後續分析。
 ![thu1](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu1.JPG){width=100% height=100%}
-※訓練資料圖示1  
+※訓練資料圖示1:八個類別。
 ![thu2](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu2.JPG){width=100% height=100%}
-※訓練資料圖示2  
+※訓練資料圖示2:類別內各自以.txt呈現。
 
 ![thu3](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu3.jpg)
 
-※訓練資料圖示3  
+※訓練資料圖示3 :溫度以縱向的方式呈現。 
 
 # Read data
 說明:以下程式在資料目錄及其底下的txt檔架構不變下，只需要更改資料夾位置即可  
@@ -57,7 +57,7 @@ pathtest <- "C:\\Users\\User\\OneDrive\\Lin\\NSYSU\\thu_bigdata\\test_model\\"
 2.資料夾位置最後記得加上反斜線「/」。
 
 # Part2:Install packages
-準備幾個會使用到的package
+準備後續幾個會使用到的package：
 ```{r}
 necessary = c("readr","dplyr","plyr","randomForest")
 installed = necessary %in% installed.packages()[, 'Package']
@@ -244,12 +244,14 @@ test = data1
 ```
 
 # Part4:Data analyzing
+我們先透過資料視覺化，並以此決定後續分析方向，因不知不同PTC是否有影響，因此我們決定先保留PTC，並找尋個機台的溫度特徵來當作其他的解釋變數。
 ## Data Visualization
-這是第一個類別的第一機台溫度時間變化圖，大多數的觀測溫度變化圖呈現類似的結果。
+這是第一個類別的第一機台溫度時間變化圖，大多數的觀測溫度變化圖呈現類似的結果。我們在最開始以升溫速率當作分類特徵，但效果並不顯著。  
 ```{r}
 temprature = as.numeric(data1[1,])
 plot(temprature,xlab = "time", xlim = c(0,225),col="blue")
 ```
+  
 我們已知機台為持續加溫，因此其溫度變化的特徵是一個可作為類別區分的依據，因此我們在最一開始分析時，使用各串溫度資料的某些特徵進行分析，例如最大溫度、穩態溫度時間長度、溫度下降點等。但在訓練過程中，我們嘗試了多種分類方法，如常見的SVM、XGB、隨機森林等，但因各PTC差異甚小，且保留過少的溫度特徵，因此效果並不理想。後續使用集成學習(stacking)的方法，但交叉驗證的預測準確率也僅約70%左右。
 ![thu6](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu6.jpg)
 ※分析流程1
