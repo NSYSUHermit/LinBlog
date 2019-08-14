@@ -27,9 +27,9 @@ I participated in the 2019 Donghae University Big Data Competition. In this arti
 
 
 資料型態為8個資料夾，分別代表8個不同分類，資料夾內有數個機台溫度的txt檔案，其呈現方式為垂直觀測資料，故我們先以R讀入大量txt資料，再將垂直格式轉為水平格式，並且幫各比溫度資料標記其所屬的分類，以1~8的factor為代稱，以方便我們做後續分析。
-![thu1](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu1.jpg)
+![thu1](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu1.JPG){width=100% height=100%}
 ※訓練資料圖示1  
-![thu2](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu2.jpg)
+![thu2](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu2.JPG){width=100% height=100%}
 ※訓練資料圖示2  
 
 ![thu3](/post/2019-08-13-2019-thu-big-data-preliminary_files/thu3.jpg)

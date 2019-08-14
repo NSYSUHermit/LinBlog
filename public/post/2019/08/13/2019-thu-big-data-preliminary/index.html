@@ -79,12 +79,12 @@
 <p>3.比賽方式:
 經由比賽團隊所訓練出來的模型，將測驗數據當作輸入數據，進行分類。主辦 方將各團隊的 36 組測驗數據分類結果經過分類準確度計算，進行團隊排名， 做為入圍決賽之依據。</p>
 <p>資料型態為8個資料夾，分別代表8個不同分類，資料夾內有數個機台溫度的txt檔案，其呈現方式為垂直觀測資料，故我們先以R讀入大量txt資料，再將垂直格式轉為水平格式，並且幫各比溫度資料標記其所屬的分類，以1~8的factor為代稱，以方便我們做後續分析。
-<img src="2019-08-13/thu1.JPG" alt="thu1" />
+<img src="/post/2019-08-13-2019-thu-big-data-preliminary_files/thu1.JPG" alt="thu1" style="width:100.0%;height:100.0%" />
 ※訓練資料圖示1<br />
-<img src="2019-08-13/thu2.JPG" alt="thu2" />
+<img src="/post/2019-08-13-2019-thu-big-data-preliminary_files/thu2.JPG" alt="thu2" style="width:100.0%;height:100.0%" />
 ※訓練資料圖示2</p>
 <div class="figure">
-<img src="2019-08-13/thu3.JPG" alt="thu3" />
+<img src="/post/2019-08-13-2019-thu-big-data-preliminary_files/thu3.jpg" alt="thu3" />
 <p class="caption">thu3</p>
 </div>
 <p>※訓練資料圖示3</p>
@@ -263,9 +263,9 @@ data$y = c(a,b,c,d,e,f,g,h)</code></pre>
 <div id="test-data" class="section level2">
 <h2>Test data</h2>
 <p>測試資料與訓練資料呈現類似，以36個txt檔案呈現，並期望我們能預測36筆資料分別為哪些類別。
-<img src="2019-08-13/thu4.JPG" alt="thu4" />
+<img src="/post/2019-08-13-2019-thu-big-data-preliminary_files/thu4.jpg" alt="thu4" />
 ※測試資料圖示1</p>
-<p><img src="2019-08-13/thu5.JPG" alt="thu5" />
+<p><img src="/post/2019-08-13/thu5.jpg" alt="thu5" />
 ※測試資料圖示2</p>
 <pre class="r"><code>g49 &lt;- list.files(path = pathtest, pattern = &quot;*.txt&quot;)
 g49data = lapply(paste0(path = pathtest,g49,sep=&quot;&quot;),txt)
@@ -298,10 +298,10 @@ test = data1</code></pre>
 plot(temprature,xlab = &quot;time&quot;, xlim = c(0,225),col=&quot;blue&quot;)</code></pre>
 <p><img src="/post/2019-08-13-2019-thu-big-data-preliminary_files/figure-html/unnamed-chunk-6-1.png" width="672" />
 我們已知機台為持續加溫，因此其溫度變化的特徵是一個可作為類別區分的依據，因此我們在最一開始分析時，使用各串溫度資料的某些特徵進行分析，例如最大溫度、穩態溫度時間長度、溫度下降點等。但在訓練過程中，我們嘗試了多種分類方法，如常見的SVM、XGB、隨機森林等，但因各PTC差異甚小，且保留過少的溫度特徵，因此效果並不理想。後續使用集成學習(stacking)的方法，但交叉驗證的預測準確率也僅約70%左右。
-<img src="2019-08-13/thu6.JPG" alt="thu6" />
+<img src="/post/2019-08-13-2019-thu-big-data-preliminary_files/thu6.jpg" alt="thu6" />
 ※分析流程1</p>
 <p>後來透過分析方法推得相異PTC並無顯著影響分類結果，因此使用不考慮PTC差異的全溫度資料進行分類，在使用各類多元分類方法以及集成方法後，訓練資料的交叉驗證準確率皆高達99%，因此在最後我們決定使用不易過度擬合的分類方法：隨機森林，來當作我們這次的最終分類模型。
-<img src="2019-08-13/thu7.JPG" alt="thu7" />
+<img src="/post/2019-08-13-2019-thu-big-data-preliminary_files/thu7.jpg" alt="thu7" />
 ※分析流程2</p>
 </div>
 <div id="randomforest" class="section level2">
@@ -412,7 +412,7 @@ for(i in len){
 
 <nav class="post-nav">
   <span class="nav-prev"></span>
-  <span class="nav-next"><a href="/post/2019/08/13/cre-bacteria-data-analysis/">CRE Bacteria Data Analysis &rarr;</a></span>
+  <span class="nav-next"><a href="/post/2019/04/24/cre-bacteria-data-analysis/">CRE Bacteria Data Analysis &rarr;</a></span>
 </nav>
 
 
