@@ -14,7 +14,8 @@ So I won't tell you how GIT work. If you want to learn rigorous and precise.
 This web way help:https://gitbook.tw/.  
 
 #Ch1: build a git place and push on it.
-First: you have to build a Repository or a Project on gitlab(or github)  
+First: you have to build a Repository or a Project on gitlab(or github) 
+![gi1](/post/2019-08-15-git-simple-tutorial_files/gi1.PNG)
 <img src="/post/2019-08-15-git-simple-tutorial_files/gi1.PNG" alt="gi1" width="100%" height="100%"/>
 
 Second: Make sure you have installed the GIT on your device. Then open the commander  
