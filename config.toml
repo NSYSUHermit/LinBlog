@@ -20,7 +20,7 @@ paginate = 6
     weight = 1
 [[menu.main]]
     name = "About"
-    url = "/about/"
+    url = "/about1/"
     weight = 2
 [[menu.main]]
     name = "Categories"
@@ -31,8 +31,8 @@ paginate = 6
     url = "/tags/"
     weight = 4
 [[menu.main]]
-    name = "Subscribe"
-    url = "/index.xml"
+    name = "Blogdown"
+    url = "/about/"
 
 [params]
     description = "A website built through Hugo and blogdown."
