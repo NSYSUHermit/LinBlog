@@ -38,7 +38,7 @@ paginate = 6
     description = "A website built through Hugo and blogdown."
     summary_length = 300
     github_edit = "https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/"
-    footer = "&copy; [Lin](https://biggo.com.tw) | [Github](https://github.com/NSYSUHermit) | [Rpubs](https://rpubs.com/JupiterHenry)"
+    footer = "&copy; [Lin](https://www.instagram.com/henry.5060/?hl=zh-tw) | [Github](https://github.com/NSYSUHermit) | [Rpubs](https://rpubs.com/JupiterHenry)"
 
 [params.text]
     back = "&larr; Back to Home"
