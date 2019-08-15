@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>GIT on Lin&#39;s Blog</title>
+    <title>GIT on Hugo XMag</title>
     <link>/tags/git/</link>
-    <description>Recent content in GIT on Lin&#39;s Blog</description>
+    <description>Recent content in GIT on Hugo XMag</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 15 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 14 Aug 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/git/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>GIT Simple Tutorial</title>
-      <link>/post/2019/08/15/git-simple-tutorial/</link>
-      <pubDate>Thu, 15 Aug 2019 00:00:00 +0000</pubDate>
+      <title>Simple git tutorial</title>
+      <link>/post/2019/08/14/simple-git-tutorial/</link>
+      <pubDate>Wed, 14 Aug 2019 00:00:00 +0000</pubDate>
       
-      <guid>/post/2019/08/15/git-simple-tutorial/</guid>
+      <guid>/post/2019/08/14/simple-git-tutorial/</guid>
       <description>This is pretty simple tutorial for update gitlab or github.
-So I won&amp;rsquo;t tell you how GIT work. If you want to learn rigorous and precise.
+So I won’t tell you how GIT work. If you want to learn rigorous and precise.
 This web way help:https://gitbook.tw/.
-#Ch1: build a git place and push on it. First: you have to build a Repository or a Project on gitlab(or github)
-Second: Make sure you have installed the GIT on your device. Then open the commander
-Third: cd to your files location.</description>
+Ch1: build a git place and push on it.First:You have to build a Repository or a Project on gitlab(or github)
+Second:Make sure you have installed the GIT on your device. Then open the commander
+Third:cd to your files location.</description>
     </item>
     
   </channel>
