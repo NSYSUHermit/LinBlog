@@ -78,5 +78,14 @@ Features This theme includes a few cool features:
  Magazine title in Blackletter (&amp;Bfr;&amp;Lfr;&amp;Afr;&amp;Cfr;&amp;Kfr; &amp;Lfr;&amp;Efr;&amp;Tfr;&amp;Tfr;&amp;Efr;&amp;Rfr;)</description>
     </item>
     
+    <item>
+      <title>About myself</title>
+      <link>/about1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/about1/</guid>
+      <description>嗨，各位好，我是Hermit。 主修應用數學及統計，並以資料分析作為主要學習方向。 架立這個部落格的主要原因是希望能將自己做過的東西有個簡單陳列</description>
+    </item>
+    
   </channel>
 </rss>
