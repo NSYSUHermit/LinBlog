@@ -82,50 +82,6 @@ Then output the the chapters to each text files.</p>
 
 if (!require(ropencc))devtools::install_github(&quot;qinwf/ropencc&quot;)</code></pre>
 <pre><code>## Loading required package: ropencc</code></pre>
-<pre><code>## Warning in library(package, lib.loc = lib.loc, character.only = TRUE,
-## logical.return = TRUE, : there is no package called &#39;ropencc&#39;</code></pre>
-<pre><code>## Downloading GitHub repo qinwf/ropencc@master</code></pre>
-<pre><code>## 
-##   
-  
-  
-   checking for file &#39;C:\Users\User\AppData\Local\Temp\Rtmpak6Kb0\remotes33042f961524\qinwf-ropencc-a5deb1f/DESCRIPTION&#39; ...
-  
-   checking for file &#39;C:\Users\User\AppData\Local\Temp\Rtmpak6Kb0\remotes33042f961524\qinwf-ropencc-a5deb1f/DESCRIPTION&#39; ... 
-  
-√  checking for file &#39;C:\Users\User\AppData\Local\Temp\Rtmpak6Kb0\remotes33042f961524\qinwf-ropencc-a5deb1f/DESCRIPTION&#39;
-## 
-  
-  
-  
--  preparing &#39;ropencc&#39;:
-##    checking DESCRIPTION meta-information ...
-  
-   checking DESCRIPTION meta-information ... 
-  
-√  checking DESCRIPTION meta-information
-## -  cleaning src
-## 
-  
-  
-  
--  checking for LF line-endings in source and make files and shell scripts
-## 
-  
-  
-  
--  checking for empty or unneeded directories
-## 
-  
-  
-  
--  building &#39;ropencc_0.1.tar.gz&#39;
-## 
-  
-   
-## </code></pre>
-<pre><code>## Installing package into &#39;C:/Users/User/Documents/R/win-library/3.5&#39;
-## (as &#39;lib&#39; is unspecified)</code></pre>
 <pre class="r"><code>library(ropencc)
 
 #read the html
@@ -165,7 +121,8 @@ url &lt;- t(data.frame(url[80:87,1])) #transpose the url data</code></pre>
   write.table(cont,nam)
 }</code></pre>
 <p>We will get eight text files after the code run.<br />
-The result:</p>
+The result:<br />
+<img src="/post/2019-05-02-web-crawler-on-simple-chinese-web_files/pi.PNG" alt="pi1" /></p>
 </div>
 
 </main>
@@ -221,9 +178,6 @@ The result:</p>
 </div>
 </footer>
 
-
-<script src="//yihui.name/js/math-code.js"></script>
-<script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 
 
