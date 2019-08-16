@@ -30,7 +30,7 @@
         
         
         
-        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-08-13-cre-bacteria-data-analysis.Rmd">Edit this page &rarr;</a></span>
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-04-24-cre-bacteria-data-analysis.Rmd">Edit this page &rarr;</a></span>
         
         
       
@@ -45,7 +45,7 @@
   
     <a href="/categories/r">R</a>
   
-     &hercon; <a href="/categories/machine-learning">Machine Learning</a>
+     &hercon; <a href="/categories/machine-learning">machine-learning</a>
   
   </div>
 
@@ -57,7 +57,7 @@
   
 
   
-  <p>Tags: <a href="/tags/r-markdown">R Markdown</a>
+  <p>Tags: <a href="/tags/classification">classification</a>
   </p>
   
   
@@ -80,7 +80,7 @@
 <h1>Data processing</h1>
 <div id="read-data" class="section level2">
 <h2>Read data</h2>
-<pre class="r"><code>data_csv &lt;- read.csv(&quot;20180111_CRE_46-non-CRE_49_Intensity.csv&quot;)
+<pre class="r"><code>data_csv &lt;- read.csv(&quot;C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Educations\\NSYSU\\fu_chung\\bacterial\\20180111_CRE_46-non-CRE_49_Intensity.csv&quot;)
 
 #preview the origin data
 head(data_csv[,1:5],10)</code></pre>
@@ -95,10 +95,11 @@ head(data_csv[,1:5],10)</code></pre>
 ## 8  2094.218 1.00000000 1.00000000                   0                0.00
 ## 9  2107.575 0.00045300 0.06658398                   0                0.00
 ## 10 2124.102 0.76943375 1.00000000                   0                0.00</code></pre>
+<p>可看出兩種類別的數量非常接近，CRE為46個，非CRE為49個。</p>
 </div>
 <div id="arrange" class="section level2">
 <h2>arrange</h2>
-<p>將資料轉置成我們要的方向，因為原資料的peak有1471種，其重要性以p value的大小為分別，這裡我只取前50大的種類，並且因為前面的46個觀察值是CRE，後面的49個則不是，因此在這裡幫前46比觀察值加入label，讓後續的分類可以更好進行。因此最終資料將呈現95比觀察值與51個變數(前50 peak 的解釋變數以及一個CRE類別反應變數)。</p>
+<p>將資料轉置成我們要的方向，因為原資料的peak有1471種，其重要性以p value的大小為分別，這裡我只取前50小(顯著)的種類，並且因為前面的46個觀察值是CRE，後面的49個則不是，因此在這裡幫前46比觀察值加入label，讓後續的分類可以更好進行。因此最終資料將呈現95比觀察值與51個變數(前50 peak 的解釋變數以及一個CRE類別反應變數)。</p>
 <pre class="r"><code>if (!require(tidyverse)) install.packages(&#39;tidyverse&#39;)</code></pre>
 <pre><code>## Loading required package: tidyverse</code></pre>
 <pre><code>## -- Attaching packages ----------------------------------------------------------------------------------------------- tidyverse 1.2.1 --</code></pre>
@@ -148,7 +149,7 @@ head(data[,c(1:5,51)],10)</code></pre>
 ## B1060606.077.CRE.KP      0.0 237456.30  489450.3 317787.7     0.00   1</code></pre>
 <pre class="r"><code>#Plot the CRE type
 plot(data$CRE)</code></pre>
-<p><img src="/post/2019-08-13-cre-bacteria-data-analysis_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="/post/2019-04-24-cre-bacteria-data-analysis_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 </div>
 </div>
 <div id="bulid-the-classificators" class="section level1">
@@ -215,7 +216,7 @@ for(i in c(1:95)){
 
 #LOOCV test accuracy
 mean(rf_loocv_accuracy) # Accurary with LOOCV = 0.9157895</code></pre>
-<pre><code>## [1] 0.9052632</code></pre>
+<pre><code>## [1] 0.8947368</code></pre>
 </div>
 <div id="knn-with-distance-10" class="section level2">
 <h2>KNN with distance = 10</h2>
@@ -315,7 +316,7 @@ mean(lr_loocv_accuracy) # Accurary with LOOCV = 0.5157895</code></pre>
 
 
 <nav class="post-nav">
-  <span class="nav-prev"><a href="/post/2019/04/24/cre-bacteria-data-analysis/">&larr; CRE Bacteria Data Analysis</a></span>
+  <span class="nav-prev"><a href="/post/2019/08/11/2019-thu-big-data-preliminary/">&larr; 2019 THU Big Data Preliminary</a></span>
   <span class="nav-next"><a href="/post/2017/02/14/a-plain-markdown-post/">A Plain Markdown Post &rarr;</a></span>
 </nav>
 

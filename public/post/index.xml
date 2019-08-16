@@ -25,44 +25,12 @@ Step 1: build a git place and push on it.1-1:You have to build a Repository or
     </item>
     
     <item>
-      <title>Simple git tutorial</title>
-      <link>/post/2019/08/14/simple-git-tutorial/</link>
-      <pubDate>Wed, 14 Aug 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/post/2019/08/14/simple-git-tutorial/</guid>
-      <description>This is pretty simple tutorial for update gitlab or github.
-So I won’t tell you how GIT work. If you want to learn rigorous and precise.
-This web way help:https://gitbook.tw/.
-Ch1: build a git place and push on it.First:You have to build a Repository or a Project on gitlab(or github)
-Second:Make sure you have installed the GIT on your device. Then open the commander
-Third:cd to your files location.</description>
-    </item>
-    
-    <item>
-      <title>2019 THU Big Data Preliminary</title>
-      <link>/post/2019/08/13/2019-thu-big-data-preliminary/</link>
-      <pubDate>Tue, 13 Aug 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/post/2019/08/13/2019-thu-big-data-preliminary/</guid>
-      <description>I participated in the 2019 Donghae University Big Data Competition. In this article, I will show waht kind of the problem we should do and how I finish the work. ※There is contest Description: 1.訓練數據(用於建立模型) 此數據為建模用，數據為熱壓爐成化加</description>
-    </item>
-    
-    <item>
       <title>2019 THU Big Data Preliminary</title>
       <link>/post/2019/08/11/2019-thu-big-data-preliminary/</link>
       <pubDate>Sun, 11 Aug 2019 00:00:00 +0000</pubDate>
       
       <guid>/post/2019/08/11/2019-thu-big-data-preliminary/</guid>
       <description>I participated in the 2019 Donghae University Big Data Competition. In this article, I will show waht kind of the problem we should do and how I finish the work. ※There is contest Description: 1.訓練數據(用於建立模型) 此數據為建模用，數據為熱壓爐成化加</description>
-    </item>
-    
-    <item>
-      <title>CRE Bacteria Data Analysis</title>
-      <link>/post/2019/04/24/cre-bacteria-data-analysis/</link>
-      <pubDate>Wed, 24 Apr 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/post/2019/04/24/cre-bacteria-data-analysis/</guid>
-      <description>在這個資料中，我們有兩種細菌。前面的46個觀察值是CRE，後面的49個則不是。 我們希望將資料分類為是否為 CRE。Peak是蛋白質的名稱，而P</description>
     </item>
     
     <item>
