@@ -10,7 +10,9 @@ footnotereturnlinkcontents = "↩"
 hasCJKLanguage = true
 enableEmoji = true
 paginate = 6
-
+[params.banner]
+    src = "/path/to/banner.png"
+    
 [permalinks]
     post = "/post/:year/:month/:day/:slug/"
 
@@ -33,6 +35,7 @@ paginate = 6
 [[menu.main]]
     name = "Blogdown"
     url = "/about/"
+    weight = 5
 
 [params]
     description = "A website built through Hugo and blogdown."
