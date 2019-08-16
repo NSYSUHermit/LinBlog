@@ -1,0 +1,73 @@
+---
+title: Simple git tutorial
+author: Hermit
+date: '2019-08-16'
+slug: simple-git-tutorial
+categories:
+  - Git
+tags:
+  - Git
+---
+This is pretty simple tutorial for update gitlab or github.  
+So I won't tell you how GIT work. If you want to learn rigorous and precise.  
+This web way help:https://gitbook.tw/.  
+
+# Step 1: build a git place and push on it.
+
+### 1-1: 
+You have to build a Repository or a Project on gitlab(or github)  
+![gj1](/post/2019-08-16-simple-git-tutorial_files/gi1.PNG)
+
+### 1-2: 
+Make sure you have installed the GIT on your device. Then open the commander  
+![gi2](/post/2019-08-16-simple-git-tutorial_files/gi2.PNG)
+
+### 1-3: 
+Use "cd" to link your files location.(If you didn't know the DOS command,this web may be help:https://en.wikipedia.org/wiki/List_of_DOS_commands)
+```{r,eval = FALSE}
+cd location #location is your file link
+```
+
+![gi3](/post/2019-08-16-simple-git-tutorial_files/gi3.PNG)
+
+### 1-4:
+```{r,eval = FALSE}
+git clone url
+```
+Key "git clone url",the url is your Project clone link and it may ask you to log in the website.
+![gi4](/post/2019-08-16-simple-git-tutorial_files/gi4.PNG)
+
+
+### 1-5:
+```{r,eval = FALSE}
+git push
+```
+Key "git push" and the local project files will be pushed on the git web!
+![gi5](/post/2019-08-16-simple-git-tutorial_files/gi5.PNG)
+
+# Step 2: update the git files.
+If you want to push your updated files on git web. You should cd to your git location at first.
+
+### 2-1: 
+```{r,eval = FALSE}
+git add .
+```
+After cd to your git location, key "git add .",then it will check the updated clone files. 
+
+### 2-2:
+```{r,eval = FALSE}
+git status
+```
+Key "git status", it will show you what's files be updated.
+
+### 2-3
+```{r,eval = FALSE}
+git commit -m 'update'
+```
+Key "git commit -m 'update'", you need to announce the "commit name". The 'update' can be changed by any string you want to call. 
+
+### 2-4
+```{r,eval = FALSE}
+git push
+```
+Key "git push",then the files will be pushed on git web if your git files is legal.

@@ -4,42 +4,47 @@
   
   <url>
     <loc>/categories/</loc>
-    <lastmod>2019-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/git/</loc>
-    <lastmod>2019-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/categories/git/</loc>
-    <lastmod>2019-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/</loc>
-    <lastmod>2019-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2019-08-14T00:00:00+00:00</lastmod>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/post/2019/08/16/simple-git-tutorial/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/post/2019/08/14/simple-git-tutorial/</loc>
     <lastmod>2019-08-14T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
-    <lastmod>2019-08-14T00:00:00+00:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -69,6 +74,22 @@
     <loc>/tags/blogdown/</loc>
     <lastmod>2019-08-13T00:00:00+00:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/post/2019/08/11/2019-thu-big-data-preliminary/</loc>
+    <lastmod>2019-08-11T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/classification/</loc>
+    <lastmod>2019-08-11T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/post/2019/04/24/cre-bacteria-data-analysis/</loc>
+    <lastmod>2019-04-24T00:00:00+00:00</lastmod>
   </url>
   
   <url>

@@ -10,8 +10,6 @@ footnotereturnlinkcontents = "↩"
 hasCJKLanguage = true
 enableEmoji = true
 paginate = 6
-[params.banner]
-    src = "/path/to/banner.png"
     
 [permalinks]
     post = "/post/:year/:month/:day/:slug/"
