@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Web crawler on simple Chinese web | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-05-02</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-05-02-web-crawler-on-simple-chinese-web.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/r">R</a>
+  
+  </div>
+
+  <h1><span class="title">Web crawler on simple Chinese web</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/crawler">crawler</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>We will use the R-package:“rvest” for web crawler this time.</p>
+<p>The example web html: <a href="https://heavenlyfood.cn/books/menu.php?id=2021" class="uri">https://heavenlyfood.cn/books/menu.php?id=2021</a> (国度的操练为着教会的建造)<br />
+This web is written by simple Chinese. So we will trans the language to Traditional Chinese.<br />
+We will use the R-package:“ropencc” to do this job. You can download the “ropencc” on Github.
+Then output the the chapters to each text files.</p>
+<div id="link-the-website" class="section level1">
+<h1>Link the website</h1>
+<pre class="r"><code>if (!require(rvest))install.packages(&quot;rvest&quot;)</code></pre>
+<pre><code>## Loading required package: rvest</code></pre>
+<pre><code>## Loading required package: xml2</code></pre>
+<pre class="r"><code>library(rvest)
+
+if (!require(ropencc))devtools::install_github(&quot;qinwf/ropencc&quot;)</code></pre>
+<pre><code>## Loading required package: ropencc</code></pre>
+<pre><code>## Warning in library(package, lib.loc = lib.loc, character.only = TRUE,
+## logical.return = TRUE, : there is no package called &#39;ropencc&#39;</code></pre>
+<pre><code>## Downloading GitHub repo qinwf/ropencc@master</code></pre>
+<pre><code>## 
+##   
+  
+  
+   checking for file &#39;C:\Users\User\AppData\Local\Temp\Rtmpak6Kb0\remotes33042f961524\qinwf-ropencc-a5deb1f/DESCRIPTION&#39; ...
+  
+   checking for file &#39;C:\Users\User\AppData\Local\Temp\Rtmpak6Kb0\remotes33042f961524\qinwf-ropencc-a5deb1f/DESCRIPTION&#39; ... 
+  
+√  checking for file &#39;C:\Users\User\AppData\Local\Temp\Rtmpak6Kb0\remotes33042f961524\qinwf-ropencc-a5deb1f/DESCRIPTION&#39;
+## 
+  
+  
+  
+-  preparing &#39;ropencc&#39;:
+##    checking DESCRIPTION meta-information ...
+  
+   checking DESCRIPTION meta-information ... 
+  
+√  checking DESCRIPTION meta-information
+## -  cleaning src
+## 
+  
+  
+  
+-  checking for LF line-endings in source and make files and shell scripts
+## 
+  
+  
+  
+-  checking for empty or unneeded directories
+## 
+  
+  
+  
+-  building &#39;ropencc_0.1.tar.gz&#39;
+## 
+  
+   
+## </code></pre>
+<pre><code>## Installing package into &#39;C:/Users/User/Documents/R/win-library/3.5&#39;
+## (as &#39;lib&#39; is unspecified)</code></pre>
+<pre class="r"><code>library(ropencc)
+
+#read the html
+bible &lt;- read_html(&quot;https://heavenlyfood.cn/books/menu.php?id=2021&quot;)
+
+#get the title
+bible_title &lt;- html_nodes(bible,&quot;#title&quot;)
+title &lt;- html_text(bible_title)
+title &lt;- title[2:9]
+trans &lt;- converter(S2TWP)
+title &lt;- run_convert(trans, title) #trans simple chinese to traditional chinese
+
+#get the chapter&#39;s url
+url &lt;- html_nodes(bible,&quot;div a&quot;)  
+url &lt;- data.frame(html_attr(url,&quot;href&quot;))
+url &lt;- t(data.frame(url[80:87,1])) #transpose the url data</code></pre>
+</div>
+<div id="content-grabbing" class="section level1">
+<h1>Content Grabbing</h1>
+<p>We want to save one chapter in one txt file. So I save one time after I collect one chapter.</p>
+<pre class="r"><code>for(i in c(1:length(title))){
+  
+  #link to the chapter url
+  chapter_url &lt;- paste0(&quot;https://heavenlyfood.cn/&quot;, url[i])
+  bible1 &lt;- read_html(chapter_url)
+  
+  #grab the content
+  bible_cont &lt;- html_nodes(bible1,&quot;.cont&quot;)
+  cont &lt;- html_text(bible_cont,trim = TRUE)
+  
+  #trans simple Chinese to traditional Chinese
+  cont[1] &lt;- title[i] #name the title
+  cont &lt;- run_convert(trans, cont)
+  
+  #output the txt for each chapter
+  nam &lt;- paste(title[i],&quot;.txt&quot;, sep=&quot; &quot;)
+  write.table(cont,nam)
+}</code></pre>
+<p>We will get eight text files after the code run.<br />
+The result:</p>
+</div>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"><a href="/post/2019/08/11/2019-thu-big-data-preliminary/">&larr; 2019 THU Big Data Preliminary</a></span>
+  <span class="nav-next"><a href="/post/2019/04/24/cre-bacteria-data-analysis/">CRE Bacteria Data Analysis &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/about1/"><span data-hover="About">About</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="https://www.instagram.com/henry.5060/?hl=zh-tw">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+<script src="//yihui.name/js/math-code.js"></script>
+<script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+

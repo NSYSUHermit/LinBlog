@@ -20,7 +20,7 @@
       <description>This is pretty simple tutorial for update gitlab or github.
 So I won’t tell you how GIT work. If you want to learn rigorous and precise.
 This web way help:https://gitbook.tw/.
-Step 1: build a git place and push on it.1-1:You have to build a Repository or a Project on gitlab(or github)
+Step 1: Build a git place and push on it.1-1:You have to build a Repository or a Project on gitlab(or github)
 1-2:Make sure you have installed the GIT on your device. Then open the commander</description>
     </item>
     
@@ -31,6 +31,15 @@ Step 1: build a git place and push on it.1-1:You have to build a Repository or
       
       <guid>/post/2019/08/11/2019-thu-big-data-preliminary/</guid>
       <description>I participated in the 2019 Donghae University Big Data Competition. In this article, I will show waht kind of the problem we should do and how I finish the work. ※There is contest Description: 1.訓練數據(用於建立模型) 此數據為建模用，數據為熱壓爐成化加</description>
+    </item>
+    
+    <item>
+      <title>Web crawler on simple Chinese web</title>
+      <link>/post/2019/05/02/web-crawler-on-simple-chinese-web/</link>
+      <pubDate>Thu, 02 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/05/02/web-crawler-on-simple-chinese-web/</guid>
+      <description>We will use the R-package:“rvest” for web crawler this time. The example web html: https://heavenlyfood.cn/books/menu.php?id=2021 (国度的操练为着教会的建造) This web is written by simple Chinese. So we will trans the language to Traditional Chinese. We will use the R-pac</description>
     </item>
     
     <item>

@@ -12,7 +12,7 @@ This is pretty simple tutorial for update gitlab or github.
 So I won't tell you how GIT work. If you want to learn rigorous and precise.  
 This web way help:https://gitbook.tw/.  
 
-# Step 1: build a git place and push on it.
+# Step 1: Build a git place and push on it.
 
 ### 1-1: 
 You have to build a Repository or a Project on gitlab(or github)  
@@ -45,7 +45,7 @@ git push
 Key "git push" and the local project files will be pushed on the git web!
 ![gi5](/post/2019-08-16-simple-git-tutorial_files/gi5.PNG)
 
-# Step 2: update the git files.
+# Step 2: Update the git files.
 If you want to push your updated files on git web. You should cd to your git location at first.
 
 ### 2-1: 
@@ -53,21 +53,25 @@ If you want to push your updated files on git web. You should cd to your git loc
 git add .
 ```
 After cd to your git location, key "git add .",then it will check the updated clone files. 
+![gi6](/post/2019-08-16-simple-git-tutorial_files/gi6.PNG)
 
 ### 2-2:
 ```{r,eval = FALSE}
 git status
 ```
 Key "git status", it will show you what's files be updated.
+![gi8](/post/2019-08-16-simple-git-tutorial_files/gi8.PNG)
 
 ### 2-3
 ```{r,eval = FALSE}
 git commit -m 'update'
 ```
 Key "git commit -m 'update'", you need to announce the "commit name". The 'update' can be changed by any string you want to call. 
+![gi9](/post/2019-08-16-simple-git-tutorial_files/gi9.PNG)
 
 ### 2-4
 ```{r,eval = FALSE}
 git push
 ```
 Key "git push",then the files will be pushed on git web if your git files is legal.
+![gi9](/post/2019-08-16-simple-git-tutorial_files/git91.PNG)

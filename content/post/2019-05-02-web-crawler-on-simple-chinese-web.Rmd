@@ -1,0 +1,67 @@
+---
+title: Web crawler on simple Chinese web
+author: Hermit
+date: '2019-05-02'
+slug: web-crawler-on-simple-chinese-web
+categories:
+  - R
+tags:
+  - crawler
+---
+We will use the R-package:"rvest" for web crawler this time.  
+
+The example web html:  https://heavenlyfood.cn/books/menu.php?id=2021 (国度的操练为着教会的建造)  
+This web is written by simple Chinese. So we will trans the language to Traditional Chinese.  
+We will use the R-package:"ropencc" to do this job. You can download the "ropencc"  on Github.
+Then output the the chapters to each text files.
+
+# Link the website
+```{r}
+if (!require(rvest))install.packages("rvest")
+library(rvest)
+
+if (!require(ropencc))devtools::install_github("qinwf/ropencc")
+library(ropencc)
+
+#read the html
+bible <- read_html("https://heavenlyfood.cn/books/menu.php?id=2021")
+
+#get the title
+bible_title <- html_nodes(bible,"#title")
+title <- html_text(bible_title)
+title <- title[2:9]
+trans <- converter(S2TWP)
+title <- run_convert(trans, title) #trans simple chinese to traditional chinese
+
+#get the chapter's url
+url <- html_nodes(bible,"div a")  
+url <- data.frame(html_attr(url,"href"))
+url <- t(data.frame(url[80:87,1])) #transpose the url data
+```
+
+# Content Grabbing
+We want to save one chapter in one txt file. So I save one time after I collect one chapter.
+```{r}
+for(i in c(1:length(title))){
+  
+  #link to the chapter url
+  chapter_url <- paste0("https://heavenlyfood.cn/", url[i])
+  bible1 <- read_html(chapter_url)
+  
+  #grab the content
+  bible_cont <- html_nodes(bible1,".cont")
+  cont <- html_text(bible_cont,trim = TRUE)
+  
+  #trans simple Chinese to traditional Chinese
+  cont[1] <- title[i] #name the title
+  cont <- run_convert(trans, cont)
+  
+  #output the txt for each chapter
+  nam <- paste(title[i],".txt", sep=" ")
+  write.table(cont,nam)
+}
+```
+We will get eight text files after the code run.  
+The result:  
+![pi1](/post/2019-05-02-web-crawler-on-simple-chinese-web_files/pi.PNG)
+
