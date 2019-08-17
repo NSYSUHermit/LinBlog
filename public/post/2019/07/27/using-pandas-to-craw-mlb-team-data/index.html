@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Using pandas to craw MLB team data | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-07-27</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-07-27-using-pandas-to-craw-mlb-team-data.md">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/python">Python</a>
+  
+  </div>
+
+  <h1><span class="title">Using pandas to craw MLB team data</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/crawler">crawler</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+<h1 id="mlb-球隊資料-爬蟲">MLB 球隊資料 爬蟲</h1>
+
+<p>這次參與工研院資料科學的課程，課程中分配的小組必須進行一個完整資料分析的報告，題目自訂。<br />
+因為球類的open data相對完整，基本上較少遺失值的問體，因此我們決定以mlb的球隊資料來當分析對象。
+而主要分析目標則分為兩大類：第一、對例行賽勝率進行迴歸分析找出影響勝率的主因；第二、對&rdquo;明年是否進入季後賽&rdquo;做二項分類的預測。</p>
+
+<p>這篇文章主要是介紹如何爬取並建立可分析的csv檔案。
+主要使用pandas套件，並透過for迴圈去進行多個網頁的爬取，最後合併多年的投打資料，並以csv格式輸出。</p>
+
+<p>因2004-2005之間有球隊更換隊名，因此為了&rdquo;方便&rdquo;資料合併，因此抓取範圍為2005-2018年間例行賽的球隊投打資料。
+爬取網站為：<a href="https://www.baseball-reference.com/">https://www.baseball-reference.com/</a>
+<img src="/post/2019-07-27-using-pandas-to-craw-mlb-team-data_files/ml2.PNG" alt="ml2" /></p>
+
+<h1 id="爬蟲作業">爬蟲作業</h1>
+
+<pre><code class="language-python">import pandas as pd
+</code></pre>
+
+<p>下面我們先令一個空個list來存放各年的資料，因為打擊跟投球資料是分開的表格，因此在存放至df前會有合併的動作 (這一步會run有點久，時間大約3-5分鐘)。</p>
+
+<pre><code class="language-python">#2005-2018 MLB url
+df = list()#設一個空list來存放各年資料
+df1 = pd.DataFrame()#預設dataframe做暫存
+
+for i in range(5,19):
+    j = 2000+i
+    bat1 = (&quot;https://www.baseball-reference.com/leagues/MLB/&quot;+str(j)+&quot;-standard-batting.shtml&quot;)#爬取第2000+i年的打擊資料
+    pitch1 = (&quot;https://www.baseball-reference.com/leagues/MLB/&quot;+str(j)+&quot;-standard-pitching.shtml&quot;)#爬取第2000+i年的投手資料
+    
+    df1 = pd.merge(pd.read_html(bat1)[0][0:30], pd.read_html(pitch1)[0][0:30], how='left', on='Tm')#Merge multiple dataframe    
+    
+    df1['Year']=j #Add the year
+    df1[&quot;Tm&quot;] = df1[&quot;Tm&quot;]+df1[&quot;Year&quot;].map(str)
+    df += [df1]
+</code></pre>
+
+<p>接下來合併各年的資料，並將資料以隊伍做排序標準，最後輸出data到mlb.csv(檔案會在電腦的使用者那一個地方)。</p>
+
+<pre><code class="language-python">#Merge all years' datas
+data = df[0]
+for k in range(1,14): 
+    data = pd.concat([data,df[k]],axis = 0)
+    
+#Sorting data frame by Team and then By names 
+data.sort_values([&quot;Tm&quot;], axis=0, 
+                 ascending=True, inplace=True) 
+
+#Write the csv
+data.to_csv(&quot;mlb.csv&quot;,index=False,sep=',')
+</code></pre>
+
+<p>以下是最後匯出的csv：<br />
+<img src="/post/2019-07-27-using-pandas-to-craw-mlb-team-data_files/ml1.PNG" alt="ml123" /></p>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"><a href="/post/2019/08/11/2019-thu-big-data-preliminary/">&larr; 2019 THU Big Data Preliminary</a></span>
+  <span class="nav-next"><a href="/post/2019/05/23/web-crawler-on-simple-chinese-web/">Web crawler on simple Chinese web &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/about1/"><span data-hover="About">About</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="https://www.instagram.com/henry.5060/?hl=zh-tw">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+

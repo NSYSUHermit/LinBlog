@@ -1,0 +1,65 @@
+---
+title: Web crawler on simple Chinese web
+author: Hermit
+date: '2019-05-23'
+slug: web-crawler-on-simple-chinese-web
+categories:
+  - R
+tags:
+  - crawler
+---
+
+
+
+<p>我會在這次使用R-package:“rvest”來執行網路爬蟲。</p>
+<p>這次要爬取的網站: <a href="https://heavenlyfood.cn/books/menu.php?id=2021" class="uri">https://heavenlyfood.cn/books/menu.php?id=2021</a> (国度的操练为着教会的建造)<br />
+這個網頁是用簡體中文寫的，所以我會將最後輸出的語言轉換為繁體中文。<br />
+我將使用R-package：“ropencc”來完成這項工作，它可以在Github上下載“ropencc”。<br />
+最後後將章節的故事輸出到每個txt文本文件，並且以章節名稱為檔案命名。</p>
+<div id="link-the-website" class="section level1">
+<h1>Link the website</h1>
+<pre class="r"><code>if (!require(rvest))install.packages(&quot;rvest&quot;)
+library(rvest)
+
+if (!require(ropencc))devtools::install_github(&quot;qinwf/ropencc&quot;)
+library(ropencc)
+
+#read the html
+bible &lt;- read_html(&quot;https://heavenlyfood.cn/books/menu.php?id=2021&quot;)
+
+#get the title
+bible_title &lt;- html_nodes(bible,&quot;#title&quot;)
+title &lt;- html_text(bible_title)
+title &lt;- title[2:9]
+trans &lt;- converter(S2TWP)
+title &lt;- run_convert(trans, title) #trans simple chinese to traditional chinese
+
+#get the chapter&#39;s url
+url &lt;- html_nodes(bible,&quot;div a&quot;)  
+url &lt;- data.frame(html_attr(url,&quot;href&quot;))
+url &lt;- t(data.frame(url[80:87,1])) #transpose the url data</code></pre>
+</div>
+<div id="content-grabbing" class="section level1">
+<h1>Content Grabbing</h1>
+<pre class="r"><code>for(i in c(1:length(title))){
+  
+  #link to the chapter url
+  chapter_url &lt;- paste0(&quot;https://heavenlyfood.cn/&quot;, url[i])
+  bible1 &lt;- read_html(chapter_url)
+  
+  #grab the content
+  bible_cont &lt;- html_nodes(bible1,&quot;.cont&quot;)
+  cont &lt;- html_text(bible_cont,trim = TRUE)
+  
+  #trans simple Chinese to traditional Chinese
+  cont[1] &lt;- title[i] #name the title
+  cont &lt;- run_convert(trans, cont)
+  
+  #output the txt for each chapter
+  nam &lt;- paste(title[i],&quot;.txt&quot;, sep=&quot; &quot;)
+  write.table(cont,nam)
+}</code></pre>
+<p>代碼運行後將獲得八個文本文件。<br />
+結果如下：
+<img src="/post/2019-05-02-web-crawler-on-simple-chinese-web_files/pi.PNG" alt="bi" /></p>
+</div>
