@@ -20,22 +20,8 @@
       <description>This is pretty simple tutorial for update gitlab or github.
 So I won’t tell you how GIT work. If you want to learn rigorous and precise.
 This web way help:https://gitbook.tw/.
-Step 1: build a git place and push on it.1-1:You have to build a Repository or a Project on gitlab(or github)
+Step 1: Build a git place and push on it.1-1:You have to build a Repository or a Project on gitlab(or github)
 1-2:Make sure you have installed the GIT on your device. Then open the commander</description>
-    </item>
-    
-    <item>
-      <title>Simple git tutorial</title>
-      <link>/post/2019/08/14/simple-git-tutorial/</link>
-      <pubDate>Wed, 14 Aug 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/post/2019/08/14/simple-git-tutorial/</guid>
-      <description>This is pretty simple tutorial for update gitlab or github.
-So I won’t tell you how GIT work. If you want to learn rigorous and precise.
-This web way help:https://gitbook.tw/.
-Ch1: build a git place and push on it.First:You have to build a Repository or a Project on gitlab(or github)
-Second:Make sure you have installed the GIT on your device. Then open the commander
-Third:cd to your files location.</description>
     </item>
     
   </channel>

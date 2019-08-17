@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>crawler on Lin&#39;s Blog</title>
+    <link>/tags/crawler/</link>
+    <description>Recent content in crawler on Lin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 02 May 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/crawler/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Web crawler on simple Chinese web</title>
+      <link>/post/2019/05/02/web-crawler-on-simple-chinese-web/</link>
+      <pubDate>Thu, 02 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/05/02/web-crawler-on-simple-chinese-web/</guid>
+      <description>We will use the R-package:“rvest” for web crawler this time. The example web html: https://heavenlyfood.cn/books/menu.php?id=2021 (国度的操练为着教会的建造) This web is written by simple Chinese. So we will trans the language to Traditional Chinese. We will use the R-pac</description>
+    </item>
+    
+  </channel>
+</rss>

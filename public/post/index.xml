@@ -34,15 +34,6 @@ Step 1: Build a git place and push on it.1-1:You have to build a Repository or
     </item>
     
     <item>
-      <title>Web crawler on simple Chinese web</title>
-      <link>/post/2019/05/02/web-crawler-on-simple-chinese-web/</link>
-      <pubDate>Thu, 02 May 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/post/2019/05/02/web-crawler-on-simple-chinese-web/</guid>
-      <description>We will use the R-package:“rvest” for web crawler this time. The example web html: https://heavenlyfood.cn/books/menu.php?id=2021 (国度的操练为着教会的建造) This web is written by simple Chinese. So we will trans the language to Traditional Chinese. We will use the R-pac</description>
-    </item>
-    
-    <item>
       <title>CRE Bacteria Data Analysis</title>
       <link>/post/2019/04/24/cre-bacteria-data-analysis/</link>
       <pubDate>Wed, 24 Apr 2019 00:00:00 +0000</pubDate>
