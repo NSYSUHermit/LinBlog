@@ -2,7 +2,7 @@
 author: Hermit
 title: About me
 ---
-![me](/post/2019-05-02-web-crawler-on-simple-chinese-web_files/1.png)
+![me](/post/2019-05-02-web-crawler-on-simple-chinese-web_files/12.png)
 
 嗨，各位好，我是Hermit。  
 主修應用數學及統計，並以資料分析作為主要學習方向。  
