@@ -66,6 +66,17 @@
   </url>
   
   <url>
+    <loc>/post/2019/08/06/mlb-win-rate-regression/</loc>
+    <lastmod>2019-08-06T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/regression/</loc>
+    <lastmod>2019-08-06T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/categories/python/</loc>
     <lastmod>2019-07-27T00:00:00+00:00</lastmod>
     <priority>0</priority>
@@ -152,12 +163,6 @@
   
   <url>
     <loc>/tags/plot/</loc>
-    <lastmod>2015-07-23T21:13:14-05:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/regression/</loc>
     <lastmod>2015-07-23T21:13:14-05:00</lastmod>
     <priority>0</priority>
   </url>

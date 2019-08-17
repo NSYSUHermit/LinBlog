@@ -21,6 +21,15 @@
     </item>
     
     <item>
+      <title>MLB win rate regression</title>
+      <link>/post/2019/08/06/mlb-win-rate-regression/</link>
+      <pubDate>Tue, 06 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/08/06/mlb-win-rate-regression/</guid>
+      <description>Last time we build a mlb team data by python. So this time we will bulid a suitable model for our data. And now we want to focus on win rate, so I let the team win rate be the response. In this time, I will read the data at first. Then bulid the full model and check whether it collinear or not. 上次我們通過p</description>
+    </item>
+    
+    <item>
       <title>Web crawler on simple Chinese web</title>
       <link>/post/2019/05/23/web-crawler-on-simple-chinese-web/</link>
       <pubDate>Thu, 23 May 2019 00:00:00 +0000</pubDate>

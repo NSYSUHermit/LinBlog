@@ -34,6 +34,15 @@ Step 1: Build a git place and push on it.1-1:You have to build a Repository or
     </item>
     
     <item>
+      <title>MLB win rate regression</title>
+      <link>/post/2019/08/06/mlb-win-rate-regression/</link>
+      <pubDate>Tue, 06 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/08/06/mlb-win-rate-regression/</guid>
+      <description>Last time we build a mlb team data by python. So this time we will bulid a suitable model for our data. And now we want to focus on win rate, so I let the team win rate be the response. In this time, I will read the data at first. Then bulid the full model and check whether it collinear or not. 上次我們通過p</description>
+    </item>
+    
+    <item>
       <title>Using pandas to craw MLB team data</title>
       <link>/post/2019/07/27/using-pandas-to-craw-mlb-team-data/</link>
       <pubDate>Sat, 27 Jul 2019 00:00:00 +0000</pubDate>
@@ -96,7 +105,7 @@ Features This theme includes a few cool features:
     </item>
     
     <item>
-      <title>About myself</title>
+      <title>About me</title>
       <link>/about1/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
