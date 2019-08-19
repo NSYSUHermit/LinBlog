@@ -6,10 +6,19 @@
     <description>Recent content in classification on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 11 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 20 Aug 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/classification/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>MLB playoff prediction with SVM &amp; Randomforest</title>
+      <link>/post/2019/08/20/mlb-playoff-prediction/</link>
+      <pubDate>Tue, 20 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/08/20/mlb-playoff-prediction/</guid>
+      <description>In the same theme,MLB. I will show how to use Python to train a randomforest and SVM classifier. Our target is predicting whether the team will enter the next year playoff or not. Since the playoff qualification depends on the same year&amp;rsquo;s season game win rate. If we predict the same year playoff is pointless. So I make the variable &amp;ldquo;palyoff&amp;rdquo; to &amp;ldquo;next year playoff&amp;rdquo;. I will use the module</description>
+    </item>
     
     <item>
       <title>2019 THU Big Data Preliminary</title>

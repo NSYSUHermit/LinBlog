@@ -4,8 +4,8 @@ author: Hermit
 date: '2019-08-11'
 slug: 2019-thu-big-data-preliminary
 categories:
-  - machine-learning
   - R
+  - machine-learning
 tags:
   - classification
 ---
