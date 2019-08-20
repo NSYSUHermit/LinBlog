@@ -14,6 +14,8 @@ tags:
 
 # What is Deep Learning
 
+很常遇到有人在討論深度學習與機器學習的差異，以及"深度"是深在哪裡。  
+因此有撰寫這篇文章的想法，順便讓自己更清楚的知道這些名詞的差異。
 在談論何謂深度學習之前，我們要先知道人工智慧以及機器學習、深度學習的關係。  
 應該許多人看過以下這張圖：  
 ![](https://miro.medium.com/max/1400/1*I-rTLtMaWeRG1dpaiUczNg.png){width=50% height=50%}
