@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>What is deep learning | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-08-20</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-08-20-what-is-deep-learning.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+     &hercon; <a href="/categories/machine-learning">machine-learning</a>
+  
+  </div>
+
+  <h1><span class="title">What is deep learning</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/small-talk">small talk</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>最近拜讀Keras之父-Francois Chollet所撰寫的deep learning with python。<br />
+因此想撰寫一些讀後心得筆記，以留日後自己參考。</p>
+<div id="what-is-deep-learning" class="section level1">
+<h1>What is Deep Learning</h1>
+<p>在談論何謂深度學習之前，我們要先知道人工智慧以及機器學習、深度學習的關係。<br />
+應該許多人看過以下這張圖：<br />
+<img src="https://miro.medium.com/max/1400/1*I-rTLtMaWeRG1dpaiUczNg.png" style="width:50.0%;height:50.0%" /></p>
+<p>因此不免俗的，先簡介這三者，再深入探討我們所要談論的“深度”學習。</p>
+<div id="artifical-intelligence" class="section level2">
+<h2>Artifical Intelligence</h2>
+<p>人工智慧大約於1950年代，當時電腦科學領域內所電腦是否能用來“思考”，在最開始的開發者認為，可以經由工程師輸入足夠多的處理規則來達成，這種方法稱為“Symbolic AI”，儘管他能用來解決例如西洋棋這種規則清楚的問題，但對於更複雜或模糊的問題是相當困難的，因此因應而生的新方法，那就是“Machine Learning”</p>
+</div>
+<div id="machine-learning" class="section level2">
+<h2>Machine Learning</h2>
+<p>機器學習源自於：電腦能否執行超越聽命行事的侷限，且能自主學習並完成我們所預期的任務。開發者甚至不用建立處理規則，而是電腦自動執行學習找出一套完成任務的規則。</p>
+<ul>
+<li><p>Symbolic AI：<br />
+輸入:資料、規則<br />
+輸出：答案</p></li>
+<li><p>Machine Learning：<br />
+輸入:資料、答案<br />
+輸出：規則</p></li>
+</ul>
+<p>這個的好處在於，某些人類難以定義的規則，可以經由演算法找出，並套用在新的資料上並正確的產出答案。<br />
+機器學習雖然與數學統計有高度相關性，但在幾個重要的地方仍有別於統計：機器學習善於處理龐大且複雜的資料，這對於傳統統計方法在實作上有一定的難度，這導致機器學習，特別是深度學習，逐漸轉向工程導向而淡化了數學理論，簡單說就是重視食物而較少著力於理論基礎。(較為傳統的數學、統計教授有些不太接受例如神經網路等深度學習理論…)</p>
+</div>
+<div id="deep-learning" class="section level2">
+<h2>Deep Learning</h2>
+<p>深度學習是機器學習的子領域，採用簡單的迭帶手法從資料中學習有效的表示法，強調使用連續且多層(Layers)的方式。“深度”的概念是呈現出模型用多少層來處理資料，分層或是階層表示法的學習或許是另一個較適合這裡育的名稱。而其他的機器學習多半使用1至2層的資料表示法，這些方法有時也稱為“Shallow Learning”。</p>
+<p>在深度學習中，基本上多層次表示法都是來自於神經網路，其組成結構就是一層一層疊加上去。
+<img src="/post/2019-05-02-web-crawler-on-simple-chinese-web_files/de1.JPG" /></p>
+<p>在這裡小小總結一下，深度學習在技術上是：用多階段的方式來學習資料表示法，雖然概念簡單，但事實證明透過足夠規模的學習訓練後，其結果卻相當優秀。</p>
+<p>而在當中，所謂的“層”其實就是多個數字權重所組成，而層是藉由權重參數來和輸入資料進行運算以執行資料轉換的工作，因此權重有時也被稱為稱為“層參數”，而學習的過程指的就是幫神經網路中各層找出是當的權重值，讓神經網路可以正確的幫我們找出測試資料的標準答案。</p>
+<p>而要評估輸出與標轉達案還相差多少，則需以損失函數“loss function”來計算，損失函數會取得神經網路的預測結果與實際答案，並計算出損失分數，並以該分數當作回饋訊號來微調各層的權重，設法逐步降低每次學習的損失分數，微調的工作則是交給優化器“optimizer”，它負責深度學習中最核心的的反向傳遞演算法(反向傳遞可以參考這篇blog:<a href="https://medium.com/datathings/neural-networks-and-backpropagation-explained-in-a-simple-way-f540a3611f5e" class="uri">https://medium.com/datathings/neural-networks-and-backpropagation-explained-in-a-simple-way-f540a3611f5e</a>)。
+<img src="/post/2019-05-02-web-crawler-on-simple-chinese-web_files/de2.JPG" /></p>
+<p>在最初，神經網路會自動配置一組隨機權重，然後透過學習過程轉換，可想而知隨機值可能使損失分數很大，迭代過程也可能掉入local minimal的問題，但在重複執行夠多次之後，理想情況下可將損失函數最小化，這說明：一個簡單的機制，只要能透過足夠大的訓練規模，就能推導出最佳的結果。</p>
+</div>
+</div>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2019/08/19/mlb-playoff-prediction/">MLB playoff prediction with SVM &amp; Randomforest &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+
+
+
+
+
+</body>
+</html>
+

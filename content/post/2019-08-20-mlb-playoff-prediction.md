@@ -1,7 +1,7 @@
 ---
 title: MLB playoff prediction with SVM & Randomforest
 author: Hermit
-date: '2019-08-20'
+date: '2019-08-19'
 slug: mlb-playoff-prediction
 categories:
   - Python

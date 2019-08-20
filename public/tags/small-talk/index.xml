@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>small talk on Lin&#39;s Blog</title>
+    <link>/tags/small-talk/</link>
+    <description>Recent content in small talk on Lin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 20 Aug 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/small-talk/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>What is deep learning</title>
+      <link>/post/2019/08/20/what-is-deep-learning/</link>
+      <pubDate>Tue, 20 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/08/20/what-is-deep-learning/</guid>
+      <description>最近拜讀Keras之父-Francois Chollet所撰寫的deep learning with python。 因此想撰寫一些讀後心得筆記，以留日後自己參考。 What is Deep</description>
+    </item>
+    
+  </channel>
+</rss>
