@@ -1,0 +1,122 @@
+---
+title: THU Preliminary by Neural Network
+author: Hermit
+date: '2019-08-22'
+slug: thu-preliminary-by-neural-network
+categories:
+  - Python
+  - deep-learning
+tags:
+  - classification
+---
+
+![](https://cdn-images-1.medium.com/max/2000/1*ILJI87KKC7Y3y5ExxbGA8A.png)  
+  
+先前剛看完齋藤康毅的深度學習架構，因此最近正在學習使用keras架立神經網路模型，範例檔案都是使用mnist手寫資料，正在練習時突然想到先前東海大學大數據的初賽可以拿來實踐看看。而在嘗試建立好模型後，發現準確度也是高達99%，因此寫這篇文章將架構的部分筆記起來。
+
+## 開發環境
+因使用Windows 10，所以許多環境設置相比於Linux來說更加繁瑣，因此使用Anaconda來簡化tensorflow gpu CUDA的設置。    
+為了能順利使用keras，所以虛擬環境使用：python3.6 + CUDA 10 + cuDNN 7.4.2 + Tesorflow-GPU + Keras。
+
+## 引入套件
+
+
+```python
+import keras
+import numpy as np
+import pandas as pd
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+```
+
+## 讀取資料
+
+
+```python
+data = pd.read_csv('C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/Contests/thu_bigdata/初賽/自己最終code/train.csv')
+#dataa = pd.read_csv('C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/Contests/thu_bigdata/初賽/自己最終code/test.csv')
+```
+
+## 切割資料 8:2
+這次僅使用訓練資料做validation，先將標籤的部分切開(如同xgb在r上的處理)，並使用sci-kit learnw套件的function做資料切割，以8(訓練集):2(驗證集)的比例切分，在這裡我們的訓練資料樣本數1745，因此訓練集與驗證集數量分別為1396、349。  
+
+```python
+data_variable =  preprocessing.scale(data.drop(columns=['y']))
+data_label = data["y"]
+train_x, test_x, train_y, test_y = train_test_split(data_variable, data_label, test_size = 0.2)
+```
+
+## 建立初始化神經網路
+引入models以及layers，並設定Activation Function使用Rectified Linear Unit，而溫度變數我們有449個。  
+並且因這裡是多元分類問題，因此output layer設定為softmax。      
+(這裡不清楚為何softmax要定義為9類，但設定在8類神經網路會判定output的dimension少1層而無法輸出)  
+
+```python
+from keras import models
+from keras import layers
+
+network = models.Sequential()
+# Use relu and size 
+network.add(layers.Dense(449, activation='relu', input_shape=(1 * 449,)))
+network.add(layers.Dense(9, activation='softmax'))
+```
+
+## 編譯神經網路
+其中的categorical_crossentropy是個損失函數，並使用損失值作為回饋訊號來學習(調整)權重張量，在這個訓練過程中嘗試達到損失值最小化。同時，也知道損失的降低是透過小批次隨機梯度下降法來實現(SGD)，而控制梯度下降的規則是由compile的第一個參數rmsprop優化器所定義。  
+
+```python
+network.compile(optimizer='rmsprop',
+                loss='categorical_crossentropy',
+                metrics=['accuracy'])
+```
+## 資料標籤維度展開
+這步就是將資料的標籤自動展開成多個dummy variable的格式，讓network可以辨識。
+(在這裡資料被自動轉成9個維度)
+
+```python
+from keras.utils import to_categorical
+
+train_y = to_categorical(train_y)
+test_y = to_categorical(test_y)
+```
+## 訓練循環
+我們設定5次的epochs，以及以128的小批次量輸入訓練資料。在每批次輸入時，神經網路會依該批次量的損失函數計算相關權重梯度並更新，以此讓損失值接近最小化，在五次的epoch後我們的神經網路總共進行了11*5 = 55次的梯度更新(1396/128 = 10.90625,。此時神經網路的損失已降到最低，因此在最後的驗證準確率高達99%。
+
+```python
+network.fit(train_x, train_y, epochs=5, batch_size=128)
+```
+
+    W0822 00:57:49.395738  1748 deprecation.py:323] From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\tensorflow\python\ops\math_grad.py:1250: add_dispatch_support.<locals>.wrapper (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+    Instructions for updating:
+    Use tf.where in 2.0, which has the same broadcast rule as np.where
+    W0822 00:57:49.441615  1748 deprecation_wrapper.py:119] From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\backend\tensorflow_backend.py:986: The name tf.assign_add is deprecated. Please use tf.compat.v1.assign_add instead.
+    
+    
+
+    Epoch 1/5
+    1396/1396 [==============================] - 3s 2ms/step - loss: 0.6614 - acc: 0.7958
+    Epoch 2/5
+    1396/1396 [==============================] - 0s 26us/step - loss: 0.1258 - acc: 0.9649
+    Epoch 3/5
+    1396/1396 [==============================] - 0s 24us/step - loss: 0.1562 - acc: 0.9556
+    Epoch 4/5
+    1396/1396 [==============================] - 0s 25us/step - loss: 0.0613 - acc: 0.9807
+    Epoch 5/5
+    1396/1396 [==============================] - 0s 24us/step - loss: 0.1096 - acc: 0.9570
+    
+
+
+
+
+    <keras.callbacks.History at 0x2f43ef7b7f0>
+
+
+
+
+```python
+test_loss, test_acc = network.evaluate(test_x, test_y)
+print('test_acc:', test_acc)
+```
+
+    349/349 [==============================] - 0s 143us/step
+    test_acc: 0.9914040099242355
