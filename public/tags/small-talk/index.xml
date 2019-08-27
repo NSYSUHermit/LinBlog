@@ -6,10 +6,21 @@
     <description>Recent content in small talk on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 20 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 27 Aug 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/small-talk/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>How to compose a python(or R) script on linux commander.</title>
+      <link>/post/2019/08/27/how-to-compose-a-python-or-r-script-on-linux-commander/</link>
+      <pubDate>Tue, 27 Aug 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/08/27/how-to-compose-a-python-or-r-script-on-linux-commander/</guid>
+      <description>In this article I will show how to bulid a script file on your location. And how to compose the script on Python (or R). You should bulid the Python script on your virtual environment if you want to use the keras CUDA.
+You should enter your server at begining.
+Rstep 1. Set up the file location:You can key “dir” to check all files on your location.</description>
+    </item>
     
     <item>
       <title>What is deep learning</title>
