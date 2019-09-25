@@ -6,10 +6,19 @@
     <description>Recent content in small talk on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 27 Aug 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 25 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/small-talk/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Imbalanced Data Binary Classification</title>
+      <link>/post/2019/09/25/imbalanced-data-binary-classification/</link>
+      <pubDate>Wed, 25 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/09/25/imbalanced-data-binary-classification/</guid>
+      <description>不平衡資料 (Imbalanced Data)是很常見於結構化資料的情境之一。比如說我們有一筆保險客戶的資料，有非常多的客戶基本資料(如:居住地、學歷等等)，以及一</description>
+    </item>
     
     <item>
       <title>How to compose a python(or R) script on linux commander.</title>
