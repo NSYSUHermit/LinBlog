@@ -6,10 +6,19 @@
     <description>Recent content on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 02 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 16 Oct 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Dropout </title>
+      <link>/post/2019/10/16/dropout/</link>
+      <pubDate>Wed, 16 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/10/16/dropout/</guid>
+      <description>Drop 是由Geoff Hinton與多倫多大學的學生所開發的神經網路常規化技術之一。神經網路層的丟棄法，主要是在訓練期間隨機丟棄layer的一些輸</description>
+    </item>
     
     <item>
       <title>One Class Learning</title>
