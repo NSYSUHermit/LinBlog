@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>regression | Lin&#39;s Blog</title>
+    <title>neural network | Lin&#39;s Blog</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
 
       <div class="head-meta">
       
-        <span>regression</span>
+        <span>neural network</span>
         <span>2019-10-31</span>
         
         <span>1 / 1</span>
@@ -38,61 +38,29 @@
   <div class="categories">
   
   
-    <a href="/categories/r">R</a>
+    <a href="/categories/deep-learning">deep-learning</a>
   
   
   </div>
-  <h1><a href="/post/2019/08/06/mlb-win-rate-regression/">MLB win rate regression</a></h1>
+  <h1><a href="/post/2019/10/31/gan-on-non-image-data/">GAN on non image data</a></h1>
   <div class="date-author">
     <span class="author">Hermit
 </span> / 
-    <span class="date">2019-08-06</span>
+    <span class="date">2019-10-31</span>
   </div>
   <div class="summary">
-    <a href="/post/2019/08/06/mlb-win-rate-regression/">
+    <a href="/post/2019/10/31/gan-on-non-image-data/">
     
     
     
-    <div class="thumbnail"><img src="/post/2019-08-17-mlb-win-rate-regression_files/figure-html/unnamed-chunk-2-1.png" alt="Thumbnail" /></div>
+    <div class="thumbnail"><img src="/post/2019-10-31-gan-on-non-image-data_files/output_3_0.png" alt="Thumbnail" /></div>
     
     
     
       
     
-    Last time we build a mlb team data by python. So this time we will bulid a suitable model for our data. And now we want to focus on win rate, so I let the team win rate be the response. In this time, I will read the data at first. Then bulid the full model and check whether it collinear or not.
-上次我們&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/r">R</a>
-  
-  
-  </div>
-  <h1><a href="/post/2015/07/23/hello-r-markdown/">Hello R Markdown</a></h1>
-  <div class="date-author">
-    <span class="author">Frida Gomam
-</span> / 
-    <span class="date">2015-07-23</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2015/07/23/hello-r-markdown/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2015-07-23-r-rmarkdown_files/figure-html/pie-1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars)## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0&hellip;
+    這次我將考慮一個非常簡單的問題，在非圖像資料上實驗生成對抗網路。在這次的實驗中，將生成隨機正弦曲線，並且將嘗試使GAN生成正確的正弦曲線。
+%matplotlib inlineimport osimport randomimport numpy as npimport pandas as pdimport matplotlib.pyplot as pltimport seaborn as snsfrom tqdm import tqdm_notebook as tqdmfrom keras.models import Modelfrom keras.layers import&hellip;
     </a>
   </div>
 </section>
