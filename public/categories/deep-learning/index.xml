@@ -6,19 +6,10 @@
     <description>Recent content in deep-learning on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 23 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 16 Oct 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/deep-learning/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Generative Adversarial Network Practice</title>
-      <link>/post/2019/10/23/generative-adversarial-network-practice/</link>
-      <pubDate>Wed, 23 Oct 2019 00:00:00 +0000</pubDate>
-      
-      <guid>/post/2019/10/23/generative-adversarial-network-practice/</guid>
-      <description>由Goodfellow等人在2014年推出的生成對抗神經網路適用於學習圖像空間VAE的替代方法。藉由強制讓聲稱ˊ圖像與真實圖片在統計上幾乎無</description>
-    </item>
     
     <item>
       <title>Dropout </title>
