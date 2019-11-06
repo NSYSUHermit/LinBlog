@@ -1,0 +1,3669 @@
+---
+title: Using GAN to generate some non image data with CRE bateria data
+author: Hermit
+date: '2019-11-06'
+slug: using-gan-to-generate-some-non-image-data-with-cre-bateria-data
+categories:
+  - deep-learning
+  - gan
+tags:
+  - classification
+---
+
+這次我將修改前次的生成對抗網路，希望能夠調整為一個自動生成樣本的神經網路。我這次將使用以前曾經使用過的CRE Bacteria data(https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/ )。
+我先建立一個簡單的分類模型，一將使用p_value前五個維度當作解釋變數，先建立一個簡單的分類模型，並將第一類的46個當作樣本輸入至生成對抗網路，調整訓練參數，且試圖讓神經網路能夠產生第一類別的資料。最後，經由生成器生成的資料我將匯入原先的分類模型，觀察是否能產生類似於第一類別的資料，並最終計算其生成準確率。
+
+# 匯入原始資料
+原始資料有95筆 * 1462維資料，並且以是否為CRE細菌作為二元分類依據，我們先將資料切至95 * 50的大小並建立一簡易二元分類模型。
+
+
+```python
+import pandas as pd
+import numpy as np
+
+data = pd.read_csv('C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv')
+data.head()
+data_50 = data.iloc[:,0:50]
+cre = data.loc[:, ['CRE']]
+cre = pd.concat([data_50,cre],axis = 1,join = 'outer')
+data1 = data[0:46]
+data11 = data.iloc[0:46,0:50]
+data2 = data[46:96]
+cre
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>V1</th>
+      <th>V2</th>
+      <th>V3</th>
+      <th>V4</th>
+      <th>V5</th>
+      <th>V6</th>
+      <th>V7</th>
+      <th>V8</th>
+      <th>V9</th>
+      <th>V10</th>
+      <th>...</th>
+      <th>V42</th>
+      <th>V43</th>
+      <th>V44</th>
+      <th>V45</th>
+      <th>V46</th>
+      <th>V47</th>
+      <th>V48</th>
+      <th>V49</th>
+      <th>V50</th>
+      <th>CRE</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>251357.70</td>
+      <td>0.00</td>
+      <td>494285.53</td>
+      <td>114879.43</td>
+      <td>31439.26</td>
+      <td>0.00</td>
+      <td>94049.75</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>85986.77</td>
+      <td>0.00</td>
+      <td>54979.47</td>
+      <td>0.00</td>
+      <td>278172.31</td>
+      <td>65956.08</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>394550.19</td>
+      <td>65408.65</td>
+      <td>2186094.75</td>
+      <td>137296.91</td>
+      <td>0.00</td>
+      <td>401122.91</td>
+      <td>350882.59</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>645223.63</td>
+      <td>486622.78</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>159735.28</td>
+      <td>0.00</td>
+      <td>1143224.25</td>
+      <td>0.00</td>
+      <td>13108.50</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.00</td>
+      <td>129236.21</td>
+      <td>675608.81</td>
+      <td>182865.20</td>
+      <td>16074.49</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>49122.42</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>259147.75</td>
+      <td>130750.07</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>11471.32</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>137403.30</td>
+      <td>0.00</td>
+      <td>818021.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>24273.09</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>14327.79</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>113117.47</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>377358.78</td>
+      <td>327564.66</td>
+      <td>532502.63</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>913255.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>48186.92</td>
+      <td>241815.84</td>
+      <td>0.00</td>
+      <td>356398.22</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>321700.28</td>
+      <td>300239.31</td>
+      <td>220649.50</td>
+      <td>289622.50</td>
+      <td>42589.68</td>
+      <td>896569.38</td>
+      <td>26930.33</td>
+      <td>130587.49</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>74352.74</td>
+      <td>161985.64</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>10547.48</td>
+      <td>0.00</td>
+      <td>596415.63</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>122302.27</td>
+      <td>163517.28</td>
+      <td>143966.83</td>
+      <td>197685.97</td>
+      <td>44586.54</td>
+      <td>665813.19</td>
+      <td>68359.62</td>
+      <td>86041.64</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>28788.66</td>
+      <td>82527.43</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>277068.66</td>
+      <td>531947.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>458382.13</td>
+      <td>136389.20</td>
+      <td>412460.16</td>
+      <td>294669.03</td>
+      <td>46850.84</td>
+      <td>470360.91</td>
+      <td>70784.13</td>
+      <td>52197.92</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>148098.28</td>
+      <td>269423.69</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>396628.63</td>
+      <td>153470.94</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>59923.06</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>404748.19</td>
+      <td>97165.77</td>
+      <td>800137.44</td>
+      <td>134355.13</td>
+      <td>0.00</td>
+      <td>285973.69</td>
+      <td>152992.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>244165.31</td>
+      <td>424717.97</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>227433.22</td>
+      <td>50524.48</td>
+      <td>727185.63</td>
+      <td>0.00</td>
+      <td>81509.76</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>0.00</td>
+      <td>237456.30</td>
+      <td>489450.28</td>
+      <td>317787.66</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>374539.31</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>364267.56</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>66223.03</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>0.00</td>
+      <td>60298.57</td>
+      <td>242256.88</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>28529.95</td>
+      <td>0.00</td>
+      <td>577876.63</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>38658.57</td>
+      <td>0.00</td>
+      <td>224369.88</td>
+      <td>6513216.00</td>
+      <td>0.00</td>
+      <td>61225.02</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>39572.38</td>
+      <td>102085.48</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>37461.19</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>8476.11</td>
+      <td>29001.76</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>3069943.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>360071.94</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>214887.48</td>
+      <td>250224.81</td>
+      <td>764692.88</td>
+      <td>440959.63</td>
+      <td>4499.10</td>
+      <td>0.00</td>
+      <td>250105.41</td>
+      <td>253094.77</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>5126750.50</td>
+      <td>323721.41</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1290133.38</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>1024226.56</td>
+      <td>62647.80</td>
+      <td>907918.56</td>
+      <td>190326.44</td>
+      <td>0.00</td>
+      <td>357887.69</td>
+      <td>174800.92</td>
+      <td>39311.43</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>409826.63</td>
+      <td>339814.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>850082.00</td>
+      <td>80572.13</td>
+      <td>1511603.75</td>
+      <td>0.00</td>
+      <td>246942.27</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>850345.94</td>
+      <td>0.00</td>
+      <td>1142041.75</td>
+      <td>0.00</td>
+      <td>22913.52</td>
+      <td>83391.35</td>
+      <td>132192.95</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>12294757.00</td>
+      <td>0.00</td>
+      <td>580786.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>133160.09</td>
+      <td>0.00</td>
+      <td>324190.84</td>
+      <td>165610.81</td>
+      <td>0.00</td>
+      <td>529124.81</td>
+      <td>0.00</td>
+      <td>76230.84</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>3765545.50</td>
+      <td>112336.07</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>853561.81</td>
+      <td>224773.64</td>
+      <td>894039.13</td>
+      <td>256644.66</td>
+      <td>0.00</td>
+      <td>691336.94</td>
+      <td>151860.30</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>229604.53</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>13607436.00</td>
+      <td>275794.03</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>3668494.75</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>1093476.88</td>
+      <td>0.00</td>
+      <td>1066216.00</td>
+      <td>214933.13</td>
+      <td>1172.88</td>
+      <td>417991.06</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>303218.16</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>3830377.25</td>
+      <td>166417.11</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>835839.38</td>
+      <td>196176.73</td>
+      <td>1012032.63</td>
+      <td>282281.94</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>229121.41</td>
+      <td>90093.88</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>368116.94</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1202129.13</td>
+      <td>269585.47</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>280330.34</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>69313.85</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>10560.65</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>997972.56</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>701646.44</td>
+      <td>98642.90</td>
+      <td>1148627.88</td>
+      <td>162741.14</td>
+      <td>5982.86</td>
+      <td>451335.22</td>
+      <td>197993.38</td>
+      <td>107926.05</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>580906.13</td>
+      <td>147341.31</td>
+      <td>731664.13</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>0.00</td>
+      <td>123056.53</td>
+      <td>695162.56</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>151534.30</td>
+      <td>106993.80</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>93097.80</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>8234697.50</td>
+      <td>319331.75</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>617170.38</td>
+      <td>111139.70</td>
+      <td>585900.88</td>
+      <td>309262.72</td>
+      <td>0.00</td>
+      <td>463963.53</td>
+      <td>124548.41</td>
+      <td>68199.38</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>143815.31</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1165821.50</td>
+      <td>194897.69</td>
+      <td>262373.09</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>120912.78</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>205087.30</td>
+      <td>130860.28</td>
+      <td>170190.36</td>
+      <td>239147.09</td>
+      <td>32240.99</td>
+      <td>461357.53</td>
+      <td>79884.00</td>
+      <td>106250.06</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>93911.43</td>
+      <td>160792.20</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>211207.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>233611.23</td>
+      <td>0.00</td>
+      <td>288788.53</td>
+      <td>0.00</td>
+      <td>62809.87</td>
+      <td>572302.38</td>
+      <td>105359.08</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>81040.71</td>
+      <td>181801.95</td>
+      <td>0.00</td>
+      <td>257644.23</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>308586.69</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>443459.50</td>
+      <td>193747.16</td>
+      <td>328036.19</td>
+      <td>370594.88</td>
+      <td>46355.38</td>
+      <td>629435.25</td>
+      <td>74593.73</td>
+      <td>84710.16</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>108000.26</td>
+      <td>231578.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>364557.78</td>
+      <td>0.00</td>
+      <td>480221.81</td>
+      <td>0.00</td>
+      <td>61320.29</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>169506.22</td>
+      <td>94801.80</td>
+      <td>756320.94</td>
+      <td>227413.02</td>
+      <td>3680.05</td>
+      <td>663061.88</td>
+      <td>147819.56</td>
+      <td>112498.08</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>263977.31</td>
+      <td>322974.41</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>391799.50</td>
+      <td>1083744.13</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>801636.50</td>
+      <td>23726.37</td>
+      <td>737771.00</td>
+      <td>0.00</td>
+      <td>133648.45</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>122182.41</td>
+      <td>211591.83</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>250239.63</td>
+      <td>196264.91</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>0.00</td>
+      <td>225195.66</td>
+      <td>19572.24</td>
+      <td>63537.30</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1212757.50</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>325006.94</td>
+      <td>8263.08</td>
+      <td>0.00</td>
+      <td>77168.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>0.00</td>
+      <td>2340887.50</td>
+      <td>10041711.00</td>
+      <td>65790.56</td>
+      <td>257753.78</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>142773.91</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>15381708.00</td>
+      <td>9648307.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>0.00</td>
+      <td>40468.29</td>
+      <td>2929239.50</td>
+      <td>35529.07</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>134214.80</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>739789.69</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>96349.65</td>
+      <td>8238.51</td>
+      <td>174242.38</td>
+      <td>1659760.63</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>22582.54</td>
+      <td>275360.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>2066323.88</td>
+      <td>176120.22</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>0.00</td>
+      <td>55406.89</td>
+      <td>37459.26</td>
+      <td>567906.94</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>79680.77</td>
+      <td>2215088.25</td>
+      <td>53483.09</td>
+      <td>353274.03</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>0.00</td>
+      <td>1373136.00</td>
+      <td>55669.65</td>
+      <td>29413.53</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1849143.63</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>208588.38</td>
+      <td>90467.52</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>0.00</td>
+      <td>2209497.50</td>
+      <td>0.00</td>
+      <td>332850.19</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>88801.86</td>
+      <td>...</td>
+      <td>675265.50</td>
+      <td>0.00</td>
+      <td>31135.10</td>
+      <td>264477.78</td>
+      <td>82188.95</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>0.00</td>
+      <td>53772.94</td>
+      <td>0.00</td>
+      <td>26620.26</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>1740308.88</td>
+      <td>0.00</td>
+      <td>38134.36</td>
+      <td>292079.94</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>0.00</td>
+      <td>2577626.75</td>
+      <td>5790287.00</td>
+      <td>381110.81</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>1179673.13</td>
+      <td>0.00</td>
+      <td>3556.30</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1980458.38</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>15431.62</td>
+      <td>0.00</td>
+      <td>46608.68</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>9948.27</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>55582.52</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>61258.17</td>
+      <td>155787.94</td>
+      <td>55921.07</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>0.00</td>
+      <td>7889.80</td>
+      <td>215028.61</td>
+      <td>10020.09</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>73794.52</td>
+      <td>224818.03</td>
+      <td>5925.26</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>140673.16</td>
+      <td>16277292.00</td>
+      <td>1037529.88</td>
+      <td>147025.31</td>
+      <td>292055.81</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>181992.77</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>0.00</td>
+      <td>603047.88</td>
+      <td>675125.19</td>
+      <td>30792.79</td>
+      <td>0.00</td>
+      <td>419252.44</td>
+      <td>14130.80</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>60714.32</td>
+      <td>1038307.81</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>0.00</td>
+      <td>11717567.00</td>
+      <td>0.00</td>
+      <td>1276.74</td>
+      <td>57683.21</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>4174.87</td>
+      <td>618743.06</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>0.00</td>
+      <td>1614557.63</td>
+      <td>234533.52</td>
+      <td>496465.50</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>307068.22</td>
+      <td>275608.84</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1464.59</td>
+      <td>148034.02</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>1381.20</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>4450154.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>0.00</td>
+      <td>446516.91</td>
+      <td>0.00</td>
+      <td>144939.20</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>402528.88</td>
+      <td>...</td>
+      <td>121573.77</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>101450.37</td>
+      <td>11617.65</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>0.00</td>
+      <td>77867.39</td>
+      <td>0.00</td>
+      <td>207631.50</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>15775.92</td>
+      <td>3139882.25</td>
+      <td>0.00</td>
+      <td>4056.35</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>11023.05</td>
+      <td>1640.80</td>
+      <td>17683.26</td>
+      <td>97989.88</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1571.67</td>
+      <td>...</td>
+      <td>96426.15</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>62245.50</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>14222485.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>574.92</td>
+      <td>2521.91</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>153162.88</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>674132.88</td>
+      <td>67454.39</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>13400.29</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>21661.37</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>328922.13</td>
+      <td>...</td>
+      <td>4786.63</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1665447.00</td>
+      <td>1625.76</td>
+      <td>0.00</td>
+      <td>138802.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>0.00</td>
+      <td>823729.31</td>
+      <td>0.00</td>
+      <td>4515339.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>26520.87</td>
+      <td>0.00</td>
+      <td>153672.52</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1925521.25</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>0.00</td>
+      <td>179299.59</td>
+      <td>0.00</td>
+      <td>88929.42</td>
+      <td>0.00</td>
+      <td>1187859.25</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>265478.72</td>
+      <td>302789.31</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>0.00</td>
+      <td>511629.00</td>
+      <td>0.00</td>
+      <td>8267.26</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>514513.66</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>0.00</td>
+      <td>77937.30</td>
+      <td>42382.20</td>
+      <td>5088.32</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>69394.41</td>
+      <td>95436.05</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>0.00</td>
+      <td>2911.97</td>
+      <td>15953.10</td>
+      <td>80433.93</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>89290.69</td>
+      <td>0.00</td>
+      <td>7406277.50</td>
+      <td>260645.84</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>0.00</td>
+      <td>6875.02</td>
+      <td>360036.50</td>
+      <td>28350.88</td>
+      <td>172198.25</td>
+      <td>7187.31</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>522638.75</td>
+      <td>...</td>
+      <td>212652.81</td>
+      <td>639224.63</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>489542.88</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>93</th>
+      <td>0.00</td>
+      <td>7963.32</td>
+      <td>29800.15</td>
+      <td>174881.72</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>...</td>
+      <td>53438.88</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>8913.21</td>
+      <td>7853.11</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>94</th>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>371997.59</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>64870.32</td>
+      <td>...</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1906689.38</td>
+      <td>304293.44</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>95 rows × 51 columns</p>
+</div>
+
+
+
+
+```python
+ax = pd.DataFrame(np.transpose(data.head())).plot()
+```
+
+
+![](/post/2019-11-06-using-gan-to-generate-some-non-image-data-with-cre-bateria-data_files/output_3_0.png)
+
+# 訓練分類器模型
+這裡使用隨機森林建立一個簡單但具分類意義的分類器。
+
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+```
+
+
+```python
+# Build Train and Test data set
+cre_X = cre.iloc[:,0:50]
+cre_y = cre["CRE"]
+train_X, test_X, train_y, test_y = train_test_split(cre_X, cre_y, test_size = 0.3)
+```
+
+
+```python
+# Build the random forest model
+forest = ensemble.RandomForestClassifier(n_estimators = 100)
+forest_fit = forest.fit(train_X, train_y)
+```
+
+
+```python
+test_y_predicted = forest.predict(test_X)
+accuracy_rf = metrics.accuracy_score(test_y, test_y_predicted)
+print(accuracy_rf)
+```
+
+    0.8620689655172413
+    
+
+# Set Up Module
+
+
+```python
+%matplotlib inline
+import os
+import random
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tqdm import tqdm_notebook as tqdm
+from keras.models import Model
+from keras.layers import Input, Reshape
+from keras.layers.core import Dense, Activation, Dropout, Flatten
+from keras.layers.normalization import BatchNormalization
+from keras.layers.convolutional import UpSampling1D, Conv1D
+from keras.layers.advanced_activations import LeakyReLU
+from keras.optimizers import Adam, SGD
+from keras.callbacks import TensorBoard
+```
+
+# 建立生成器
+
+
+```python
+def get_generative(G_in, dense_dim=200, out_dim=50, lr=1e-3):
+    x = Dense(dense_dim)(G_in)
+    x = Activation('tanh')(x)
+    G_out = Dense(out_dim, activation='tanh')(x)
+    G = Model(G_in, G_out)
+    opt = SGD(lr=lr)
+    G.compile(loss='binary_crossentropy', optimizer=opt)
+    return G, G_out
+
+G_in = Input(shape=[10])
+G, G_out = get_generative(G_in)
+G.summary()
+```
+
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_4 (InputLayer)         (None, 10)                0         
+    _________________________________________________________________
+    dense_5 (Dense)              (None, 200)               2200      
+    _________________________________________________________________
+    activation_2 (Activation)    (None, 200)               0         
+    _________________________________________________________________
+    dense_6 (Dense)              (None, 50)                10050     
+    =================================================================
+    Total params: 12,250
+    Trainable params: 12,250
+    Non-trainable params: 0
+    _________________________________________________________________
+    
+
+# 建立判別器
+
+
+```python
+def get_discriminative(D_in, lr=1e-3, drate=.25, n_channels=50, conv_sz=5, leak=.2):
+    x = Reshape((-1, 1))(D_in)
+    x = Conv1D(n_channels, conv_sz, activation='relu')(x)
+    x = Dropout(drate)(x)
+    x = Flatten()(x)
+    x = Dense(n_channels)(x)
+    D_out = Dense(2, activation='sigmoid')(x)
+    D = Model(D_in, D_out)
+    dopt = Adam(lr=lr)
+    D.compile(loss='binary_crossentropy', optimizer=dopt)
+    return D, D_out
+
+D_in = Input(shape=[50])
+D, D_out = get_discriminative(D_in)
+D.summary()
+```
+
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_5 (InputLayer)         (None, 50)                0         
+    _________________________________________________________________
+    reshape_2 (Reshape)          (None, 50, 1)             0         
+    _________________________________________________________________
+    conv1d_2 (Conv1D)            (None, 46, 50)            300       
+    _________________________________________________________________
+    dropout_2 (Dropout)          (None, 46, 50)            0         
+    _________________________________________________________________
+    flatten_2 (Flatten)          (None, 2300)              0         
+    _________________________________________________________________
+    dense_7 (Dense)              (None, 50)                115050    
+    _________________________________________________________________
+    dense_8 (Dense)              (None, 2)                 102       
+    =================================================================
+    Total params: 115,452
+    Trainable params: 115,452
+    Non-trainable params: 0
+    _________________________________________________________________
+    
+
+# 串接兩神經網路
+
+
+```python
+def set_trainability(model, trainable=False):
+    model.trainable = trainable
+    for layer in model.layers:
+        layer.trainable = trainable
+        
+def make_gan(GAN_in, G, D):
+    set_trainability(D, False)
+    x = G(GAN_in)
+    GAN_out = D(x)
+    GAN = Model(GAN_in, GAN_out)
+    GAN.compile(loss='binary_crossentropy', optimizer=G.optimizer)
+    return GAN, GAN_out
+
+GAN_in = Input([10])
+GAN, GAN_out = make_gan(GAN_in, G, D)
+GAN.summary()
+```
+
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_6 (InputLayer)         (None, 10)                0         
+    _________________________________________________________________
+    model_4 (Model)              (None, 50)                12250     
+    _________________________________________________________________
+    model_5 (Model)              (None, 2)                 115452    
+    =================================================================
+    Total params: 127,702
+    Trainable params: 12,250
+    Non-trainable params: 115,452
+    _________________________________________________________________
+    
+
+
+```python
+def sample_data_and_gen(G, noise_dim=10, n_samples=46):
+    XT = np.array(data11)
+    XN_noise = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    XN = G.predict(XN_noise)
+    X = np.concatenate((XT, XN))
+    y = np.zeros((2*n_samples, 2))
+    y[:n_samples, 1] = 1
+    y[n_samples:, 0] = 1
+    return X, y
+
+def pretrain(G, D, noise_dim=10, n_samples=46, batch_size=32):
+    X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+    set_trainability(D, True)
+    D.fit(X, y, epochs=1, batch_size=batch_size)
+    
+pretrain(G, D)
+
+def sample_noise(G, noise_dim=10, n_samples=46):
+    X = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    y = np.zeros((n_samples, 2))
+    y[:, 1] = 1
+    return X, y
+```
+
+    Epoch 1/1
+    92/92 [==============================] - ETA: 0s - loss: 2.393 - 1s 6ms/step - loss: 5.6152
+    
+
+# 訓練生成對抗網路
+訓練生成對抗網路，並存取最後一次生成器產生結果
+
+
+```python
+def train(GAN, G, D, epochs=500, n_samples=46, noise_dim=10, batch_size=32, verbose=False, v_freq=50,):
+    d_loss = []
+    g_loss = []
+    e_range = range(epochs)
+    if verbose:
+        e_range = tqdm(e_range)
+    for epoch in e_range:
+        X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, True)
+        d_loss.append(D.train_on_batch(X, y))
+        xx,yy = X,y
+        
+        X, y = sample_noise(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, False)
+        g_loss.append(GAN.train_on_batch(X, y))
+        if verbose and (epoch + 1) % v_freq == 0:
+            print("Epoch #{}: Generative Loss: {}, Discriminative Loss: {}".format(epoch + 1, g_loss[-1], d_loss[-1]))
+    return d_loss, g_loss, xx, yy
+
+d_loss, g_loss ,xx,yy= train(GAN, G, D, verbose=True)
+```
+
+
+    HBox(children=(IntProgress(value=0, max=500), HTML(value='')))
+
+
+    Epoch #50: Generative Loss: 11.389734268188477, Discriminative Loss: 8.015128135681152
+    Epoch #100: Generative Loss: 11.560905456542969, Discriminative Loss: 8.015127182006836
+    Epoch #150: Generative Loss: 11.707502365112305, Discriminative Loss: 8.01512622833252
+    Epoch #200: Generative Loss: 11.78805160522461, Discriminative Loss: 8.01512336730957
+    Epoch #250: Generative Loss: 11.92248821258545, Discriminative Loss: 8.015122413635254
+    Epoch #300: Generative Loss: 12.040063858032227, Discriminative Loss: 8.015122413635254
+    Epoch #350: Generative Loss: 12.16407299041748, Discriminative Loss: 8.015120506286621
+    Epoch #400: Generative Loss: 12.269856452941895, Discriminative Loss: 8.015120506286621
+    Epoch #450: Generative Loss: 12.354406356811523, Discriminative Loss: 8.015120506286621
+    Epoch #500: Generative Loss: 12.472232818603516, Discriminative Loss: 8.015120506286621
+    
+    
+
+損失函數
+
+
+```python
+ax = pd.DataFrame(
+    {
+        'Generative Loss': g_loss,
+        'Discriminative Loss': d_loss,
+    }
+).plot(title='Training loss', logy=True)
+ax.set_xlabel("Epochs")
+ax.set_ylabel("Loss")
+```
+
+
+
+
+    Text(0, 0.5, 'Loss')
+
+
+
+![](/post/2019-11-06-using-gan-to-generate-some-non-image-data-with-cre-bateria-data_files/output_21_1.png)
+
+
+最後一次生成器所生成資料
+
+
+```python
+pd.DataFrame(xx)
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>...</th>
+      <th>40</th>
+      <th>41</th>
+      <th>42</th>
+      <th>43</th>
+      <th>44</th>
+      <th>45</th>
+      <th>46</th>
+      <th>47</th>
+      <th>48</th>
+      <th>49</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2.513577e+05</td>
+      <td>0.000000</td>
+      <td>4.942855e+05</td>
+      <td>114879.430000</td>
+      <td>31439.260000</td>
+      <td>0.000000</td>
+      <td>94049.750000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>85986.770000</td>
+      <td>0.000000</td>
+      <td>54979.470000</td>
+      <td>0.000000</td>
+      <td>2.781723e+05</td>
+      <td>65956.080000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>3.945502e+05</td>
+      <td>65408.650000</td>
+      <td>2.186095e+06</td>
+      <td>137296.910000</td>
+      <td>0.000000</td>
+      <td>401122.910000</td>
+      <td>350882.590000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>645223.630000</td>
+      <td>486622.780000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.597353e+05</td>
+      <td>0.000000</td>
+      <td>1.143224e+06</td>
+      <td>0.000000</td>
+      <td>1.310850e+04</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.000000e+00</td>
+      <td>129236.210000</td>
+      <td>6.756088e+05</td>
+      <td>182865.200000</td>
+      <td>16074.490000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>49122.420000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2.591478e+05</td>
+      <td>130750.070000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>1.147132e+04</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.374033e+05</td>
+      <td>0.000000</td>
+      <td>8.180212e+05</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>24273.090000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>14327.790000</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>113117.470000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3.773588e+05</td>
+      <td>327564.660000</td>
+      <td>5.325026e+05</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>913255.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>48186.920000</td>
+      <td>241815.840000</td>
+      <td>0.000000</td>
+      <td>356398.220000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>3.217003e+05</td>
+      <td>300239.310000</td>
+      <td>2.206495e+05</td>
+      <td>289622.500000</td>
+      <td>42589.680000</td>
+      <td>896569.380000</td>
+      <td>26930.330000</td>
+      <td>130587.490000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>74352.740000</td>
+      <td>161985.640000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.054748e+04</td>
+      <td>0.000000</td>
+      <td>5.964156e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1.223023e+05</td>
+      <td>163517.280000</td>
+      <td>1.439668e+05</td>
+      <td>197685.970000</td>
+      <td>44586.540000</td>
+      <td>665813.190000</td>
+      <td>68359.620000</td>
+      <td>86041.640000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>28788.660000</td>
+      <td>82527.430000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>277068.660000</td>
+      <td>5.319472e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>4.583821e+05</td>
+      <td>136389.200000</td>
+      <td>4.124602e+05</td>
+      <td>294669.030000</td>
+      <td>46850.840000</td>
+      <td>470360.910000</td>
+      <td>70784.130000</td>
+      <td>52197.920000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>148098.280000</td>
+      <td>269423.690000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>3.966286e+05</td>
+      <td>153470.940000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>5.992306e+04</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>4.047482e+05</td>
+      <td>97165.770000</td>
+      <td>8.001374e+05</td>
+      <td>134355.130000</td>
+      <td>0.000000</td>
+      <td>285973.690000</td>
+      <td>152992.250000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>244165.310000</td>
+      <td>424717.970000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2.274332e+05</td>
+      <td>50524.480000</td>
+      <td>7.271856e+05</td>
+      <td>0.000000</td>
+      <td>8.150976e+04</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>0.000000e+00</td>
+      <td>237456.300000</td>
+      <td>4.894503e+05</td>
+      <td>317787.660000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>374539.310000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>3.642676e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>6.622303e+04</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>0.000000e+00</td>
+      <td>60298.570000</td>
+      <td>2.422569e+05</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>28529.950000</td>
+      <td>0.000000</td>
+      <td>577876.630000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>38658.570000</td>
+      <td>0.000000</td>
+      <td>224369.880000</td>
+      <td>6.513216e+06</td>
+      <td>0.000000</td>
+      <td>6.122502e+04</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>3.957238e+04</td>
+      <td>102085.480000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>37461.190000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>8476.110000</td>
+      <td>29001.760000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>3.069943e+06</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>360071.940000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>2.148875e+05</td>
+      <td>250224.810000</td>
+      <td>7.646929e+05</td>
+      <td>440959.630000</td>
+      <td>4499.100000</td>
+      <td>0.000000</td>
+      <td>250105.410000</td>
+      <td>253094.770000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5.126750e+06</td>
+      <td>323721.410000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>1.290133e+06</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>1.024227e+06</td>
+      <td>62647.800000</td>
+      <td>9.079186e+05</td>
+      <td>190326.440000</td>
+      <td>0.000000</td>
+      <td>357887.690000</td>
+      <td>174800.920000</td>
+      <td>39311.430000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>409826.630000</td>
+      <td>339814.250000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8.500820e+05</td>
+      <td>80572.130000</td>
+      <td>1.511604e+06</td>
+      <td>0.000000</td>
+      <td>2.469423e+05</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>8.503459e+05</td>
+      <td>0.000000</td>
+      <td>1.142042e+06</td>
+      <td>0.000000</td>
+      <td>22913.520000</td>
+      <td>83391.350000</td>
+      <td>132192.950000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.229476e+07</td>
+      <td>0.000000</td>
+      <td>5.807860e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>1.331601e+05</td>
+      <td>0.000000</td>
+      <td>3.241908e+05</td>
+      <td>165610.810000</td>
+      <td>0.000000</td>
+      <td>529124.810000</td>
+      <td>0.000000</td>
+      <td>76230.840000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>3.765546e+06</td>
+      <td>112336.070000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>8.535618e+05</td>
+      <td>224773.640000</td>
+      <td>8.940391e+05</td>
+      <td>256644.660000</td>
+      <td>0.000000</td>
+      <td>691336.940000</td>
+      <td>151860.300000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>229604.530000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.360744e+07</td>
+      <td>275794.030000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>3.668495e+06</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>1.093477e+06</td>
+      <td>0.000000</td>
+      <td>1.066216e+06</td>
+      <td>214933.130000</td>
+      <td>1172.880000</td>
+      <td>417991.060000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>303218.160000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>3.830377e+06</td>
+      <td>166417.110000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>8.358394e+05</td>
+      <td>196176.730000</td>
+      <td>1.012033e+06</td>
+      <td>282281.940000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>229121.410000</td>
+      <td>90093.880000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>368116.940000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.202129e+06</td>
+      <td>269585.470000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>2.803303e+05</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>69313.850000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.056065e+04</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>997972.560000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>7.016464e+05</td>
+      <td>98642.900000</td>
+      <td>1.148628e+06</td>
+      <td>162741.140000</td>
+      <td>5982.860000</td>
+      <td>451335.220000</td>
+      <td>197993.380000</td>
+      <td>107926.050000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5.809061e+05</td>
+      <td>147341.310000</td>
+      <td>7.316641e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>0.000000e+00</td>
+      <td>123056.530000</td>
+      <td>6.951626e+05</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>151534.300000</td>
+      <td>106993.800000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>93097.800000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8.234698e+06</td>
+      <td>319331.750000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>6.171704e+05</td>
+      <td>111139.700000</td>
+      <td>5.859009e+05</td>
+      <td>309262.720000</td>
+      <td>0.000000</td>
+      <td>463963.530000</td>
+      <td>124548.410000</td>
+      <td>68199.380000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>143815.310000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>1.165822e+06</td>
+      <td>194897.690000</td>
+      <td>2.623731e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>120912.780000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>2.050873e+05</td>
+      <td>130860.280000</td>
+      <td>1.701904e+05</td>
+      <td>239147.090000</td>
+      <td>32240.990000</td>
+      <td>461357.530000</td>
+      <td>79884.000000</td>
+      <td>106250.060000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>93911.430000</td>
+      <td>160792.200000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>2.112072e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>2.336112e+05</td>
+      <td>0.000000</td>
+      <td>2.887885e+05</td>
+      <td>0.000000</td>
+      <td>62809.870000</td>
+      <td>572302.380000</td>
+      <td>105359.080000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>81040.710000</td>
+      <td>181801.950000</td>
+      <td>0.000000</td>
+      <td>257644.230000</td>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>3.085867e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>4.434595e+05</td>
+      <td>193747.160000</td>
+      <td>3.280362e+05</td>
+      <td>370594.880000</td>
+      <td>46355.380000</td>
+      <td>629435.250000</td>
+      <td>74593.730000</td>
+      <td>84710.160000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>108000.260000</td>
+      <td>231578.250000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>3.645578e+05</td>
+      <td>0.000000</td>
+      <td>4.802218e+05</td>
+      <td>0.000000</td>
+      <td>6.132029e+04</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>1.695062e+05</td>
+      <td>94801.800000</td>
+      <td>7.563209e+05</td>
+      <td>227413.020000</td>
+      <td>3680.050000</td>
+      <td>663061.880000</td>
+      <td>147819.560000</td>
+      <td>112498.080000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>263977.310000</td>
+      <td>322974.410000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>391799.500000</td>
+      <td>1.083744e+06</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>0.000000e+00</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>801636.500000</td>
+      <td>23726.370000</td>
+      <td>737771.000000</td>
+      <td>0.000000</td>
+      <td>133648.450000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>122182.410000</td>
+      <td>211591.830000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+      <td>250239.630000</td>
+      <td>1.962649e+05</td>
+      <td>0.000000</td>
+      <td>0.000000e+00</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>62</th>
+      <td>5.771863e-02</td>
+      <td>0.079141</td>
+      <td>9.384196e-02</td>
+      <td>0.125138</td>
+      <td>0.146934</td>
+      <td>0.233003</td>
+      <td>0.055012</td>
+      <td>-0.087537</td>
+      <td>-0.007778</td>
+      <td>0.055186</td>
+      <td>...</td>
+      <td>0.057421</td>
+      <td>-0.197108</td>
+      <td>-0.061168</td>
+      <td>0.211870</td>
+      <td>-0.066151</td>
+      <td>1.301075e-01</td>
+      <td>-0.054132</td>
+      <td>-2.114740e-01</td>
+      <td>-0.090373</td>
+      <td>-4.699485e-02</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>1.442752e-02</td>
+      <td>0.051881</td>
+      <td>2.286542e-02</td>
+      <td>0.104279</td>
+      <td>0.116842</td>
+      <td>0.140988</td>
+      <td>0.056342</td>
+      <td>-0.070146</td>
+      <td>-0.031679</td>
+      <td>0.097089</td>
+      <td>...</td>
+      <td>0.035543</td>
+      <td>-0.120193</td>
+      <td>-0.021412</td>
+      <td>0.093633</td>
+      <td>-0.050723</td>
+      <td>1.535993e-01</td>
+      <td>-0.029451</td>
+      <td>-1.341466e-01</td>
+      <td>-0.073321</td>
+      <td>-4.161552e-03</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>1.278929e-01</td>
+      <td>0.077950</td>
+      <td>5.305723e-02</td>
+      <td>0.144055</td>
+      <td>0.165029</td>
+      <td>0.139697</td>
+      <td>0.028592</td>
+      <td>-0.105480</td>
+      <td>-0.035320</td>
+      <td>0.071927</td>
+      <td>...</td>
+      <td>0.008859</td>
+      <td>-0.174204</td>
+      <td>-0.038903</td>
+      <td>0.210827</td>
+      <td>-0.074771</td>
+      <td>9.185766e-02</td>
+      <td>-0.035059</td>
+      <td>-1.106470e-01</td>
+      <td>-0.130182</td>
+      <td>-6.297275e-02</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>1.447559e-01</td>
+      <td>0.045958</td>
+      <td>4.400671e-02</td>
+      <td>0.140874</td>
+      <td>0.129621</td>
+      <td>0.157389</td>
+      <td>0.072795</td>
+      <td>-0.123201</td>
+      <td>-0.072477</td>
+      <td>0.076058</td>
+      <td>...</td>
+      <td>0.007564</td>
+      <td>-0.158442</td>
+      <td>-0.017006</td>
+      <td>0.092313</td>
+      <td>-0.071628</td>
+      <td>1.778769e-01</td>
+      <td>-0.032934</td>
+      <td>-1.343839e-01</td>
+      <td>-0.067688</td>
+      <td>-1.133780e-01</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>2.923003e-02</td>
+      <td>0.089982</td>
+      <td>7.115061e-02</td>
+      <td>0.160336</td>
+      <td>0.188756</td>
+      <td>0.178656</td>
+      <td>0.076112</td>
+      <td>-0.153013</td>
+      <td>-0.053440</td>
+      <td>0.141031</td>
+      <td>...</td>
+      <td>0.099056</td>
+      <td>-0.201940</td>
+      <td>-0.015563</td>
+      <td>0.197481</td>
+      <td>-0.082291</td>
+      <td>1.690800e-01</td>
+      <td>0.004397</td>
+      <td>-1.911636e-01</td>
+      <td>-0.194577</td>
+      <td>-9.241361e-02</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>4.488285e-02</td>
+      <td>0.014902</td>
+      <td>5.291061e-02</td>
+      <td>0.093878</td>
+      <td>0.111078</td>
+      <td>0.141065</td>
+      <td>0.053293</td>
+      <td>-0.044797</td>
+      <td>-0.012182</td>
+      <td>-0.004407</td>
+      <td>...</td>
+      <td>0.039949</td>
+      <td>-0.139107</td>
+      <td>-0.044550</td>
+      <td>0.143295</td>
+      <td>-0.049501</td>
+      <td>6.762740e-02</td>
+      <td>-0.030763</td>
+      <td>-7.233275e-02</td>
+      <td>-0.064332</td>
+      <td>-1.079918e-01</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>5.010782e-02</td>
+      <td>0.045066</td>
+      <td>6.465222e-02</td>
+      <td>0.136270</td>
+      <td>0.160859</td>
+      <td>0.171901</td>
+      <td>0.080074</td>
+      <td>-0.103908</td>
+      <td>-0.043519</td>
+      <td>0.132829</td>
+      <td>...</td>
+      <td>0.054123</td>
+      <td>-0.178683</td>
+      <td>-0.003971</td>
+      <td>0.133090</td>
+      <td>-0.074374</td>
+      <td>1.734688e-01</td>
+      <td>-0.000379</td>
+      <td>-1.489321e-01</td>
+      <td>-0.165764</td>
+      <td>-9.517734e-02</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>-8.699703e-02</td>
+      <td>0.088150</td>
+      <td>6.905080e-02</td>
+      <td>0.141996</td>
+      <td>0.176542</td>
+      <td>0.143441</td>
+      <td>0.008008</td>
+      <td>-0.110503</td>
+      <td>-0.008441</td>
+      <td>0.164581</td>
+      <td>...</td>
+      <td>0.082234</td>
+      <td>-0.144232</td>
+      <td>-0.021611</td>
+      <td>0.194980</td>
+      <td>-0.062477</td>
+      <td>1.285854e-01</td>
+      <td>0.015981</td>
+      <td>-1.959769e-01</td>
+      <td>-0.218486</td>
+      <td>6.528822e-03</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>1.163195e-01</td>
+      <td>0.049792</td>
+      <td>9.390505e-02</td>
+      <td>0.149623</td>
+      <td>0.172283</td>
+      <td>0.179477</td>
+      <td>0.073764</td>
+      <td>-0.113348</td>
+      <td>-0.041673</td>
+      <td>0.072650</td>
+      <td>...</td>
+      <td>0.052443</td>
+      <td>-0.211731</td>
+      <td>-0.025951</td>
+      <td>0.199543</td>
+      <td>-0.064184</td>
+      <td>1.280974e-01</td>
+      <td>-0.010837</td>
+      <td>-1.773765e-01</td>
+      <td>-0.168073</td>
+      <td>-1.308074e-01</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>-3.098747e-02</td>
+      <td>0.080269</td>
+      <td>7.809231e-02</td>
+      <td>0.135378</td>
+      <td>0.180432</td>
+      <td>0.145843</td>
+      <td>-0.010058</td>
+      <td>-0.092386</td>
+      <td>-0.011612</td>
+      <td>0.128141</td>
+      <td>...</td>
+      <td>0.046156</td>
+      <td>-0.147168</td>
+      <td>-0.035000</td>
+      <td>0.201276</td>
+      <td>-0.083927</td>
+      <td>1.009080e-01</td>
+      <td>0.012110</td>
+      <td>-1.150701e-01</td>
+      <td>-0.210679</td>
+      <td>-7.272352e-02</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>-5.603977e-05</td>
+      <td>0.086260</td>
+      <td>6.558941e-02</td>
+      <td>0.162166</td>
+      <td>0.183209</td>
+      <td>0.142338</td>
+      <td>0.036340</td>
+      <td>-0.155236</td>
+      <td>-0.057950</td>
+      <td>0.176502</td>
+      <td>...</td>
+      <td>0.069604</td>
+      <td>-0.166726</td>
+      <td>-0.004081</td>
+      <td>0.157140</td>
+      <td>-0.070198</td>
+      <td>1.764633e-01</td>
+      <td>0.018980</td>
+      <td>-2.049197e-01</td>
+      <td>-0.212454</td>
+      <td>-5.348644e-02</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>-1.597475e-02</td>
+      <td>0.082567</td>
+      <td>6.936116e-02</td>
+      <td>0.128655</td>
+      <td>0.213990</td>
+      <td>0.148111</td>
+      <td>0.059413</td>
+      <td>-0.123450</td>
+      <td>-0.016059</td>
+      <td>0.116500</td>
+      <td>...</td>
+      <td>0.115040</td>
+      <td>-0.171914</td>
+      <td>-0.035751</td>
+      <td>0.220132</td>
+      <td>-0.084824</td>
+      <td>1.483972e-01</td>
+      <td>-0.024151</td>
+      <td>-1.925847e-01</td>
+      <td>-0.186185</td>
+      <td>4.065286e-02</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>-4.355310e-02</td>
+      <td>0.124092</td>
+      <td>8.693540e-02</td>
+      <td>0.143820</td>
+      <td>0.139506</td>
+      <td>0.224342</td>
+      <td>-0.001981</td>
+      <td>-0.055389</td>
+      <td>0.015957</td>
+      <td>0.082807</td>
+      <td>...</td>
+      <td>0.075091</td>
+      <td>-0.204232</td>
+      <td>-0.073173</td>
+      <td>0.252675</td>
+      <td>-0.072187</td>
+      <td>8.624671e-02</td>
+      <td>0.004114</td>
+      <td>-1.449837e-01</td>
+      <td>-0.181872</td>
+      <td>-1.628515e-01</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>7.016601e-02</td>
+      <td>0.126638</td>
+      <td>6.968953e-02</td>
+      <td>0.177304</td>
+      <td>0.197027</td>
+      <td>0.169905</td>
+      <td>0.025738</td>
+      <td>-0.153522</td>
+      <td>-0.052389</td>
+      <td>0.155450</td>
+      <td>...</td>
+      <td>0.053709</td>
+      <td>-0.209556</td>
+      <td>-0.034219</td>
+      <td>0.236195</td>
+      <td>-0.079108</td>
+      <td>1.532988e-01</td>
+      <td>-0.002492</td>
+      <td>-2.017526e-01</td>
+      <td>-0.211118</td>
+      <td>-6.792208e-02</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>-3.582065e-02</td>
+      <td>0.075462</td>
+      <td>7.358342e-02</td>
+      <td>0.120523</td>
+      <td>0.172002</td>
+      <td>0.175398</td>
+      <td>0.036168</td>
+      <td>-0.064960</td>
+      <td>0.008145</td>
+      <td>0.100263</td>
+      <td>...</td>
+      <td>0.090297</td>
+      <td>-0.176223</td>
+      <td>-0.045846</td>
+      <td>0.214244</td>
+      <td>-0.068341</td>
+      <td>1.150602e-01</td>
+      <td>-0.008958</td>
+      <td>-1.573523e-01</td>
+      <td>-0.179583</td>
+      <td>-3.757584e-02</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>1.149180e-03</td>
+      <td>0.073993</td>
+      <td>4.709528e-02</td>
+      <td>0.116353</td>
+      <td>0.148364</td>
+      <td>0.141842</td>
+      <td>0.057276</td>
+      <td>-0.100674</td>
+      <td>-0.030467</td>
+      <td>0.045873</td>
+      <td>...</td>
+      <td>0.102190</td>
+      <td>-0.153453</td>
+      <td>-0.057053</td>
+      <td>0.165054</td>
+      <td>-0.053285</td>
+      <td>1.368121e-01</td>
+      <td>-0.029020</td>
+      <td>-1.778644e-01</td>
+      <td>-0.089894</td>
+      <td>-2.899860e-02</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>4.883933e-02</td>
+      <td>0.073878</td>
+      <td>1.052822e-01</td>
+      <td>0.148079</td>
+      <td>0.173811</td>
+      <td>0.176635</td>
+      <td>0.019220</td>
+      <td>-0.105041</td>
+      <td>-0.022027</td>
+      <td>0.060350</td>
+      <td>...</td>
+      <td>0.063225</td>
+      <td>-0.193632</td>
+      <td>-0.050965</td>
+      <td>0.226729</td>
+      <td>-0.071156</td>
+      <td>9.797296e-02</td>
+      <td>-0.000686</td>
+      <td>-1.610914e-01</td>
+      <td>-0.181303</td>
+      <td>-1.430665e-01</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>-1.273230e-02</td>
+      <td>0.056331</td>
+      <td>4.888410e-02</td>
+      <td>0.133763</td>
+      <td>0.174581</td>
+      <td>0.110827</td>
+      <td>0.026463</td>
+      <td>-0.120391</td>
+      <td>-0.043959</td>
+      <td>0.175507</td>
+      <td>...</td>
+      <td>0.039367</td>
+      <td>-0.124524</td>
+      <td>0.004223</td>
+      <td>0.121695</td>
+      <td>-0.069352</td>
+      <td>1.589927e-01</td>
+      <td>0.010103</td>
+      <td>-1.553590e-01</td>
+      <td>-0.195841</td>
+      <td>8.593322e-03</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>2.019642e-02</td>
+      <td>0.058863</td>
+      <td>8.318582e-02</td>
+      <td>0.158097</td>
+      <td>0.164991</td>
+      <td>0.160093</td>
+      <td>0.028337</td>
+      <td>-0.099454</td>
+      <td>-0.029948</td>
+      <td>0.158778</td>
+      <td>...</td>
+      <td>0.037951</td>
+      <td>-0.184605</td>
+      <td>-0.000601</td>
+      <td>0.179939</td>
+      <td>-0.057108</td>
+      <td>1.289516e-01</td>
+      <td>0.034764</td>
+      <td>-1.603799e-01</td>
+      <td>-0.239722</td>
+      <td>-1.197372e-01</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>1.089811e-01</td>
+      <td>0.047334</td>
+      <td>5.823605e-02</td>
+      <td>0.129653</td>
+      <td>0.186784</td>
+      <td>0.130830</td>
+      <td>0.055852</td>
+      <td>-0.122106</td>
+      <td>-0.045716</td>
+      <td>0.084037</td>
+      <td>...</td>
+      <td>0.033420</td>
+      <td>-0.157943</td>
+      <td>-0.022635</td>
+      <td>0.170346</td>
+      <td>-0.087565</td>
+      <td>1.277712e-01</td>
+      <td>-0.032698</td>
+      <td>-1.151622e-01</td>
+      <td>-0.139719</td>
+      <td>-3.704622e-02</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>-2.369104e-02</td>
+      <td>0.039272</td>
+      <td>1.003548e-01</td>
+      <td>0.121072</td>
+      <td>0.176277</td>
+      <td>0.160217</td>
+      <td>0.028175</td>
+      <td>-0.068355</td>
+      <td>-0.001034</td>
+      <td>0.080345</td>
+      <td>...</td>
+      <td>0.086252</td>
+      <td>-0.168808</td>
+      <td>-0.040289</td>
+      <td>0.182596</td>
+      <td>-0.066557</td>
+      <td>1.155214e-01</td>
+      <td>0.013119</td>
+      <td>-1.522985e-01</td>
+      <td>-0.200415</td>
+      <td>-1.017104e-01</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>3.295303e-02</td>
+      <td>0.128977</td>
+      <td>3.527293e-02</td>
+      <td>0.149690</td>
+      <td>0.177678</td>
+      <td>0.157079</td>
+      <td>0.031657</td>
+      <td>-0.120921</td>
+      <td>-0.033545</td>
+      <td>0.140918</td>
+      <td>...</td>
+      <td>0.056751</td>
+      <td>-0.177175</td>
+      <td>-0.040286</td>
+      <td>0.232053</td>
+      <td>-0.078717</td>
+      <td>1.313213e-01</td>
+      <td>-0.022502</td>
+      <td>-1.580906e-01</td>
+      <td>-0.166002</td>
+      <td>-2.041462e-03</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>-2.193222e-02</td>
+      <td>0.071473</td>
+      <td>4.067374e-02</td>
+      <td>0.127829</td>
+      <td>0.129760</td>
+      <td>0.156506</td>
+      <td>0.085491</td>
+      <td>-0.065933</td>
+      <td>-0.019193</td>
+      <td>0.073946</td>
+      <td>...</td>
+      <td>0.110103</td>
+      <td>-0.187463</td>
+      <td>-0.036088</td>
+      <td>0.186077</td>
+      <td>-0.044486</td>
+      <td>1.043225e-01</td>
+      <td>-0.003263</td>
+      <td>-1.358489e-01</td>
+      <td>-0.140418</td>
+      <td>-1.032844e-01</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>1.287738e-03</td>
+      <td>0.134546</td>
+      <td>3.888072e-02</td>
+      <td>0.165624</td>
+      <td>0.126719</td>
+      <td>0.164514</td>
+      <td>0.009274</td>
+      <td>-0.132407</td>
+      <td>-0.053828</td>
+      <td>0.152904</td>
+      <td>...</td>
+      <td>0.034691</td>
+      <td>-0.164441</td>
+      <td>-0.028324</td>
+      <td>0.185680</td>
+      <td>-0.063293</td>
+      <td>1.271236e-01</td>
+      <td>0.004165</td>
+      <td>-1.574730e-01</td>
+      <td>-0.149576</td>
+      <td>-9.104238e-02</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>1.190792e-01</td>
+      <td>0.049373</td>
+      <td>7.937831e-02</td>
+      <td>0.141312</td>
+      <td>0.137289</td>
+      <td>0.203820</td>
+      <td>0.068109</td>
+      <td>-0.103065</td>
+      <td>-0.043260</td>
+      <td>0.092760</td>
+      <td>...</td>
+      <td>0.010624</td>
+      <td>-0.187389</td>
+      <td>-0.018631</td>
+      <td>0.147604</td>
+      <td>-0.076098</td>
+      <td>1.515454e-01</td>
+      <td>-0.025110</td>
+      <td>-1.434764e-01</td>
+      <td>-0.115842</td>
+      <td>-1.291046e-01</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>4.425447e-02</td>
+      <td>0.121940</td>
+      <td>6.427467e-02</td>
+      <td>0.144705</td>
+      <td>0.201681</td>
+      <td>0.167424</td>
+      <td>0.014653</td>
+      <td>-0.138411</td>
+      <td>-0.031778</td>
+      <td>0.123827</td>
+      <td>...</td>
+      <td>0.048905</td>
+      <td>-0.167162</td>
+      <td>-0.051302</td>
+      <td>0.238433</td>
+      <td>-0.095100</td>
+      <td>1.377496e-01</td>
+      <td>-0.043771</td>
+      <td>-1.745853e-01</td>
+      <td>-0.156156</td>
+      <td>2.941268e-02</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>1.352898e-02</td>
+      <td>0.093871</td>
+      <td>1.029101e-01</td>
+      <td>0.129897</td>
+      <td>0.160283</td>
+      <td>0.241069</td>
+      <td>0.037356</td>
+      <td>-0.079107</td>
+      <td>0.009802</td>
+      <td>0.064191</td>
+      <td>...</td>
+      <td>0.071833</td>
+      <td>-0.204458</td>
+      <td>-0.059586</td>
+      <td>0.262838</td>
+      <td>-0.096586</td>
+      <td>7.896692e-02</td>
+      <td>-0.029935</td>
+      <td>-1.215087e-01</td>
+      <td>-0.154695</td>
+      <td>-1.246584e-01</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>-6.471997e-02</td>
+      <td>0.161791</td>
+      <td>8.699533e-02</td>
+      <td>0.166800</td>
+      <td>0.153273</td>
+      <td>0.239945</td>
+      <td>-0.011309</td>
+      <td>-0.127351</td>
+      <td>-0.014987</td>
+      <td>0.153934</td>
+      <td>...</td>
+      <td>0.075217</td>
+      <td>-0.197810</td>
+      <td>-0.053932</td>
+      <td>0.260759</td>
+      <td>-0.086715</td>
+      <td>1.205225e-01</td>
+      <td>0.004634</td>
+      <td>-2.008244e-01</td>
+      <td>-0.192758</td>
+      <td>-1.036462e-01</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>-7.696584e-03</td>
+      <td>0.057619</td>
+      <td>1.040991e-01</td>
+      <td>0.114195</td>
+      <td>0.183359</td>
+      <td>0.196935</td>
+      <td>0.010609</td>
+      <td>-0.030886</td>
+      <td>0.040294</td>
+      <td>0.088672</td>
+      <td>...</td>
+      <td>0.050991</td>
+      <td>-0.185898</td>
+      <td>-0.048450</td>
+      <td>0.255344</td>
+      <td>-0.076115</td>
+      <td>6.810440e-02</td>
+      <td>-0.018218</td>
+      <td>-1.282074e-01</td>
+      <td>-0.204055</td>
+      <td>-3.708909e-02</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>2.760612e-02</td>
+      <td>0.067704</td>
+      <td>3.295968e-02</td>
+      <td>0.129812</td>
+      <td>0.154076</td>
+      <td>0.102998</td>
+      <td>0.043750</td>
+      <td>-0.084157</td>
+      <td>-0.033504</td>
+      <td>0.080922</td>
+      <td>...</td>
+      <td>0.073709</td>
+      <td>-0.159288</td>
+      <td>-0.034829</td>
+      <td>0.167826</td>
+      <td>-0.045594</td>
+      <td>1.152339e-01</td>
+      <td>-0.004282</td>
+      <td>-1.422732e-01</td>
+      <td>-0.147273</td>
+      <td>-4.370746e-02</td>
+    </tr>
+  </tbody>
+</table>
+<p>92 rows × 50 columns</p>
+</div>
+
+
+
+
+```python
+pd.DataFrame(np.transpose(xx)).plot()
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x21e22a40c50>
+
+
+
+![](/post/2019-11-06-using-gan-to-generate-some-non-image-data-with-cre-bateria-data_files/output_24_1.png)
+
+
+# Test the generation
+使用最後一次生成結果匯入前面訓練好的分類模型，檢查是否能判別為第一類別。
+
+
+```python
+test_y_predicted = forest.predict(xx)
+pd.DataFrame(test_y_predicted)
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>62</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>92 rows × 1 columns</p>
+</div>
+
+
+
+判別為正確的比例：
+
+
+```python
+sum(test_y_predicted)/len(test_y_predicted)
+```
+
+
+
+
+    0.4673913043478261
+
+
+
+# 結論
+我們可以看到，生成的樣本分類率僅0.46左右，可以說是相當不理想，但換個角度思考，這當中有46%的資料是可以當作新的樣本加入訓練集，因此我們可透過事先建立的分類器來當作衡量樣本是否可當作是當的生成樣本。且若我們僅憑肉眼看生成的資料，其範圍也落在0-40000這個區間左右，矩陣稀疏情況也看似接近。當然，生成對抗網路還有許多細節可以調整，也許可以調整學習率、backpropagation、drop out等等事項來改善生成器神經網路。先前看到有多種生成對抗網路，如conditional-GAN,MCF-GAN等等，也許我可以學習其他類型架構的生成對抗網路來完成這樣工作也不一定。

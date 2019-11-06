@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>gan | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span>gan</span>
+        <span>2019-11-06</span>
+        
+        <span>1 / 1</span>
+      
+      </div>
+    </nav>
+
+
+<div class="container">
+<main class="list">
+
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/">Using GAN to generate some non image data with CRE bateria data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-11-06</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-11-06-using-gan-to-generate-some-non-image-data-with-cre-bateria-data_files/output_3_0.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次我將修改前次的生成對抗網路，希望能夠調整為一個自動生成樣本的神經網路。我這次將使用以前曾經使用過的CRE Bacteria data(https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/ )。我先建立一個簡單的分類模型，一將使用p_value前五個維度當作解釋變數，先建立一個簡單的分類模型，並將第一類的46個當作樣本輸入至生成對抗網路，調整訓練參數，且試圖讓神經網路能夠產生第一類別的資料。最後，經由生成器生成的資料我將匯入原先的分類模型，觀察是否能產生類似於第一類別的資料，並最終計算其生成準確&hellip;
+    </a>
+  </div>
+</section>
+
+</main>
+<nav>
+</nav>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+
+
+
+
+
+</body>
+</html>
+

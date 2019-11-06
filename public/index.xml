@@ -6,10 +6,19 @@
     <description>Recent content on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 31 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 06 Nov 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Using GAN to generate some non image data with CRE bateria data</title>
+      <link>/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/</link>
+      <pubDate>Wed, 06 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/</guid>
+      <description>這次我將修改前次的生成對抗網路，希望能夠調整為一個自動生成樣本的神經網路。我這次將使用以前曾經使用過的CRE Bacteria data(https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/ )。 我先建立一個簡單的分類模</description>
+    </item>
     
     <item>
       <title>GAN on non image data</title>
