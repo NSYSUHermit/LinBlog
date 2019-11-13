@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>GAN with One Class Learning | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-11-13</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-11-14-gan-with-one-class-learning.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+     &hercon; <a href="/categories/gan">gan</a>
+  
+     &hercon; <a href="/categories/python">Python</a>
+  
+  </div>
+
+  <h1><span class="title">GAN with One Class Learning</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/neural-network">neural network</a>; <a href="/tags/small-talk">small-talk</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>先前幾次我嘗試使用生成對抗網路產生一系列資料，但我們知道GAN的訓練很難調整，除非將生成資料直接拿去訓練比照結果，否則很難知道這次生成樣本的品質(這裡的品質是指有時候樣本過少時，我們產生所需的假資料是否能完美的當作一般樣本進行後續分析)，因此我想透過一些外部機制來當作衡量生成器生成的品質驗證，後來思考其實這有點像是異常檢測，若是先將真實資料做一個一元的異常檢測分類器，我們便可將GAN產生的資料用此當作二次確認(第一次確認是在GAN當中的判別器)，構想圖如下：</p>
+<p><img src="/post/2019-11-14-gan-with-one-class-learning_files/1.jpg" /><br />
+我們將想要生成的某類資料匯入後，先建構一個一元分類器，並將所有資料點都包含於正常資料。接著將原資料匯入GAN當中，經過幾次迭代後，我們將GAN產生的偽資料匯入當初建立好的一元分類器當中，並檢查是否所有的偽資料皆能不被辨識為異常點，若是確認這批資料皆為正常點後(也就是成功欺騙一元分類器)，我們便將那些偽資料作為成功的生成資料。</p>
+<p>這裡有幾個問題點，第一個是一元分類器的選擇，因各種One Class Classification的包含方法並不相同，因此挑選哪種方法當作此分類器需要多次嘗試；而另個問題便是，GAN當中的判別器機制其實目的與此有點類似，且在多次迭代過程中判別器的能力可能更甚外部的One Class Classification，因此會不會這個方法只是多此一舉(比如說通過了One Class的樣本其實在後續使用上還是問題很多之類的)?</p>
+<p>至此我希望透過多次的試驗來驗證此方法是否不可行抑或是多此一舉，但我個人覺得外部的異常檢測可以當作GAN的另一層保險機制，小小希望後續的試驗能如預期一般順遂QQ</p>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/">Using GAN to generate some non image data with CRE bateria data &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+
+
+
+
+
+</body>
+</html>
+

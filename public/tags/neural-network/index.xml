@@ -6,10 +6,19 @@
     <description>Recent content in neural network on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 31 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 09 Nov 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/neural-network/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>GAN with One Class Learning</title>
+      <link>/post/2019/11/09/gan-with-one-class-learning/</link>
+      <pubDate>Sat, 09 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/11/09/gan-with-one-class-learning/</guid>
+      <description>先前幾次我嘗試使用生成對抗網路產生一系列資料，但我們知道GAN的訓練很難調整，除非將生成資料直接拿去訓練比照結果，否則很難知道這次生成樣本的</description>
+    </item>
     
     <item>
       <title>GAN on non image data</title>
