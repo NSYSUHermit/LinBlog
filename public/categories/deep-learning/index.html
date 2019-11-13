@@ -42,6 +42,37 @@
   
   
   </div>
+  <h1><a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">Practice in GAN with One Class Learning</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-11-14</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_2_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
+[&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
+    </a>
+  </div>
+</section>
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
   <h1><a href="/post/2019/11/09/gan-with-one-class-learning/">GAN with One Class Learning</a></h1>
   <div class="date-author">
     <span class="author">Hermit
@@ -186,38 +217,6 @@
     Drop 是由Geoff Hinton與多倫多大學的學生所開發的神經網路常規化技術之一。神經網路層的丟棄法，主要是在訓練期間隨機丟棄layer的一些輸出特徵。假設某個輸出向量為[0.2,0.5,1.3,0.8,1.1]的向量，在使用丟棄法後將隨機幾個向量的特徵歸零:[0.2,0,1.3,0,1.1]，而控制丟失多少值一般是採用丟失率來計算，大約0.2~0.5的一個數值。而在test階段不會丟棄任何值，而是按照丟棄率去比例縮小，以平衡被歸零的影響。
 實務上，我們可以在訓練時執行dropout然後把輸出值同比例放大，這樣做就不用再測試做任何變動了。
 這個看似隨興的方法為何可以有效降&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/python">Python</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/08/22/thu-preliminary-by-neural-network/">THU Preliminary by Neural Network</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-08-22</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/08/22/thu-preliminary-by-neural-network/">
-    
-    
-    
-    <div class="thumbnail"><img src="https://cdn-images-1.medium.com/max/2000/1*ILJI87KKC7Y3y5ExxbGA8A.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    先前剛看完齋藤康毅的深度學習架構，因此最近正在學習使用keras架立神經網路模型，範例檔案都是使用mnist手寫資料，正在練習時突然想到先前東海大學大數據的初賽可以拿來實踐看看。而在嘗試建立好模型後，發現準確度也是高達99%，因此寫這篇文章將架構的部分筆記起來。
-[&hellip;] 因使用Windows 10，所以許多環境設置相比於Linux來說更加繁瑣，因此使用Anaconda來簡化tensorflow gpu CUDA的設置。
-為了能順利使用keras，所以虛擬環境使用：python3.6 + CUDA 10 + cuDNN 7.4.2 + Tesorflow-GPU + Keras。&hellip;
     </a>
   </div>
 </section>

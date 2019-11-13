@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>small talk | Lin&#39;s Blog</title>
+    <title>Python | Lin&#39;s Blog</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
 
       <div class="head-meta">
       
-        <span>small talk</span>
+        <span>Python</span>
         <span>2019-11-14</span>
         
         <span>2 / 2</span>
@@ -38,29 +38,31 @@
   <div class="categories">
   
   
-    <a href="/categories/machine-learning">machine-learning</a>
+    <a href="/categories/python">Python</a>
   
   
   </div>
-  <h1><a href="/post/2019/06/23/data-analysis-run-down/">Data Analysis Run-Down </a></h1>
+  <h1><a href="/post/2019/07/27/using-pandas-to-craw-mlb-team-data/">Using pandas to craw MLB team data</a></h1>
   <div class="date-author">
     <span class="author">Hermit
 </span> / 
-    <span class="date">2019-06-23</span>
+    <span class="date">2019-07-27</span>
   </div>
   <div class="summary">
-    <a href="/post/2019/06/23/data-analysis-run-down/">
+    <a href="/post/2019/07/27/using-pandas-to-craw-mlb-team-data/">
     
     
     
-    <div class="thumbnail"><img src="/post/2019-05-02-web-crawler-on-simple-chinese-web_files/data.JPG" alt="Thumbnail" /></div>
+    <div class="thumbnail"><img src="/post/2019-07-27-using-pandas-to-craw-mlb-team-data_files/ml2.PNG" alt="Thumbnail" /></div>
     
     
     
       
     
-    日前看到一份有關資料分析流程以及方法的圖片，但因未提及結構化資料以及時間序列等，因此我將它們增加到表上，以此來釐清各分析方法的順序。 (此表不一定正確，僅供參考)
-
+    這次參與工研院資料科學的課程，課程中分配的小組必須進行一個完整資料分析的報告，題目自訂。
+因為球類的open data相對完整，基本上較少遺失值的問體，因此我們決定以mlb的球隊資料來當分析對象。 而主要分析目標則分為兩大類：第一、對例行賽勝率進行迴歸分析找出影響勝率的主因；第二、對&rdquo;明年是否進入季後賽&rdquo;做二項分類的預測。
+這篇文章主要是介紹如何爬取並建立可分析的csv檔案。 主要使用pandas套件，並透過for迴圈去進行多個網頁的爬取，最後合併多年的投打資料，並以csv格式輸出。
+因2004-2005之間有球隊更換隊名，因此為了&rdquo;方便&rdquo;資料合&hellip;
     </a>
   </div>
 </section>
@@ -71,11 +73,11 @@
 <ul class="pagination">
     
     <li class="page-item">
-        <a href="/tags/small-talk/" class="page-link" aria-label="First"><span aria-hidden="true">&laquo;&laquo;</span></a>
+        <a href="/categories/python/" class="page-link" aria-label="First"><span aria-hidden="true">&laquo;&laquo;</span></a>
     </li>
     
     <li class="page-item">
-    <a href="/tags/small-talk/" class="page-link" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+    <a href="/categories/python/" class="page-link" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
     </li>
     
     
@@ -88,7 +90,7 @@
         
     
     
-    <li class="page-item"><a class="page-link" href="/tags/small-talk/">1</a></li>
+    <li class="page-item"><a class="page-link" href="/categories/python/">1</a></li>
     
     
     
@@ -99,7 +101,7 @@
         
     
     
-    <li class="page-item active"><a class="page-link" href="/tags/small-talk/page/2/">2</a></li>
+    <li class="page-item active"><a class="page-link" href="/categories/python/page/2/">2</a></li>
     
     
     <li class="page-item disabled">
@@ -107,7 +109,7 @@
     </li>
     
     <li class="page-item">
-        <a href="/tags/small-talk/page/2/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
+        <a href="/categories/python/page/2/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
     </li>
     
 </ul>

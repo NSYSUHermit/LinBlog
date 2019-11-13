@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>small talk | Lin&#39;s Blog</title>
+    <title>classification | Lin&#39;s Blog</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
 
       <div class="head-meta">
       
-        <span>small talk</span>
+        <span>classification</span>
         <span>2019-11-14</span>
         
         <span>2 / 2</span>
@@ -38,29 +38,31 @@
   <div class="categories">
   
   
-    <a href="/categories/machine-learning">machine-learning</a>
+    <a href="/categories/r">R</a>
   
   
   </div>
-  <h1><a href="/post/2019/06/23/data-analysis-run-down/">Data Analysis Run-Down </a></h1>
+  <h1><a href="/post/2019/04/24/cre-bacteria-data-analysis/">CRE Bacteria Data Analysis</a></h1>
   <div class="date-author">
     <span class="author">Hermit
 </span> / 
-    <span class="date">2019-06-23</span>
+    <span class="date">2019-04-24</span>
   </div>
   <div class="summary">
-    <a href="/post/2019/06/23/data-analysis-run-down/">
+    <a href="/post/2019/04/24/cre-bacteria-data-analysis/">
     
     
     
-    <div class="thumbnail"><img src="/post/2019-05-02-web-crawler-on-simple-chinese-web_files/data.JPG" alt="Thumbnail" /></div>
+    <div class="thumbnail"><img src="/post/2019-04-24-cre-bacteria-data-analysis_files/figure-html/unnamed-chunk-2-1.png" alt="Thumbnail" /></div>
     
     
     
       
     
-    日前看到一份有關資料分析流程以及方法的圖片，但因未提及結構化資料以及時間序列等，因此我將它們增加到表上，以此來釐清各分析方法的順序。 (此表不一定正確，僅供參考)
-
+    在這個資料中，我們有兩種細菌。前面的46個觀察值是CRE，後面的49個則不是。
+我們希望將資料分類為是否為 CRE。Peak是蛋白質的名稱，而P_value是各蛋白質的重要程度，較低的p_value意味著對是否為CRE的影響更大。因此， 我們將選取較低的p_value變數來構建分類器。
+資料是水平資料。因此我們先將資料轉置成一個95個觀測值與1471個變數的格式，標記何者為CRE， 然後使用機器學習方法對資料進行分類。最後，使用Leave-One-Out交叉驗證來比較各方法的測試精準度。
+In this data, we have two types bacteria. The front&hellip;
     </a>
   </div>
 </section>
@@ -71,11 +73,11 @@
 <ul class="pagination">
     
     <li class="page-item">
-        <a href="/tags/small-talk/" class="page-link" aria-label="First"><span aria-hidden="true">&laquo;&laquo;</span></a>
+        <a href="/tags/classification/" class="page-link" aria-label="First"><span aria-hidden="true">&laquo;&laquo;</span></a>
     </li>
     
     <li class="page-item">
-    <a href="/tags/small-talk/" class="page-link" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+    <a href="/tags/classification/" class="page-link" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
     </li>
     
     
@@ -88,7 +90,7 @@
         
     
     
-    <li class="page-item"><a class="page-link" href="/tags/small-talk/">1</a></li>
+    <li class="page-item"><a class="page-link" href="/tags/classification/">1</a></li>
     
     
     
@@ -99,7 +101,7 @@
         
     
     
-    <li class="page-item active"><a class="page-link" href="/tags/small-talk/page/2/">2</a></li>
+    <li class="page-item active"><a class="page-link" href="/tags/classification/page/2/">2</a></li>
     
     
     <li class="page-item disabled">
@@ -107,7 +109,7 @@
     </li>
     
     <li class="page-item">
-        <a href="/tags/small-talk/page/2/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
+        <a href="/tags/classification/page/2/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
     </li>
     
 </ul>

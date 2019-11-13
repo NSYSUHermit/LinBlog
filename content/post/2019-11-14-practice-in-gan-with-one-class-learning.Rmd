@@ -1,0 +1,2469 @@
+---
+title: Practice in GAN with One Class Learning
+author: Hermit
+date: '2019-11-14'
+slug: practice-in-gan-with-one-class-learning
+categories:
+  - deep-learning
+  - gan
+  - machine-learning
+  - Python
+tags:
+  - classification
+  - neural network
+---
+
+
+這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
+
+# 1.準備資料
+## 1.1 讀取資料
+
+```python
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/Contests/thu_bigdata/初賽/train model/train.csv')
+df.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>V1</th>
+      <th>V2</th>
+      <th>V3</th>
+      <th>V4</th>
+      <th>V5</th>
+      <th>V6</th>
+      <th>V7</th>
+      <th>V8</th>
+      <th>V9</th>
+      <th>V10</th>
+      <th>...</th>
+      <th>V441</th>
+      <th>V442</th>
+      <th>V443</th>
+      <th>V444</th>
+      <th>V445</th>
+      <th>V446</th>
+      <th>V447</th>
+      <th>V448</th>
+      <th>V449</th>
+      <th>y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>65.9</td>
+      <td>65.9</td>
+      <td>65.9</td>
+      <td>65.9</td>
+      <td>66.6</td>
+      <td>68.0</td>
+      <td>69.4</td>
+      <td>71.7</td>
+      <td>74.3</td>
+      <td>77.1</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>65.8</td>
+      <td>65.8</td>
+      <td>65.8</td>
+      <td>65.8</td>
+      <td>67.2</td>
+      <td>68.9</td>
+      <td>70.8</td>
+      <td>73.6</td>
+      <td>76.9</td>
+      <td>80.0</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>64.2</td>
+      <td>64.2</td>
+      <td>64.2</td>
+      <td>64.2</td>
+      <td>65.7</td>
+      <td>67.5</td>
+      <td>69.6</td>
+      <td>72.3</td>
+      <td>75.1</td>
+      <td>78.4</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>64.9</td>
+      <td>64.9</td>
+      <td>64.9</td>
+      <td>64.9</td>
+      <td>65.6</td>
+      <td>66.4</td>
+      <td>67.1</td>
+      <td>68.3</td>
+      <td>69.6</td>
+      <td>70.9</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>66.0</td>
+      <td>66.0</td>
+      <td>66.0</td>
+      <td>66.0</td>
+      <td>67.3</td>
+      <td>68.6</td>
+      <td>70.0</td>
+      <td>72.0</td>
+      <td>74.0</td>
+      <td>76.4</td>
+      <td>...</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows x 450 columns</p>
+</div>
+
+
+
+
+```python
+from sklearn.model_selection import train_test_split
+data1 = df[df['y'].isin([5])].iloc[0:3,:]
+data2 = df[df['y'].isin([8])]
+
+train_nor = data1
+test_nor = df[df['y'].isin([5])].iloc[5:14,:]
+train_fra, test_fra = train_test_split(data2, test_size = 0.5)
+data_train = pd.concat([train_nor,train_fra], axis=0)
+data_test = pd.concat([test_nor,test_fra], axis=0)
+```
+
+
+```python
+pd.DataFrame(np.transpose(data1)).plot()
+pd.DataFrame(np.transpose(data2.head())).plot()
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x168ba4d4710>
+
+
+
+
+![](/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_2_1.png)
+![](/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_2_2.png)
+
+
+
+## 1.2 Non Sampling
+先嘗試使用不採樣的方式建模型，觀察直接做分類的效果。
+
+```python
+from sklearn import ensemble
+from sklearn import metrics
+
+train_X = data_train.iloc[:,0:449]
+test_X = data_test.iloc[:,0:449]
+train_y = data_train["y"]
+test_y = data_test["y"]
+
+forest = ensemble.RandomForestClassifier(n_estimators = 100)
+forest_fit = forest.fit(train_X, train_y)
+
+test_y_predicted = forest.predict(test_X)
+accuracy_rf = metrics.accuracy_score(test_y, test_y_predicted)
+print(accuracy_rf)
+
+test_auc = metrics.roc_auc_score(test_y, test_y_predicted)
+print (test_auc)
+```
+
+    0.993103448275862
+    0.9444444444444444
+    
+可以發現auc高達：0.944，因此這筆資料可能特徵太過容易做分類，因此後續的平衡資料分析可能效果不會太過顯著。
+
+# 2. GAN with one class svm
+
+## 2.1 建立GAN
+```python
+# import modules
+%matplotlib inline
+import os
+import random
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tqdm import tqdm_notebook as tqdm
+from keras.models import Model
+from keras.layers import Input, Reshape
+from keras.layers.core import Dense, Activation, Dropout, Flatten
+from keras.layers.normalization import BatchNormalization
+from keras.layers.convolutional import UpSampling1D, Conv1D
+from keras.layers.advanced_activations import LeakyReLU
+from keras.optimizers import Adam, SGD
+from keras.callbacks import TensorBoard
+from sklearn.preprocessing import StandardScaler
+
+# set parameters
+dim = 450
+num = 3
+g_data = data1
+
+# Standard Scaler
+ss = StandardScaler()
+g_data = pd.DataFrame(ss.fit_transform(g_data))
+
+
+# generator
+def get_generative(G_in, dense_dim=200, out_dim= dim, lr=1e-3):
+    x = Dense(dense_dim)(G_in)
+    x = Activation('tanh')(x)
+    G_out = Dense(out_dim, activation='tanh')(x)
+    G = Model(G_in, G_out)
+    opt = SGD(lr=lr)
+    G.compile(loss='binary_crossentropy', optimizer=opt)
+    return G, G_out
+
+G_in = Input(shape=[10])
+G, G_out = get_generative(G_in)
+G.summary()
+
+# discriminator
+def get_discriminative(D_in, lr=1e-3, drate=.25, n_channels= dim, conv_sz=5, leak=.2):
+    x = Reshape((-1, 1))(D_in)
+    x = Conv1D(n_channels, conv_sz, activation='relu')(x)
+    x = Dropout(drate)(x)
+    x = Flatten()(x)
+    x = Dense(n_channels)(x)
+    D_out = Dense(2, activation='sigmoid')(x)
+    D = Model(D_in, D_out)
+    dopt = Adam(lr=lr)
+    D.compile(loss='binary_crossentropy', optimizer=dopt)
+    return D, D_out
+
+D_in = Input(shape=[dim])
+D, D_out = get_discriminative(D_in)
+D.summary()
+
+# set up gan
+def set_trainability(model, trainable=False):
+    model.trainable = trainable
+    for layer in model.layers:
+        layer.trainable = trainable
+        
+def make_gan(GAN_in, G, D):
+    set_trainability(D, False)
+    x = G(GAN_in)
+    GAN_out = D(x)
+    GAN = Model(GAN_in, GAN_out)
+    GAN.compile(loss='binary_crossentropy', optimizer=G.optimizer)
+    return GAN, GAN_out
+
+GAN_in = Input([10])
+GAN, GAN_out = make_gan(GAN_in, G, D)
+GAN.summary()
+
+# pre train
+def sample_data_and_gen(G, noise_dim=10, n_samples= num):
+    XT = np.array(g_data)
+    XN_noise = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    XN = G.predict(XN_noise)
+    X = np.concatenate((XT, XN))
+    y = np.zeros((2*n_samples, 2))
+    y[:n_samples, 1] = 1
+    y[n_samples:, 0] = 1
+    return X, y
+
+def pretrain(G, D, noise_dim=10, n_samples = num, batch_size=32):
+    X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+    set_trainability(D, True)
+    D.fit(X, y, epochs=1, batch_size=batch_size)
+    
+pretrain(G, D)
+
+def sample_noise(G, noise_dim=10, n_samples=num):
+    X = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    y = np.zeros((n_samples, 2))
+    y[:, 1] = 1
+    return X, y
+```
+
+    Using TensorFlow backend.
+    
+
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\backend\tensorflow_backend.py:74: The name tf.get_default_graph is deprecated. Please use tf.compat.v1.get_default_graph instead.
+    
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\backend\tensorflow_backend.py:517: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+    
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\backend\tensorflow_backend.py:4138: The name tf.random_uniform is deprecated. Please use tf.random.uniform instead.
+    
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\optimizers.py:790: The name tf.train.Optimizer is deprecated. Please use tf.compat.v1.train.Optimizer instead.
+    
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\backend\tensorflow_backend.py:3376: The name tf.log is deprecated. Please use tf.math.log instead.
+    
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\tensorflow\python\ops\nn_impl.py:180: add_dispatch_support.<locals>.wrapper (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+    Instructions for updating:
+    Use tf.where in 2.0, which has the same broadcast rule as np.where
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_1 (InputLayer)         (None, 10)                0         
+    _________________________________________________________________
+    dense_1 (Dense)              (None, 200)               2200      
+    _________________________________________________________________
+    activation_1 (Activation)    (None, 200)               0         
+    _________________________________________________________________
+    dense_2 (Dense)              (None, 450)               90450     
+    =================================================================
+    Total params: 92,650
+    Trainable params: 92,650
+    Non-trainable params: 0
+    _________________________________________________________________
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\backend\tensorflow_backend.py:133: The name tf.placeholder_with_default is deprecated. Please use tf.compat.v1.placeholder_with_default instead.
+    
+    WARNING:tensorflow:From C:\Users\User\Anaconda3\envs\Tensorflow-gpu\lib\site-packages\keras\backend\tensorflow_backend.py:3445: calling dropout (from tensorflow.python.ops.nn_ops) with keep_prob is deprecated and will be removed in a future version.
+    Instructions for updating:
+    Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep_prob`.
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_2 (InputLayer)         (None, 450)               0         
+    _________________________________________________________________
+    reshape_1 (Reshape)          (None, 450, 1)            0         
+    _________________________________________________________________
+    conv1d_1 (Conv1D)            (None, 446, 450)          2700      
+    _________________________________________________________________
+    dropout_1 (Dropout)          (None, 446, 450)          0         
+    _________________________________________________________________
+    flatten_1 (Flatten)          (None, 200700)            0         
+    _________________________________________________________________
+    dense_3 (Dense)              (None, 450)               90315450  
+    _________________________________________________________________
+    dense_4 (Dense)              (None, 2)                 902       
+    =================================================================
+    Total params: 90,319,052
+    Trainable params: 90,319,052
+    Non-trainable params: 0
+    _________________________________________________________________
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_3 (InputLayer)         (None, 10)                0         
+    _________________________________________________________________
+    model_1 (Model)              (None, 450)               92650     
+    _________________________________________________________________
+    model_2 (Model)              (None, 2)                 90319052  
+    =================================================================
+    Total params: 90,411,702
+    Trainable params: 92,650
+    Non-trainable params: 90,319,052
+    _________________________________________________________________
+    Epoch 1/1
+    6/6 [==============================] - 2s 342ms/step - loss: 0.6915
+    
+
+## 2.2 訓練GAN
+
+```python
+# training
+def train(GAN, G, D, epochs=300, n_samples= num, noise_dim=10, batch_size=32, verbose=False, v_freq=dim,):
+    d_loss = []
+    g_loss = []
+    e_range = range(epochs)
+    if verbose:
+        e_range = tqdm(e_range)
+    for epoch in e_range:
+        X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, True)
+        d_loss.append(D.train_on_batch(X, y))
+        xx,yy = X,y
+        
+        X, y = sample_noise(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, False)
+        g_loss.append(GAN.train_on_batch(X, y))
+        if verbose and (epoch + 1) % v_freq == 0:
+            print("Epoch #{}: Generative Loss: {}, Discriminative Loss: {}".format(epoch + 1, g_loss[-1], d_loss[-1]))
+    return d_loss, g_loss, xx, yy
+
+d_loss, g_loss ,xx,yy= train(GAN, G, D, verbose=True)
+```
+
+
+    HBox(children=(IntProgress(value=0, max=1), HTML(value='')))
+
+
+    
+    
+
+## 2.3 One Class SVM
+
+將標準化後的原始資料建立一個One Class SVM
+```python
+from sklearn import svm
+
+clf = svm.OneClassSVM(kernel='linear', gamma='auto').fit(xx[0:3])
+origin = pd.DataFrame(clf.score_samples(xx[0:3]))
+origin.describe()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>3.000000e+00</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>-8.052818e-14</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>1.144001e-06</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>-8.919722e-07</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>-6.449020e-07</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>-3.978317e-07</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>4.459860e-07</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>1.289804e-06</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+使用生成資料計算它們的score
+
+
+```python
+new = pd.DataFrame(clf.score_samples(xx[3:6]))
+new.describe()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>3.000000e+00</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>3.488132e-09</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>3.022134e-09</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>5.208247e-10</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>1.951068e-09</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>3.381310e-09</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>4.971785e-09</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>6.562260e-09</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+
+```python
+occ = pd.concat([pd.DataFrame(new[0] < origin[0].min()),pd.DataFrame(new[0] > origin[0].max())], axis=1)
+occ['ava'] = pd.DataFrame(occ.iloc[:,1:2] == occ.iloc[:,0:1])
+occ
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>0</th>
+      <th>ava</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+## 2.4 計算生成異常率
+
+```python
+err = sum(occ['ava'] == False)/len(occ['ava'])
+err
+```
+
+
+
+
+    0.0
+
+
+畫出生成的資料圖，第一張圖片為原始3張資料，下三張資料則為迭代後所生成的資料，基本肉眼難以分辨真偽。 
+
+```python
+pd.DataFrame(np.transpose(pd.DataFrame(ss.inverse_transform(xx[0:3])))).plot()
+pd.DataFrame(np.transpose(pd.DataFrame(ss.inverse_transform(xx[3:4])))).plot()
+pd.DataFrame(np.transpose(pd.DataFrame(ss.inverse_transform(xx[4:5])))).plot()
+pd.DataFrame(np.transpose(data_train1.iloc[6:9,:])).plot()
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x169afe20748>
+
+
+
+
+![](/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_13_1.png)
+
+
+
+![](/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_13_2.png)
+
+
+![](/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_13_3.png)
+
+
+
+![](/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_13_4.png)
+
+
+# 3. Balance and Validate
+
+## 3.1 Balance data
+生成符合標準的資料並合併舊有資料，以產生平衡的訓練資料。這裡我們生成45次*3的第5類樣本，並與舊的訓練資料做合併。  
+
+```python
+# balance train data
+re = 45
+new_data = pd.DataFrame(xx[3:6])
+new_data.columns = g_data.columns
+data = pd.concat([g_data,new_data], axis=0)
+for i in range(re):
+    d_loss, g_loss ,xx,yy= train(GAN, G, D, verbose=True)
+    new_data = pd.DataFrame((xx[3:6]))
+    data = pd.concat([data,new_data], axis=0)
+```
+
+
+```python
+# anti Scaler
+data_train1  = pd.DataFrame(ss.inverse_transform(data))
+data_train1 = data_train1.iloc[:,0:449]
+data_train1['y'] = 5
+data_train1.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>...</th>
+      <th>440</th>
+      <th>441</th>
+      <th>442</th>
+      <th>443</th>
+      <th>444</th>
+      <th>445</th>
+      <th>446</th>
+      <th>447</th>
+      <th>448</th>
+      <th>y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>72.800000</td>
+      <td>72.800000</td>
+      <td>72.800000</td>
+      <td>72.800000</td>
+      <td>73.200000</td>
+      <td>73.900000</td>
+      <td>75.000000</td>
+      <td>76.200000</td>
+      <td>77.700000</td>
+      <td>79.500000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>73.400000</td>
+      <td>73.400000</td>
+      <td>73.400000</td>
+      <td>73.400000</td>
+      <td>73.700000</td>
+      <td>74.100000</td>
+      <td>74.700000</td>
+      <td>75.100000</td>
+      <td>75.900000</td>
+      <td>77.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>75.400000</td>
+      <td>75.400000</td>
+      <td>75.400000</td>
+      <td>75.400000</td>
+      <td>74.000000</td>
+      <td>75.300000</td>
+      <td>73.600000</td>
+      <td>75.700000</td>
+      <td>76.400000</td>
+      <td>76.300000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>73.878938</td>
+      <td>73.787891</td>
+      <td>73.843798</td>
+      <td>73.806621</td>
+      <td>73.749946</td>
+      <td>74.432668</td>
+      <td>74.472183</td>
+      <td>75.593569</td>
+      <td>76.449077</td>
+      <td>77.687163</td>
+      <td>...</td>
+      <td>-0.029956</td>
+      <td>0.083634</td>
+      <td>-0.076972</td>
+      <td>0.121764</td>
+      <td>-0.076075</td>
+      <td>-0.037339</td>
+      <td>-0.177477</td>
+      <td>-0.117038</td>
+      <td>-0.112122</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>73.853302</td>
+      <td>73.748743</td>
+      <td>73.832179</td>
+      <td>73.800596</td>
+      <td>73.730168</td>
+      <td>74.408377</td>
+      <td>74.383461</td>
+      <td>75.584100</td>
+      <td>76.527027</td>
+      <td>77.752469</td>
+      <td>...</td>
+      <td>0.055286</td>
+      <td>0.058407</td>
+      <td>-0.067959</td>
+      <td>0.057132</td>
+      <td>-0.031436</td>
+      <td>0.031824</td>
+      <td>-0.173006</td>
+      <td>-0.083470</td>
+      <td>-0.011171</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows ?? 450 columns</p>
+</div>
+
+
+
+
+```python
+data_train1.columns = df.columns
+
+data_train1 = pd.concat([data_train1,train_fra], axis=0)
+data_train1
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>V1</th>
+      <th>V2</th>
+      <th>V3</th>
+      <th>V4</th>
+      <th>V5</th>
+      <th>V6</th>
+      <th>V7</th>
+      <th>V8</th>
+      <th>V9</th>
+      <th>V10</th>
+      <th>...</th>
+      <th>V441</th>
+      <th>V442</th>
+      <th>V443</th>
+      <th>V444</th>
+      <th>V445</th>
+      <th>V446</th>
+      <th>V447</th>
+      <th>V448</th>
+      <th>V449</th>
+      <th>y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>72.800000</td>
+      <td>72.800000</td>
+      <td>72.800000</td>
+      <td>72.800000</td>
+      <td>73.200000</td>
+      <td>73.900000</td>
+      <td>75.000000</td>
+      <td>76.200000</td>
+      <td>77.700000</td>
+      <td>79.500000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>73.400000</td>
+      <td>73.400000</td>
+      <td>73.400000</td>
+      <td>73.400000</td>
+      <td>73.700000</td>
+      <td>74.100000</td>
+      <td>74.700000</td>
+      <td>75.100000</td>
+      <td>75.900000</td>
+      <td>77.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>75.400000</td>
+      <td>75.400000</td>
+      <td>75.400000</td>
+      <td>75.400000</td>
+      <td>74.000000</td>
+      <td>75.300000</td>
+      <td>73.600000</td>
+      <td>75.700000</td>
+      <td>76.400000</td>
+      <td>76.300000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>73.878938</td>
+      <td>73.787891</td>
+      <td>73.843798</td>
+      <td>73.806621</td>
+      <td>73.749946</td>
+      <td>74.432668</td>
+      <td>74.472183</td>
+      <td>75.593569</td>
+      <td>76.449077</td>
+      <td>77.687163</td>
+      <td>...</td>
+      <td>-0.029956</td>
+      <td>0.083634</td>
+      <td>-0.076972</td>
+      <td>0.121764</td>
+      <td>-0.076075</td>
+      <td>-0.037339</td>
+      <td>-0.177477</td>
+      <td>-0.117038</td>
+      <td>-0.112122</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>73.853302</td>
+      <td>73.748743</td>
+      <td>73.832179</td>
+      <td>73.800596</td>
+      <td>73.730168</td>
+      <td>74.408377</td>
+      <td>74.383461</td>
+      <td>75.584100</td>
+      <td>76.527027</td>
+      <td>77.752469</td>
+      <td>...</td>
+      <td>0.055286</td>
+      <td>0.058407</td>
+      <td>-0.067959</td>
+      <td>0.057132</td>
+      <td>-0.031436</td>
+      <td>0.031824</td>
+      <td>-0.173006</td>
+      <td>-0.083470</td>
+      <td>-0.011171</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>74.033387</td>
+      <td>73.828074</td>
+      <td>73.997849</td>
+      <td>73.827376</td>
+      <td>73.745855</td>
+      <td>74.546560</td>
+      <td>74.443570</td>
+      <td>75.625994</td>
+      <td>76.468237</td>
+      <td>77.657693</td>
+      <td>...</td>
+      <td>-0.006352</td>
+      <td>0.039396</td>
+      <td>-0.196884</td>
+      <td>-0.117058</td>
+      <td>0.136729</td>
+      <td>0.017175</td>
+      <td>-0.251505</td>
+      <td>-0.132704</td>
+      <td>-0.105839</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>73.838466</td>
+      <td>73.865908</td>
+      <td>73.932729</td>
+      <td>73.813165</td>
+      <td>73.772236</td>
+      <td>74.401260</td>
+      <td>74.430234</td>
+      <td>75.597535</td>
+      <td>76.489400</td>
+      <td>77.574342</td>
+      <td>...</td>
+      <td>-0.034173</td>
+      <td>0.088334</td>
+      <td>-0.064008</td>
+      <td>0.193388</td>
+      <td>-0.090340</td>
+      <td>-0.023506</td>
+      <td>-0.206758</td>
+      <td>0.067784</td>
+      <td>0.069030</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>73.968721</td>
+      <td>73.812409</td>
+      <td>73.857895</td>
+      <td>73.717200</td>
+      <td>73.693565</td>
+      <td>74.388412</td>
+      <td>74.394390</td>
+      <td>75.600145</td>
+      <td>76.585469</td>
+      <td>77.710865</td>
+      <td>...</td>
+      <td>0.114202</td>
+      <td>-0.015879</td>
+      <td>-0.125624</td>
+      <td>0.023347</td>
+      <td>0.107551</td>
+      <td>0.048280</td>
+      <td>-0.147636</td>
+      <td>-0.103668</td>
+      <td>-0.138246</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>73.908992</td>
+      <td>73.781621</td>
+      <td>73.926368</td>
+      <td>73.766520</td>
+      <td>73.760308</td>
+      <td>74.445831</td>
+      <td>74.446917</td>
+      <td>75.606023</td>
+      <td>76.497831</td>
+      <td>77.589515</td>
+      <td>...</td>
+      <td>-0.041476</td>
+      <td>0.056263</td>
+      <td>-0.066880</td>
+      <td>0.172397</td>
+      <td>-0.033083</td>
+      <td>0.051897</td>
+      <td>-0.224216</td>
+      <td>-0.025964</td>
+      <td>-0.027097</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>73.833207</td>
+      <td>73.783907</td>
+      <td>73.892912</td>
+      <td>73.854442</td>
+      <td>73.729920</td>
+      <td>74.470831</td>
+      <td>74.365985</td>
+      <td>75.597333</td>
+      <td>76.568559</td>
+      <td>77.582685</td>
+      <td>...</td>
+      <td>-0.102751</td>
+      <td>-0.029668</td>
+      <td>-0.064789</td>
+      <td>0.049890</td>
+      <td>-0.004794</td>
+      <td>0.149417</td>
+      <td>-0.260081</td>
+      <td>-0.116775</td>
+      <td>0.111941</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>73.994793</td>
+      <td>73.965737</td>
+      <td>73.925414</td>
+      <td>73.808158</td>
+      <td>73.731936</td>
+      <td>74.435733</td>
+      <td>74.394966</td>
+      <td>75.592090</td>
+      <td>76.549678</td>
+      <td>77.688691</td>
+      <td>...</td>
+      <td>0.128079</td>
+      <td>0.010344</td>
+      <td>-0.145365</td>
+      <td>-0.082035</td>
+      <td>0.094352</td>
+      <td>-0.022679</td>
+      <td>-0.159005</td>
+      <td>-0.012578</td>
+      <td>-0.019866</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>73.921052</td>
+      <td>73.742424</td>
+      <td>73.917943</td>
+      <td>73.831390</td>
+      <td>73.779571</td>
+      <td>74.519111</td>
+      <td>74.425761</td>
+      <td>75.595641</td>
+      <td>76.445714</td>
+      <td>77.748555</td>
+      <td>...</td>
+      <td>0.074233</td>
+      <td>0.072568</td>
+      <td>-0.100333</td>
+      <td>0.028147</td>
+      <td>-0.028838</td>
+      <td>0.012675</td>
+      <td>-0.244881</td>
+      <td>-0.043691</td>
+      <td>-0.055285</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>73.945725</td>
+      <td>74.022831</td>
+      <td>73.799910</td>
+      <td>73.811668</td>
+      <td>73.704601</td>
+      <td>74.410911</td>
+      <td>74.419966</td>
+      <td>75.552058</td>
+      <td>76.590904</td>
+      <td>77.630128</td>
+      <td>...</td>
+      <td>0.134087</td>
+      <td>-0.084532</td>
+      <td>-0.049599</td>
+      <td>0.057422</td>
+      <td>-0.044590</td>
+      <td>0.045514</td>
+      <td>-0.119169</td>
+      <td>-0.014131</td>
+      <td>-0.030355</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>73.847404</td>
+      <td>73.851404</td>
+      <td>73.834936</td>
+      <td>73.837091</td>
+      <td>73.752652</td>
+      <td>74.407529</td>
+      <td>74.403361</td>
+      <td>75.593328</td>
+      <td>76.518159</td>
+      <td>77.734077</td>
+      <td>...</td>
+      <td>0.097375</td>
+      <td>0.055233</td>
+      <td>-0.066815</td>
+      <td>0.075503</td>
+      <td>-0.075143</td>
+      <td>-0.041789</td>
+      <td>-0.159652</td>
+      <td>0.005027</td>
+      <td>-0.005929</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>73.947727</td>
+      <td>73.815542</td>
+      <td>73.778450</td>
+      <td>73.817962</td>
+      <td>73.746453</td>
+      <td>74.486696</td>
+      <td>74.442733</td>
+      <td>75.579440</td>
+      <td>76.511518</td>
+      <td>77.779590</td>
+      <td>...</td>
+      <td>0.074677</td>
+      <td>0.022892</td>
+      <td>-0.038355</td>
+      <td>-0.022592</td>
+      <td>-0.042554</td>
+      <td>0.031449</td>
+      <td>-0.138216</td>
+      <td>-0.142730</td>
+      <td>-0.080931</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>73.925566</td>
+      <td>73.882039</td>
+      <td>73.803870</td>
+      <td>73.755239</td>
+      <td>73.737663</td>
+      <td>74.392020</td>
+      <td>74.484533</td>
+      <td>75.546649</td>
+      <td>76.469431</td>
+      <td>77.668451</td>
+      <td>...</td>
+      <td>0.056594</td>
+      <td>0.033979</td>
+      <td>-0.038682</td>
+      <td>0.179853</td>
+      <td>-0.102456</td>
+      <td>-0.024040</td>
+      <td>-0.120280</td>
+      <td>-0.075957</td>
+      <td>-0.132942</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>73.879871</td>
+      <td>73.832736</td>
+      <td>73.765226</td>
+      <td>73.842119</td>
+      <td>73.678049</td>
+      <td>74.442019</td>
+      <td>74.425773</td>
+      <td>75.551428</td>
+      <td>76.550654</td>
+      <td>77.653180</td>
+      <td>...</td>
+      <td>-0.033763</td>
+      <td>-0.001817</td>
+      <td>-0.019532</td>
+      <td>0.071347</td>
+      <td>-0.097678</td>
+      <td>0.130779</td>
+      <td>-0.145152</td>
+      <td>-0.150288</td>
+      <td>0.008012</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>73.919003</td>
+      <td>73.947922</td>
+      <td>73.914270</td>
+      <td>73.758956</td>
+      <td>73.694773</td>
+      <td>74.369162</td>
+      <td>74.410338</td>
+      <td>75.610844</td>
+      <td>76.628720</td>
+      <td>77.475921</td>
+      <td>...</td>
+      <td>-0.026706</td>
+      <td>-0.047545</td>
+      <td>-0.084694</td>
+      <td>0.167542</td>
+      <td>0.031129</td>
+      <td>0.087049</td>
+      <td>-0.178141</td>
+      <td>0.022013</td>
+      <td>0.016506</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>73.971674</td>
+      <td>73.763293</td>
+      <td>74.020434</td>
+      <td>73.724856</td>
+      <td>73.762588</td>
+      <td>74.452660</td>
+      <td>74.403516</td>
+      <td>75.655780</td>
+      <td>76.551840</td>
+      <td>77.599423</td>
+      <td>...</td>
+      <td>0.053126</td>
+      <td>0.033941</td>
+      <td>-0.144173</td>
+      <td>0.108152</td>
+      <td>0.113208</td>
+      <td>0.053927</td>
+      <td>-0.259089</td>
+      <td>0.046648</td>
+      <td>-0.059140</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>73.873470</td>
+      <td>73.814242</td>
+      <td>73.904509</td>
+      <td>73.856897</td>
+      <td>73.749162</td>
+      <td>74.465535</td>
+      <td>74.375105</td>
+      <td>75.619237</td>
+      <td>76.534312</td>
+      <td>77.680803</td>
+      <td>...</td>
+      <td>-0.042148</td>
+      <td>0.013516</td>
+      <td>-0.122904</td>
+      <td>-0.069041</td>
+      <td>0.063800</td>
+      <td>0.022003</td>
+      <td>-0.226773</td>
+      <td>-0.142803</td>
+      <td>0.034888</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>73.969568</td>
+      <td>73.822431</td>
+      <td>74.036429</td>
+      <td>73.735112</td>
+      <td>73.774298</td>
+      <td>74.440964</td>
+      <td>74.397474</td>
+      <td>75.639241</td>
+      <td>76.548028</td>
+      <td>77.586242</td>
+      <td>...</td>
+      <td>0.087750</td>
+      <td>0.043553</td>
+      <td>-0.130206</td>
+      <td>0.125775</td>
+      <td>0.083214</td>
+      <td>0.035035</td>
+      <td>-0.249830</td>
+      <td>0.123683</td>
+      <td>-0.000971</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>73.927520</td>
+      <td>74.056388</td>
+      <td>73.844742</td>
+      <td>73.861624</td>
+      <td>73.705676</td>
+      <td>74.421972</td>
+      <td>74.473550</td>
+      <td>75.569122</td>
+      <td>76.514698</td>
+      <td>77.557719</td>
+      <td>...</td>
+      <td>0.000086</td>
+      <td>-0.033800</td>
+      <td>-0.100008</td>
+      <td>0.070435</td>
+      <td>-0.060626</td>
+      <td>-0.034627</td>
+      <td>-0.141316</td>
+      <td>-0.062197</td>
+      <td>-0.067468</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>73.984382</td>
+      <td>73.757923</td>
+      <td>74.022921</td>
+      <td>73.717943</td>
+      <td>73.752087</td>
+      <td>74.444237</td>
+      <td>74.422848</td>
+      <td>75.641828</td>
+      <td>76.514564</td>
+      <td>77.630938</td>
+      <td>...</td>
+      <td>0.108226</td>
+      <td>0.069669</td>
+      <td>-0.160519</td>
+      <td>0.136394</td>
+      <td>0.088176</td>
+      <td>0.021186</td>
+      <td>-0.245913</td>
+      <td>0.076903</td>
+      <td>-0.121950</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>73.844933</td>
+      <td>73.775766</td>
+      <td>73.813972</td>
+      <td>73.798765</td>
+      <td>73.712739</td>
+      <td>74.374528</td>
+      <td>74.440031</td>
+      <td>75.579750</td>
+      <td>76.483491</td>
+      <td>77.740687</td>
+      <td>...</td>
+      <td>0.082464</td>
+      <td>0.126852</td>
+      <td>-0.060992</td>
+      <td>0.167039</td>
+      <td>-0.126541</td>
+      <td>-0.030765</td>
+      <td>-0.131213</td>
+      <td>-0.005674</td>
+      <td>-0.090124</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>73.916875</td>
+      <td>73.933067</td>
+      <td>73.947333</td>
+      <td>73.832679</td>
+      <td>73.732364</td>
+      <td>74.427197</td>
+      <td>74.387339</td>
+      <td>75.593724</td>
+      <td>76.540152</td>
+      <td>77.620734</td>
+      <td>...</td>
+      <td>0.075887</td>
+      <td>0.012468</td>
+      <td>-0.133915</td>
+      <td>0.024909</td>
+      <td>0.029358</td>
+      <td>0.004349</td>
+      <td>-0.205712</td>
+      <td>0.034473</td>
+      <td>0.027344</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>74.030343</td>
+      <td>74.039697</td>
+      <td>73.894679</td>
+      <td>73.742541</td>
+      <td>73.733480</td>
+      <td>74.385694</td>
+      <td>74.423811</td>
+      <td>75.570987</td>
+      <td>76.566650</td>
+      <td>77.622330</td>
+      <td>...</td>
+      <td>0.060378</td>
+      <td>-0.029324</td>
+      <td>-0.112027</td>
+      <td>-0.050489</td>
+      <td>0.119597</td>
+      <td>-0.032428</td>
+      <td>-0.108609</td>
+      <td>-0.083925</td>
+      <td>-0.028786</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>73.956202</td>
+      <td>73.927742</td>
+      <td>73.750810</td>
+      <td>73.843393</td>
+      <td>73.650193</td>
+      <td>74.452178</td>
+      <td>74.444872</td>
+      <td>75.543567</td>
+      <td>76.546764</td>
+      <td>77.663028</td>
+      <td>...</td>
+      <td>-0.030830</td>
+      <td>-0.075546</td>
+      <td>-0.087859</td>
+      <td>-0.067736</td>
+      <td>0.008812</td>
+      <td>0.088911</td>
+      <td>-0.113084</td>
+      <td>-0.282765</td>
+      <td>-0.099524</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>73.918950</td>
+      <td>73.873934</td>
+      <td>73.866887</td>
+      <td>73.870729</td>
+      <td>73.751639</td>
+      <td>74.505210</td>
+      <td>74.395765</td>
+      <td>75.570649</td>
+      <td>76.505601</td>
+      <td>77.706046</td>
+      <td>...</td>
+      <td>0.022673</td>
+      <td>-0.032798</td>
+      <td>-0.098683</td>
+      <td>-0.094350</td>
+      <td>0.024492</td>
+      <td>0.039677</td>
+      <td>-0.214953</td>
+      <td>-0.160884</td>
+      <td>0.010826</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>73.831740</td>
+      <td>73.790997</td>
+      <td>73.859057</td>
+      <td>73.796502</td>
+      <td>73.778171</td>
+      <td>74.420973</td>
+      <td>74.414533</td>
+      <td>75.566606</td>
+      <td>76.500374</td>
+      <td>77.641863</td>
+      <td>...</td>
+      <td>-0.042372</td>
+      <td>0.063417</td>
+      <td>0.002498</td>
+      <td>0.168990</td>
+      <td>-0.114137</td>
+      <td>0.049824</td>
+      <td>-0.190480</td>
+      <td>-0.027223</td>
+      <td>0.099529</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>73.922208</td>
+      <td>73.965984</td>
+      <td>73.826790</td>
+      <td>73.806507</td>
+      <td>73.725047</td>
+      <td>74.390745</td>
+      <td>74.412977</td>
+      <td>75.549867</td>
+      <td>76.546288</td>
+      <td>77.660408</td>
+      <td>...</td>
+      <td>0.050182</td>
+      <td>-0.000932</td>
+      <td>-0.056224</td>
+      <td>0.025629</td>
+      <td>-0.025041</td>
+      <td>0.003825</td>
+      <td>-0.117128</td>
+      <td>-0.071027</td>
+      <td>0.022686</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1713</th>
+      <td>76.300000</td>
+      <td>76.300000</td>
+      <td>76.300000</td>
+      <td>77.400000</td>
+      <td>78.100000</td>
+      <td>78.800000</td>
+      <td>79.400000</td>
+      <td>79.900000</td>
+      <td>80.500000</td>
+      <td>81.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1485</th>
+      <td>85.600000</td>
+      <td>85.600000</td>
+      <td>85.600000</td>
+      <td>85.600000</td>
+      <td>85.900000</td>
+      <td>86.100000</td>
+      <td>86.200000</td>
+      <td>86.300000</td>
+      <td>86.600000</td>
+      <td>86.800000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1627</th>
+      <td>71.400000</td>
+      <td>71.400000</td>
+      <td>71.400000</td>
+      <td>72.000000</td>
+      <td>72.300000</td>
+      <td>72.600000</td>
+      <td>72.700000</td>
+      <td>73.200000</td>
+      <td>73.400000</td>
+      <td>73.400000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1716</th>
+      <td>71.800000</td>
+      <td>71.800000</td>
+      <td>71.700000</td>
+      <td>72.100000</td>
+      <td>72.200000</td>
+      <td>72.600000</td>
+      <td>72.600000</td>
+      <td>72.700000</td>
+      <td>72.800000</td>
+      <td>73.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1608</th>
+      <td>71.500000</td>
+      <td>71.500000</td>
+      <td>71.500000</td>
+      <td>71.800000</td>
+      <td>72.200000</td>
+      <td>72.400000</td>
+      <td>72.800000</td>
+      <td>73.000000</td>
+      <td>73.200000</td>
+      <td>73.400000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1689</th>
+      <td>71.000000</td>
+      <td>71.000000</td>
+      <td>71.000000</td>
+      <td>71.800000</td>
+      <td>72.100000</td>
+      <td>72.800000</td>
+      <td>73.000000</td>
+      <td>73.600000</td>
+      <td>74.000000</td>
+      <td>74.300000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1714</th>
+      <td>73.200000</td>
+      <td>73.200000</td>
+      <td>73.100000</td>
+      <td>74.000000</td>
+      <td>74.800000</td>
+      <td>75.200000</td>
+      <td>75.800000</td>
+      <td>76.300000</td>
+      <td>76.900000</td>
+      <td>77.300000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1589</th>
+      <td>76.900000</td>
+      <td>76.900000</td>
+      <td>76.900000</td>
+      <td>77.100000</td>
+      <td>77.300000</td>
+      <td>77.400000</td>
+      <td>77.800000</td>
+      <td>77.900000</td>
+      <td>77.900000</td>
+      <td>78.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1653</th>
+      <td>79.000000</td>
+      <td>79.000000</td>
+      <td>79.000000</td>
+      <td>79.200000</td>
+      <td>79.300000</td>
+      <td>79.700000</td>
+      <td>79.700000</td>
+      <td>79.700000</td>
+      <td>79.900000</td>
+      <td>80.100000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1732</th>
+      <td>71.700000</td>
+      <td>71.700000</td>
+      <td>71.700000</td>
+      <td>72.000000</td>
+      <td>72.200000</td>
+      <td>72.400000</td>
+      <td>72.500000</td>
+      <td>72.700000</td>
+      <td>72.800000</td>
+      <td>72.900000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1484</th>
+      <td>84.600000</td>
+      <td>84.600000</td>
+      <td>84.600000</td>
+      <td>84.700000</td>
+      <td>84.600000</td>
+      <td>85.400000</td>
+      <td>85.400000</td>
+      <td>85.600000</td>
+      <td>85.800000</td>
+      <td>86.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1737</th>
+      <td>76.800000</td>
+      <td>76.800000</td>
+      <td>76.800000</td>
+      <td>78.300000</td>
+      <td>79.000000</td>
+      <td>79.600000</td>
+      <td>80.100000</td>
+      <td>80.500000</td>
+      <td>80.900000</td>
+      <td>81.300000</td>
+      <td>...</td>
+      <td>116.800000</td>
+      <td>116.000000</td>
+      <td>115.200000</td>
+      <td>114.500000</td>
+      <td>114.100000</td>
+      <td>113.800000</td>
+      <td>113.700000</td>
+      <td>113.600000</td>
+      <td>113.500000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1659</th>
+      <td>74.200000</td>
+      <td>74.200000</td>
+      <td>74.200000</td>
+      <td>73.900000</td>
+      <td>74.400000</td>
+      <td>74.500000</td>
+      <td>74.600000</td>
+      <td>74.600000</td>
+      <td>74.600000</td>
+      <td>74.700000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1534</th>
+      <td>75.500000</td>
+      <td>75.500000</td>
+      <td>75.500000</td>
+      <td>76.100000</td>
+      <td>76.000000</td>
+      <td>76.400000</td>
+      <td>76.400000</td>
+      <td>76.600000</td>
+      <td>76.800000</td>
+      <td>77.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1479</th>
+      <td>87.600000</td>
+      <td>87.600000</td>
+      <td>87.600000</td>
+      <td>88.100000</td>
+      <td>88.300000</td>
+      <td>88.700000</td>
+      <td>88.800000</td>
+      <td>88.200000</td>
+      <td>89.400000</td>
+      <td>89.500000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1567</th>
+      <td>68.600000</td>
+      <td>68.600000</td>
+      <td>68.600000</td>
+      <td>68.700000</td>
+      <td>68.800000</td>
+      <td>69.200000</td>
+      <td>69.600000</td>
+      <td>69.600000</td>
+      <td>70.000000</td>
+      <td>70.200000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1536</th>
+      <td>76.700000</td>
+      <td>76.700000</td>
+      <td>76.500000</td>
+      <td>77.000000</td>
+      <td>77.400000</td>
+      <td>77.700000</td>
+      <td>77.900000</td>
+      <td>78.100000</td>
+      <td>78.400000</td>
+      <td>78.700000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1673</th>
+      <td>69.700000</td>
+      <td>69.700000</td>
+      <td>69.700000</td>
+      <td>70.000000</td>
+      <td>70.200000</td>
+      <td>70.500000</td>
+      <td>70.700000</td>
+      <td>70.800000</td>
+      <td>71.100000</td>
+      <td>71.300000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1503</th>
+      <td>78.200000</td>
+      <td>78.200000</td>
+      <td>78.200000</td>
+      <td>79.100000</td>
+      <td>79.500000</td>
+      <td>80.000000</td>
+      <td>80.200000</td>
+      <td>80.600000</td>
+      <td>80.700000</td>
+      <td>81.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1719</th>
+      <td>73.000000</td>
+      <td>73.000000</td>
+      <td>72.700000</td>
+      <td>73.100000</td>
+      <td>73.500000</td>
+      <td>73.800000</td>
+      <td>73.900000</td>
+      <td>74.100000</td>
+      <td>74.700000</td>
+      <td>74.900000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1489</th>
+      <td>78.400000</td>
+      <td>78.400000</td>
+      <td>78.400000</td>
+      <td>78.300000</td>
+      <td>78.500000</td>
+      <td>79.200000</td>
+      <td>79.300000</td>
+      <td>79.500000</td>
+      <td>79.800000</td>
+      <td>80.000000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1720</th>
+      <td>73.600000</td>
+      <td>73.600000</td>
+      <td>73.600000</td>
+      <td>73.900000</td>
+      <td>74.300000</td>
+      <td>74.500000</td>
+      <td>74.900000</td>
+      <td>75.100000</td>
+      <td>75.500000</td>
+      <td>75.700000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1590</th>
+      <td>76.800000</td>
+      <td>76.800000</td>
+      <td>76.800000</td>
+      <td>77.300000</td>
+      <td>77.700000</td>
+      <td>78.000000</td>
+      <td>78.300000</td>
+      <td>78.600000</td>
+      <td>78.900000</td>
+      <td>79.300000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1575</th>
+      <td>71.800000</td>
+      <td>71.800000</td>
+      <td>71.800000</td>
+      <td>72.000000</td>
+      <td>71.900000</td>
+      <td>72.100000</td>
+      <td>72.000000</td>
+      <td>72.100000</td>
+      <td>72.300000</td>
+      <td>72.400000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1600</th>
+      <td>76.400000</td>
+      <td>76.400000</td>
+      <td>76.400000</td>
+      <td>76.700000</td>
+      <td>77.000000</td>
+      <td>77.200000</td>
+      <td>77.400000</td>
+      <td>77.600000</td>
+      <td>77.900000</td>
+      <td>77.900000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1738</th>
+      <td>76.000000</td>
+      <td>76.000000</td>
+      <td>76.000000</td>
+      <td>76.800000</td>
+      <td>77.400000</td>
+      <td>77.600000</td>
+      <td>77.900000</td>
+      <td>78.100000</td>
+      <td>78.400000</td>
+      <td>78.700000</td>
+      <td>...</td>
+      <td>120.500000</td>
+      <td>120.000000</td>
+      <td>119.100000</td>
+      <td>118.400000</td>
+      <td>118.000000</td>
+      <td>117.500000</td>
+      <td>117.300000</td>
+      <td>116.800000</td>
+      <td>116.900000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1598</th>
+      <td>75.600000</td>
+      <td>75.600000</td>
+      <td>75.600000</td>
+      <td>75.900000</td>
+      <td>76.400000</td>
+      <td>76.600000</td>
+      <td>77.000000</td>
+      <td>77.200000</td>
+      <td>77.500000</td>
+      <td>77.800000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1646</th>
+      <td>79.300000</td>
+      <td>79.300000</td>
+      <td>79.300000</td>
+      <td>79.500000</td>
+      <td>79.600000</td>
+      <td>79.900000</td>
+      <td>80.200000</td>
+      <td>80.300000</td>
+      <td>80.500000</td>
+      <td>80.600000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1606</th>
+      <td>71.100000</td>
+      <td>71.100000</td>
+      <td>71.100000</td>
+      <td>71.200000</td>
+      <td>71.400000</td>
+      <td>71.700000</td>
+      <td>71.900000</td>
+      <td>72.000000</td>
+      <td>72.200000</td>
+      <td>72.400000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>1562</th>
+      <td>70.300000</td>
+      <td>70.300000</td>
+      <td>70.300000</td>
+      <td>70.800000</td>
+      <td>71.000000</td>
+      <td>71.400000</td>
+      <td>71.500000</td>
+      <td>71.600000</td>
+      <td>71.700000</td>
+      <td>71.900000</td>
+      <td>...</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>8</td>
+    </tr>
+  </tbody>
+</table>
+<p>277 rows * 450 columns</p>
+</div>
+
+
+
+## 3.2　Validate
+如同第一部分的方式，我們一樣用隨機森林來做為分類分法，但這次訓練資料我們使用以GAN平衡後的資料當作測試集，其餘步驟街與第一部分一致。
+
+```python
+train_X = data_train1.iloc[:,0:449]
+test_X = data_test.iloc[:,0:449]
+train_y = data_train1["y"]
+test_y = data_test["y"]
+
+forest = ensemble.RandomForestClassifier(n_estimators = 100)
+forest_fit = forest.fit(train_X, train_y)
+
+test_y_predicted = forest.predict(test_X)
+accuracy_rf = metrics.accuracy_score(test_y, test_y_predicted)
+print(accuracy_rf)
+
+test_auc = metrics.roc_auc_score(test_y, test_y_predicted)
+print (test_auc)
+```
+
+    1.0
+    1.0
+    
+結果上來看，以GAN平衡的結果較好，但仍存在一些問題。  
+第一：隨機森林參數並無調整，因此在這個差距上來看並不能說平衡後的模型較佳；  
+第二：在未平衡前資料分類就可達到相當水準，因此可見此份資料的分類並不需要平衡資料來達成。  
+
+但可以確定的是，使用這個模式下，我們可以生成不錯的偽資料，至少在欺騙人眼的作用上是辦的到的。但也發現生成資料的另個問題為，幾乎無較為偏離的資料，意旨我們所產生的資料變異程度遠遠低於原先資料的變異程度，因此使用GAN的資料平衡後會降低該類別資料的變異程度，這可能會導致模型的泛化能力降低。  

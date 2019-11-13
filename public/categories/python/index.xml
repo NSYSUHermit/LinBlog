@@ -6,10 +6,19 @@
     <description>Recent content in Python on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 09 Nov 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 14 Nov 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/python/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Practice in GAN with One Class Learning</title>
+      <link>/post/2019/11/14/practice-in-gan-with-one-class-learning/</link>
+      <pubDate>Thu, 14 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/11/14/practice-in-gan-with-one-class-learning/</guid>
+      <description>這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5</description>
+    </item>
     
     <item>
       <title>GAN with One Class Learning</title>
