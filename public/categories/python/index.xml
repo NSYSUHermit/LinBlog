@@ -6,10 +6,19 @@
     <description>Recent content in Python on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 14 Nov 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 19 Nov 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/python/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>GAN Sampling Versus Other Sampling Method On Credit Card Fraud Detection Data</title>
+      <link>/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/</link>
+      <pubDate>Tue, 19 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/</guid>
+      <description>這次，我將使用一個來自kaggle的不平衡數據資料(link:https://www.kaggle.com/mlg-ulb/creditca</description>
+    </item>
     
     <item>
       <title>Practice in GAN with One Class Learning</title>
