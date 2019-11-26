@@ -96,9 +96,9 @@ TNM分期II，TNM分期III，與對照組的訓練集，以訓練WGAN，然後�
 在HCC病例的合成樣本生成後，這些樣本用於訓練分類器DNN。DNN分類器是一個多層感知器（MLP），然後用HCC測試集驗證。之後在一系列的實驗DNN的超參數進行測定。分類器的輸入是42，這是等於HCC樣本中的特徵數量。該分類有三個隱藏層，每片含32ReLUs;該SOFTMAX函數被用作輸出層和交叉熵被用作損失函數。環境為TensorFlow1.1和GPU用於訓練的DNN分類，迭代次數為3000。  
 
 為了評估這些合成訓練樣本大小的影響DNN的分類器的性能，我們使用了不同數量合成樣品訓練分類器DNN，然後用實際的樣品測試的準確性，F值的三個指標，以及G-mean。我們逐步增加產出的樣本於DNN模型當中，而精確度，F值，和G-mean的變化示於圖4中：  
-![](/post/2019-11-25-gan-based-small-sample-augmentation_files/4.jpg)
+![](/post/2019-11-25-gan-based-small-sample-augmentation_files/4.jpg)  
 這裡比較有意思的地方在於，他分類錯誤所造成的成本我們並未考慮到，以4000當作一個例子，以下是其Confusion Matrix：   
-![](/post/2019-11-25-gan-based-small-sample-augmentation_files/table0.jpg)
+![](/post/2019-11-25-gan-based-small-sample-augmentation_files/table0.jpg)  
 若是要考慮誤診(type1&2 error)的機會成本不同，則分類器應該要加重權重，或是數據的平衡上要有所改變。  
 
 接著我們要比較gan與smote的功效，且為了要測試dnn分類方法的有效性，將使用幾種成見的分類方法來比較。隨機森林（RF）是一個集成學習方法以更高的精度和比其他機器學習模型更好的泛化能力，而樸素貝葉斯（NB）分類器有一個簡單的原則和穩定的分類性能。這兩種算法是選擇作為經典的統計機器學習分類的代表。因此將使用smote、gan與rf、nb、dnn來進行交叉比較。結果如下表：  
