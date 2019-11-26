@@ -6,10 +6,19 @@
     <description>Recent content on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 19 Nov 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 25 Nov 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>GAN Based Small Sample Augmentation</title>
+      <link>/post/2019/11/25/gan-based-small-sample-augmentation/</link>
+      <pubDate>Mon, 25 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/11/25/gan-based-small-sample-augmentation/</guid>
+      <description>I read some paper about GAN for generate synthetic sample data. Then I find a paper it’s framework works similar with my one-class-GAN. So I want to record the paper’s marrows this time. There is the paper resource link: https://www.sciencedirect.com/science/article/abs/pii/S0925231219309257?dgcid=rss_sd_all In this paper, we propose an approach based on a generative adversarial network (GAN) combined with a deep neural network (DNN).</description>
+    </item>
     
     <item>
       <title>GAN Sampling Versus Other Sampling Method On Credit Card Fraud Detection Data</title>
