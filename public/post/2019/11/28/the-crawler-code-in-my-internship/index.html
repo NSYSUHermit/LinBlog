@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>The Crawler Code in my internship. | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-11-28</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-11-28-the-crawler-code-in-my-internship.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/python">Python</a>
+  
+  </div>
+
+  <h1><span class="title">The Crawler Code in my internship.</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/crawler">crawler</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>In this summer vacation, I was become a intern engineer in a internet service company. In fact, our company is an eshops price comparison platform. Here is the website link:<a href="https://biggo.com.tw/" class="uri">https://biggo.com.tw/</a> . They crawler the products information in different eshops like Amazon, PChome etc. Build a SQL system store the data. Then run a browser engine website to present the price comparision results. Its service area including Taiwan, Tailand, Singapore. Now they want to push their business into Japan. So the job most I do is Japan eshops website crawler.
+<img src="/post/2019-11-28-the-crawler-code-in-my-internship_files/1.jpg" /></p>
+<p>So I want to write an article to record the crawler code. The company always store the data by a type called “pickle”. And we using the python to do the crawler jobs. The most part of job is running under the crawler, but we let the request job in another .py file. So we need to build two files into the same path. Then running the cralwer.py to execute.</p>
+<div id="the-crawler" class="section level1">
+<h1>1.The Crawler</h1>
+<div id="import-modules" class="section level2">
+<h2>Import modules</h2>
+<pre class="python"><code>import urllib.parse
+import os
+import re
+import argparse
+import logging
+import time
+import pickle
+from bs4 import BeautifulSoup
+from requesturl import requesturl</code></pre>
+<p>To put it briefly, our job is finding the category pages. Using the category branch to craw merchandise information respectively. Then write a auto jump page code to collect all of products under the branch.</p>
+<pre class="python"><code>logger = logging.getLogger(&#39;avac&#39;)
+
+class Crawler:
+    site = &#39;jp_ec_avac&#39;
+    
+    def collect_cat(self):
+        baseurl = &#39;https://www.avac.co.jp/&#39;
+        doc = self.uc.reachurl(baseurl)
+        sp = BeautifulSoup(doc, &#39;lxml&#39;)
+        cats = set()
+        for a in sp.select(&#39;td.side_text ul.level1 li.level1&#39;)[0:48]:
+            a1 = a.select_one(&#39;a&#39;)
+            url = &#39;https://www.avac.co.jp&#39;+a1.get(&#39;href&#39;)
+            if url  in url:
+                cats.add(url)
+        return list(cats)   
+
+    def geturl(self,url):
+        items = []
+        nextpage = &quot;&quot;
+        doc = self.uc.reachurl(url)
+        sp = BeautifulSoup(doc,&#39;lxml&#39;)
+        link = sp.select(&#39;span.navi a&#39;)
+        if len(link) &gt; 0:
+            a = link[len(link)-1]
+            if &#39;次へ&#39; in a.get_text():
+                href = a.get(&#39;href&#39;)
+                nextpage =&#39;https://www.avac.co.jp/products/list.php&#39;+href
+            else:
+                nextpage = &quot;&quot;
+
+        bigblock = sp.select(&#39;div.list_area.clearfix&#39;)
+        if bigblock:
+            for block in bigblock:               
+                img = block.select_one(&#39;div.listphoto a img&#39;)
+                price_tag = block.select_one(&#39;span.price strong&#39;)
+                name_block = block.select_one(&#39;h4.text-right a&#39;)                
+                if img:
+                    title = img.get(&quot;alt&quot;)
+                    image = &quot;https://www.avac.co.jp&quot;+img.get(&#39;src&#39;)
+                else:
+                    logger.warning(&#39;Wrong cant find title or url: %s&#39;, img)
+                    continue
+                if price_tag:
+                    price = price_tag.text.strip()
+                else:
+                    logger.warning(&#39;Wrong cant find img: %s&#39;, price_tag)
+                    continue
+                if name_block:
+                    url = &quot;https://www.avac.co.jp&quot;+name_block.get(&#39;href&#39;)
+                    iid = url.split(&quot;=&quot;)[1]
+                else:
+                    logger.warning(&#39;Wrong cant find price: %s&#39;, name_block)
+                    continue
+
+                if img and price_tag and title and url:
+                    item = {}
+                    item[&#39;iid&#39;] = iid
+                    item[&#39;title&#39;] = title
+                    item[&#39;url&#39;] = url
+                    item[&#39;image&#39;] = image
+                    item[&#39;provide&#39;] = &#39;avac&#39;
+                    item[&#39;providename&#39;] = [&#39;avac&#39;]
+                    item[&#39;price&#39;] = self.getint(price)
+                    if len(item[&#39;iid&#39;]) &gt; 1 and len(item[&#39;title&#39;]) &gt; 2 and item[&#39;image&#39;].startswith(&#39;http&#39;) and item[&#39;price&#39;] &gt; 0 and len(item[&#39;url&#39;]) &gt; 10:
+                        items.append(item)
+                    else:
+                        logger.warning(&#39;Wrong item: %s&#39;, url)
+                        print(item)
+                        continue
+                else:
+                    logger.warning(&#39;Wrong info: %s&#39;, url)
+                    continue
+            return items, nextpage
+        else:
+            logger.warning(&#39;Wrong cant not find items&#39;)
+            return items, nextpage
+    
+    def __init__(self, pilimit=1000):
+        self.pilimit = pilimit
+        self.keyset = set()
+        self.item_buf = []
+        self.uc = requesturl()
+
+    def getint(self,strtext):
+        intstr = re.sub(&quot;[^0-9.]&quot;, &quot;&quot;, strtext)
+        if len(intstr) &gt; 0:
+            return int(float(intstr))
+        else:
+            return 0
+
+    def prepare_dump(self):
+        home = &#39;.&#39;
+        dirname = os.path.join(home, &#39;var&#39;, &#39;item_buf&#39;)
+        #dirname = os.path.join(os.environ[&#39;HOMEPATH&#39;], &#39;var&#39;, &#39;item_buf&#39;)
+        os.makedirs(dirname, exist_ok=True)
+        ts = time.time()
+        filename = os.path.join(dirname, &#39;{}.{}.pickle&#39;.format(self.site, ts))
+        return filename
+
+    def syncbuf(self):
+        if len(self.item_buf) &gt; 0:
+            output_file = self.prepare_dump()
+            to_dump = {
+                &#39;site&#39;: self.site,
+                &#39;buffer&#39;: self.item_buf
+            }
+            with open(output_file, &#39;wb&#39;) as fd:
+                pickle.dump(to_dump, fd)
+            self.item_buf = []
+
+    def spamcheck(self, item):
+        chk = False
+        if item[&#39;iid&#39;] not in self.keyset:
+            chk = True
+            self.keyset.add(item[&#39;iid&#39;])
+        return chk
+
+
+    def loopurl(self,it):
+        searched = 0
+        inserted = 0
+        searchurl = it
+        pi = 1
+        while pi &lt; self.pilimit:
+            newitem = []
+            newitem, searchurl = self.geturl(searchurl)
+            if len(newitem) &gt; 0:
+                lop = 0
+                for item in newitem:
+                    if self.spamcheck(item):
+                        lop += 1
+                        self.item_buf.append(item)
+                if lop == 0:
+                    break
+                inserted += lop
+                searched += len(newitem)
+                if len(self.item_buf) &gt; 1000:
+                    self.syncbuf()
+            else:
+                break
+            if len(searchurl) &lt; 1:
+                break
+            pi += 1
+        logger.info(&#39;%s pi: %s, searched: %s, inserted: %s&#39;, it, pi, searched, inserted)
+        self.state(inserted,a)
+        return True
+    
+    def state(self,inserted,a):
+        cats = self.collect_cat()        
+        a += [inserted]
+        finish = len(a)/len(cats)*100
+        su = sum(a)
+        logger.info(&#39;目前商品總數: %s, 類別完成率: %s&#39;,su,finish) 
+
+    def start(self):
+        cats = self.collect_cat()
+        logger.info(&#39;get %s cats&#39;, len(cats))
+        for i in cats:
+            self.loopurl(i)
+        self.syncbuf()
+
+
+if __name__ == &#39;__main__&#39;:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(&quot;-d&quot;,&quot;--debug&quot;, help=&quot;getall ruten result&quot;,action=&quot;store_true&quot;)
+
+    args = parser.parse_args()
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    pilimit = 10000
+    a = list()
+    crawler = Crawler(pilimit)
+    crawler.start()
+</code></pre>
+</div>
+</div>
+<div id="request-part" class="section level1">
+<h1>2.Request part</h1>
+<pre class="python"><code>import time
+import requests
+requests.packages.urllib3.disable_warnings()
+import os
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+class requesturl:
+    def __init__(self):
+        self.bot = requests.session()
+
+    def reachurl(self, url, referer=&#39;https://www.avac.co.jp/&#39;, rjson=False):
+        urlcontent = &quot;&quot;
+        for x in range(5):
+            headers = {}
+            headers[&#39;X-Requested-With&#39;] = &#39;XMLHttpRequest&#39;
+            api_url = url
+            try:
+                r = self.bot.get(api_url, headers=headers, timeout=180, verify=False, allow_redirects=False)
+                if r.ok:
+                    if rjson:
+                        urlcontent = r.json()
+                        break
+                    else:
+                        urlcontent = r.content
+                        if len(urlcontent) &gt; 4000:
+                            break
+            except Exception as inst:
+                logger.debug(&quot;Retry: %s %s %s&quot;, inst, x ,url)
+                time.sleep(10)
+            logger.debug(&#39;%s\t %s %s&#39;, url, os.getpid(), len(urlcontent))
+        else:
+            logger.debug(&#39;bot checkurl false: %s&#39;,url)
+        return urlcontent</code></pre>
+</div>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2019/11/25/gan-based-small-sample-augmentation/">GAN Based Small Sample Augmentation &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+<script src="//yihui.name/js/math-code.js"></script>
+<script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+

@@ -6,10 +6,19 @@
     <description>Recent content in Python on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 19 Nov 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 28 Nov 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/python/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>The Crawler Code in my internship.</title>
+      <link>/post/2019/11/28/the-crawler-code-in-my-internship/</link>
+      <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/11/28/the-crawler-code-in-my-internship/</guid>
+      <description>In this summer vacation, I was become a intern engineer in a internet service company. In fact, our company is an eshops price comparison platform. Here is the website link:https://biggo.com.tw/ . They crawler the products information in different eshops like Amazon, PChome etc. Build a SQL system store the data. Then run a browser engine website to present the price comparision results. Its service area including Taiwan, Tailand, Singapore. Now</description>
+    </item>
     
     <item>
       <title>GAN Sampling Versus Other Sampling Method On Credit Card Fraud Detection Data</title>

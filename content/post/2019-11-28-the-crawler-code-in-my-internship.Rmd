@@ -1,0 +1,258 @@
+---
+title: The Crawler Code in my internship.
+author: Hermit
+date: '2019-11-28'
+slug: the-crawler-code-in-my-internship
+categories:
+  - Python
+tags:
+  - crawler
+---
+
+In this summer vacation, I was become a intern engineer in a internet service company. In fact, our company is an eshops price comparison platform. Here is the website link:https://biggo.com.tw/ . They crawler the products information in different eshops like Amazon, PChome etc. Build a SQL system store the data. Then run a browser engine website to present the price comparision results. Its service area including Taiwan, Tailand, Singapore. Now they want to push their business into Japan. So the job most I do is Japan eshops website crawler.
+![](/post/2019-11-28-the-crawler-code-in-my-internship_files/1.jpg)
+
+So I want to write an article to record the crawler code. The company always store the data by a type called "pickle". And we using the python to do the crawler jobs. The most part of job is running under the crawler, but we let the request job in another .py file. So we need to build two files into the same path. Then running the cralwer.py to execute.
+
+# 1.The Crawler
+## Import modules
+
+
+```python
+import urllib.parse
+import os
+import re
+import argparse
+import logging
+import time
+import pickle
+from bs4 import BeautifulSoup
+from requesturl import requesturl
+```
+
+To put it briefly, our job is finding the category pages. Using the category branch to craw merchandise information respectively. Then write a auto jump page code to collect all of products under the branch.
+
+
+```python
+logger = logging.getLogger('avac')
+
+class Crawler:
+    site = 'jp_ec_avac'
+    
+    def collect_cat(self):
+        baseurl = 'https://www.avac.co.jp/'
+        doc = self.uc.reachurl(baseurl)
+        sp = BeautifulSoup(doc, 'lxml')
+        cats = set()
+        for a in sp.select('td.side_text ul.level1 li.level1')[0:48]:
+            a1 = a.select_one('a')
+            url = 'https://www.avac.co.jp'+a1.get('href')
+            if url  in url:
+                cats.add(url)
+        return list(cats)   
+
+    def geturl(self,url):
+        items = []
+        nextpage = ""
+        doc = self.uc.reachurl(url)
+        sp = BeautifulSoup(doc,'lxml')
+        link = sp.select('span.navi a')
+        if len(link) > 0:
+            a = link[len(link)-1]
+            if '次へ' in a.get_text():
+                href = a.get('href')
+                nextpage ='https://www.avac.co.jp/products/list.php'+href
+            else:
+                nextpage = ""
+
+        bigblock = sp.select('div.list_area.clearfix')
+        if bigblock:
+            for block in bigblock:               
+                img = block.select_one('div.listphoto a img')
+                price_tag = block.select_one('span.price strong')
+                name_block = block.select_one('h4.text-right a')                
+                if img:
+                    title = img.get("alt")
+                    image = "https://www.avac.co.jp"+img.get('src')
+                else:
+                    logger.warning('Wrong cant find title or url: %s', img)
+                    continue
+                if price_tag:
+                    price = price_tag.text.strip()
+                else:
+                    logger.warning('Wrong cant find img: %s', price_tag)
+                    continue
+                if name_block:
+                    url = "https://www.avac.co.jp"+name_block.get('href')
+                    iid = url.split("=")[1]
+                else:
+                    logger.warning('Wrong cant find price: %s', name_block)
+                    continue
+
+                if img and price_tag and title and url:
+                    item = {}
+                    item['iid'] = iid
+                    item['title'] = title
+                    item['url'] = url
+                    item['image'] = image
+                    item['provide'] = 'avac'
+                    item['providename'] = ['avac']
+                    item['price'] = self.getint(price)
+                    if len(item['iid']) > 1 and len(item['title']) > 2 and item['image'].startswith('http') and item['price'] > 0 and len(item['url']) > 10:
+                        items.append(item)
+                    else:
+                        logger.warning('Wrong item: %s', url)
+                        print(item)
+                        continue
+                else:
+                    logger.warning('Wrong info: %s', url)
+                    continue
+            return items, nextpage
+        else:
+            logger.warning('Wrong cant not find items')
+            return items, nextpage
+    
+    def __init__(self, pilimit=1000):
+        self.pilimit = pilimit
+        self.keyset = set()
+        self.item_buf = []
+        self.uc = requesturl()
+
+    def getint(self,strtext):
+        intstr = re.sub("[^0-9.]", "", strtext)
+        if len(intstr) > 0:
+            return int(float(intstr))
+        else:
+            return 0
+
+    def prepare_dump(self):
+        home = '.'
+        dirname = os.path.join(home, 'var', 'item_buf')
+        #dirname = os.path.join(os.environ['HOMEPATH'], 'var', 'item_buf')
+        os.makedirs(dirname, exist_ok=True)
+        ts = time.time()
+        filename = os.path.join(dirname, '{}.{}.pickle'.format(self.site, ts))
+        return filename
+
+    def syncbuf(self):
+        if len(self.item_buf) > 0:
+            output_file = self.prepare_dump()
+            to_dump = {
+                'site': self.site,
+                'buffer': self.item_buf
+            }
+            with open(output_file, 'wb') as fd:
+                pickle.dump(to_dump, fd)
+            self.item_buf = []
+
+    def spamcheck(self, item):
+        chk = False
+        if item['iid'] not in self.keyset:
+            chk = True
+            self.keyset.add(item['iid'])
+        return chk
+
+
+    def loopurl(self,it):
+        searched = 0
+        inserted = 0
+        searchurl = it
+        pi = 1
+        while pi < self.pilimit:
+            newitem = []
+            newitem, searchurl = self.geturl(searchurl)
+            if len(newitem) > 0:
+                lop = 0
+                for item in newitem:
+                    if self.spamcheck(item):
+                        lop += 1
+                        self.item_buf.append(item)
+                if lop == 0:
+                    break
+                inserted += lop
+                searched += len(newitem)
+                if len(self.item_buf) > 1000:
+                    self.syncbuf()
+            else:
+                break
+            if len(searchurl) < 1:
+                break
+            pi += 1
+        logger.info('%s pi: %s, searched: %s, inserted: %s', it, pi, searched, inserted)
+        self.state(inserted,a)
+        return True
+    
+    def state(self,inserted,a):
+        cats = self.collect_cat()        
+        a += [inserted]
+        finish = len(a)/len(cats)*100
+        su = sum(a)
+        logger.info('目前商品總數: %s, 類別完成率: %s',su,finish) 
+
+    def start(self):
+        cats = self.collect_cat()
+        logger.info('get %s cats', len(cats))
+        for i in cats:
+            self.loopurl(i)
+        self.syncbuf()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d","--debug", help="getall ruten result",action="store_true")
+
+    args = parser.parse_args()
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    pilimit = 10000
+    a = list()
+    crawler = Crawler(pilimit)
+    crawler.start()
+
+```
+
+# 2.Request part
+
+
+```python
+import time
+import requests
+requests.packages.urllib3.disable_warnings()
+import os
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+class requesturl:
+    def __init__(self):
+        self.bot = requests.session()
+
+    def reachurl(self, url, referer='https://www.avac.co.jp/', rjson=False):
+        urlcontent = ""
+        for x in range(5):
+            headers = {}
+            headers['X-Requested-With'] = 'XMLHttpRequest'
+            api_url = url
+            try:
+                r = self.bot.get(api_url, headers=headers, timeout=180, verify=False, allow_redirects=False)
+                if r.ok:
+                    if rjson:
+                        urlcontent = r.json()
+                        break
+                    else:
+                        urlcontent = r.content
+                        if len(urlcontent) > 4000:
+                            break
+            except Exception as inst:
+                logger.debug("Retry: %s %s %s", inst, x ,url)
+                time.sleep(10)
+            logger.debug('%s\t %s %s', url, os.getpid(), len(urlcontent))
+        else:
+            logger.debug('bot checkurl false: %s',url)
+        return urlcontent
+```
