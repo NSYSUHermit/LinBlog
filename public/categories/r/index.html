@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>R</span>
-        <span>2019-11-28</span>
+        <span>2019-12-04</span>
         
         <span>1 / 2</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/r">R</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/04/using-rvest-crawler-on-simple-chiness-web/">Using Rvest Crawler On Simple Chiness Web</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-04</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/04/using-rvest-crawler-on-simple-chiness-web/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-04-using-rvest-crawler-on-simple-chiness-web_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    在之前的文章裡(link:https://hermitlin.netlify.com/post/2019/05/23/web-crawler-on-simple-chinese-web/) ，我只抓取了該本書的八個章節，而最近我需要將其改為能對於該網站(link: https://heavenlyfood.cn/books/menu.php?id=2021) 的各本書進行相同的爬取，並且須以該書名建立資料夾，儲存該本書各章節的內容。同樣的，我使用了rvest與ropencc這兩個package幫我完成爬蟲以及簡轉繁的工作。
+[&hellip;] if&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -192,39 +223,6 @@ You should enter your server at begining.
 我將使用R-package：“ropencc”來完成這項工作，它可以在Github上下載“ropencc”。
 最後後將章節的故事輸出到每個txt文本文件，並且以章節名稱為檔案命名。
 [&hellip;] if (!require(rvest))install.packages(&quot;rvest&quot;)&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/r">R</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/04/24/cre-bacteria-data-analysis/">CRE Bacteria Data Analysis</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-04-24</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/04/24/cre-bacteria-data-analysis/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-04-24-cre-bacteria-data-analysis_files/figure-html/unnamed-chunk-2-1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    在這個資料中，我們有兩種細菌。前面的46個觀察值是CRE，後面的49個則不是。
-我們希望將資料分類為是否為 CRE。Peak是蛋白質的名稱，而P_value是各蛋白質的重要程度，較低的p_value意味著對是否為CRE的影響更大。因此， 我們將選取較低的p_value變數來構建分類器。
-資料是水平資料。因此我們先將資料轉置成一個95個觀測值與1471個變數的格式，標記何者為CRE， 然後使用機器學習方法對資料進行分類。最後，使用Leave-One-Out交叉驗證來比較各方法的測試精準度。
-In this data, we have two types bacteria. The front&hellip;
     </a>
   </div>
 </section>

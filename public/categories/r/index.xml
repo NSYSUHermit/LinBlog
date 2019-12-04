@@ -6,10 +6,19 @@
     <description>Recent content in R on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 02 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 04 Dec 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Using Rvest Crawler On Simple Chiness Web</title>
+      <link>/post/2019/12/04/using-rvest-crawler-on-simple-chiness-web/</link>
+      <pubDate>Wed, 04 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/12/04/using-rvest-crawler-on-simple-chiness-web/</guid>
+      <description>在之前的文章裡(link:https://hermitlin.netlify.com/post/2019/05/23/web-crawler</description>
+    </item>
     
     <item>
       <title>One Class Learning</title>

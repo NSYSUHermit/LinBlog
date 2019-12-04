@@ -1,0 +1,84 @@
+---
+title: Using Rvest Crawler On Simple Chiness Web
+author: Hermit
+date: '2019-12-04'
+slug: using-rvest-crawler-on-simple-chiness-web
+categories:
+  - R
+tags:
+  - crawler
+---
+
+
+
+<p>在之前的文章裡(link:<a href="https://hermitlin.netlify.com/post/2019/05/23/web-crawler-on-simple-chinese-web/" class="uri">https://hermitlin.netlify.com/post/2019/05/23/web-crawler-on-simple-chinese-web/</a>) ，我只抓取了該本書的八個章節，而最近我需要將其改為能對於該網站(link: <a href="https://heavenlyfood.cn/books/menu.php?id=2021" class="uri">https://heavenlyfood.cn/books/menu.php?id=2021</a>) 的各本書進行相同的爬取，並且須以該書名建立資料夾，儲存該本書各章節的內容。同樣的，我使用了rvest與ropencc這兩個package幫我完成爬蟲以及簡轉繁的工作。</p>
+<div id="import-packages" class="section level1">
+<h1>import packages</h1>
+<pre class="r"><code>if (!require(rvest))install.packages(&quot;rvest&quot;)
+library(rvest)
+
+if (!require(ropencc))devtools::install_github(&quot;qinwf/ropencc&quot;)
+library(ropencc)</code></pre>
+</div>
+<div id="crawler" class="section level1">
+<h1>crawler</h1>
+<pre class="r"><code>##Link the website
+#read the html
+num = 2018 #更改這個數字即可
+link = paste0(&quot;https://heavenlyfood.cn/books/menu.php?id=&quot;, num)
+bible &lt;- read_html(link)
+
+#def simple to traditional
+trans &lt;- converter(S2TWP)
+
+#get the book title
+book_title1 &lt;- html_nodes(bible,&quot;#mainwhite&quot;)
+book_title &lt;- html_text(book_title1)
+book_title &lt;- run_convert(trans, book_title[1])
+
+#create a folder
+folder &lt;- paste0(&quot;./&quot;, book_title)
+dir.create(folder)
+
+#get the title
+bible_title &lt;- html_nodes(bible,&quot;div#title div a#wt&quot;)
+title &lt;- html_text(bible_title)
+title &lt;- run_convert(trans, title) #trans simple chinese to traditional chinese
+
+#get the chapter&#39;s url
+url &lt;- html_nodes(bible,&quot;div#title&quot;)  
+url = seq(length(url))
+
+## Content Grabbing
+#set wd
+path = paste0(&quot;./&quot;,book_title)
+setwd(path)
+
+for(i in c(1:length(title))){
+  #link to the chapter url
+  chapter_url &lt;- paste0(&quot;https://heavenlyfood.cn/books/&quot;, num,&quot;-&quot;,url[i])
+  bible1 &lt;- read_html(chapter_url)
+  
+  #grab the content
+  bible_cont &lt;- html_nodes(bible1,&quot;.cont&quot;)
+  cont &lt;- html_text(bible_cont,trim = TRUE)
+  
+  #trans simple Chinese to traditional Chinese
+  cont[1] &lt;- title[i] #name the title
+  cont &lt;- run_convert(trans, cont)
+  
+  #output the txt for each chapter
+  nam &lt;- paste(&quot;第&quot;,i,&quot;篇 &quot;,title[i],&quot;.txt&quot;, sep=&quot; &quot;)
+  write.table(cont,nam)
+}</code></pre>
+<p>該網站一個數字代表一本書，而書又會有數篇文章。網站的結構如下：<br />
+<img src="/post/2019-12-04-using-rvest-crawler-on-simple-chiness-web_files/1.JPG" /><br />
+這個是指2018的目錄下有一本“如何享受神及操練”的書，以及超過13篇的文章。</p>
+<p>因此只要將想爬下的數字KEY IN 代碼中的num，即可爬下該本書的內容，而檔案會儲存於code的相同目錄之下，並建立以書名命名的資料夾，存放書本各篇文章。結果如下：<br />
+<img src="/post/2019-12-04-using-rvest-crawler-on-simple-chiness-web_files/2.JPG" /><br />
+以書名建立的各資料夾。</p>
+<p><img src="/post/2019-12-04-using-rvest-crawler-on-simple-chiness-web_files/3.JPG" /><br />
+在書名資料夾下該本書的各篇文章。</p>
+<p><img src="/post/2019-12-04-using-rvest-crawler-on-simple-chiness-web_files/4.JPG" /><br />
+文章儲存的內容。</p>
+</div>
