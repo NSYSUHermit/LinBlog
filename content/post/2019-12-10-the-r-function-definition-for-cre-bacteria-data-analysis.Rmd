@@ -58,7 +58,8 @@ data_pca$CRE <- data$CRE
 
 
 # Bulid the Classificators 
-在這裡我會先定義完整個function，接著使用定義好的function來輸出我們要的表格。
+在這裡我會先定義完整個function，接著使用定義好的function來輸出我們要的表格。  
+
 ## Def function
 先在function外部切好cre以及非cre資料，這樣才不會每次run function時都做重複的事情浪費運算效率。  
 function的input總共有8個，分別為CRE樣本個數、非CRE樣本個數、是否要運算Logistic Regression、是否要運算Naive Bayes、是否要運算K-NearestNeighbors、是否要運算Random Forest、是否要運算Support Vector Machine以及要幾個主成分作為變數，但分類器都已預設為執行，因此僅需輸入其餘三者即可運行。  

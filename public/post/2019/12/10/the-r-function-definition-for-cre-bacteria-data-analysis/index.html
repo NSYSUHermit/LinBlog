@@ -116,9 +116,10 @@ data_pca$CRE &lt;- data$CRE </code></pre>
 </div>
 <div id="bulid-the-classificators" class="section level1">
 <h1>Bulid the Classificators</h1>
-<p>在這裡我會先定義完整個function，接著使用定義好的function來輸出我們要的表格。
-## Def function
-先在function外部切好cre以及非cre資料，這樣才不會每次run function時都做重複的事情浪費運算效率。<br />
+<p>在這裡我會先定義完整個function，接著使用定義好的function來輸出我們要的表格。</p>
+<div id="def-function" class="section level2">
+<h2>Def function</h2>
+<p>先在function外部切好cre以及非cre資料，這樣才不會每次run function時都做重複的事情浪費運算效率。<br />
 function的input總共有8個，分別為CRE樣本個數、非CRE樣本個數、是否要運算Logistic Regression、是否要運算Naive Bayes、是否要運算K-NearestNeighbors、是否要運算Random Forest、是否要運算Support Vector Machine以及要幾個主成分作為變數，但分類器都已預設為執行，因此僅需輸入其餘三者即可運行。</p>
 <p>function內部前面以重組資料至df為主，會先重組新的樣本數資料至df1，在依據需要的pca個數切入df，後續分類器則都以df進行分析，這次一樣是使用LOOCV的方式進行運算分析，因此最終也皆會以LOOCV的結果呈現，至於方法的超參數皆可在function內部進行調整。這裡有一些預設值：<br />
 1.random forest, n = 150<br />
@@ -216,6 +217,7 @@ pca.clf &lt;- function(num_cre,num_ncre,lgr = TRUE,nb = TRUE,knn = TRUE,rf = TRU
   result &lt;- c(num_cre,num_ncre,pca,lgr,nb,knn,rf,svm)
   return(result)
 }</code></pre>
+</div>
 <div id="generate-results" class="section level2">
 <h2>Generate results</h2>
 <p>如果你想要一份24:24的樣本進行主成分1個至25個的比較列表，則可執行下列的迴圈進行運算。</p>
