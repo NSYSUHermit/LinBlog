@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Posts</span>
-        <span>2019-12-04</span>
+        <span>2019-12-10</span>
         
         <span>2 / 5</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/11/09/gan-with-one-class-learning/">GAN with One Class Learning</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-11-09</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/11/09/gan-with-one-class-learning/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-11-09-gan-with-one-class-learning_files/1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    先前幾次我嘗試使用生成對抗網路產生一系列資料，但我們知道GAN的訓練很難調整，除非將生成資料直接拿去訓練比照結果，否則很難知道這次生成樣本的品質(這裡的品質是指有時候樣本過少時，我們產生所需的假資料是否能完美的當作一般樣本進行後續分析)，因此我想透過一些外部機制來當作衡量生成器生成的品質驗證，後來思考其實這有點像是異常檢測，若是先將真實資料做一個一元的異常檢測分類器，我們便可將GAN產生的資料用此當作二次確認(第一次確認是在GAN當中的判別器)，構想圖如下：
+我們將想要生成的某類資料匯入後，先建構一個一元分類器，並將所有資料點都包含於正常資料。接著將原資料匯入GAN當中，經過幾次迭代後，我們&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -187,37 +218,6 @@
     在資料探勘中，異常檢測:anomaly detection對不符合預期模式或資料集中其他專案的專案、事件或觀測值的辨識。 通常異常專案會轉變成銀行欺詐、結構缺陷、醫療問題、文字錯誤等類型的問題。異常也被稱為離群值、新奇、噪聲、偏差和例外。
 特別是在檢測濫用與網路入侵時，有趣性物件往往不是罕見物件，但卻是超出預料的突發活動。這種模式不遵循通常統計定義中把異常點看作是罕見物件，於是許多異常檢測方法（特別是無監督的方法）將對此類資料失效，除非進行了合適的聚集。相反，群集分析演算法可能可以檢測出這些模式形成的微群集。
 有三大類異常檢測方法。在假設資料集中大多數實體都是正常的前提下，無監督異常檢測方法能&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/machine-learning">machine-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/09/25/imbalanced-data-binary-classification/">Imbalanced Data Binary Classification</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-09-25</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/09/25/imbalanced-data-binary-classification/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-09-25-unbalanced-binary-classification_files/1.1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    不平衡資料 (Imbalanced Data)是很常見於結構化資料的情境之一。比如說我們有一筆保險客戶的資料，有非常多的客戶基本資料(如:居住地、學歷等等)，以及一個對應的反應變數:是否有投保，而這個變量有極大的可能多數為非投保狀態，這種情況就稱為Imbalanced Data，因為最近遇到這個類型的資料分析問題，因此從數篇文章中整理幾個常見的解決方法，這裡主要針對反應變數為binary classificaion的狀態。
-[&hellip;] 因為極度不平衡的資料，將導致我們在訓練分類模型的時候有過度去預測某一類的情況。比如說上述的保險資料，我們持有10萬筆客戶訓練資料，但僅有2000筆資&hellip;
     </a>
   </div>
 </section>

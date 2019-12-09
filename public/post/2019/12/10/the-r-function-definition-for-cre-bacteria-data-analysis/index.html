@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>The R Function Definition for CRE Bacteria Data Analysis | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-12-10</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-12-10-the-r-function-definition-for-cre-bacteria-data-analysis.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/r">R</a>
+  
+     &hercon; <a href="/categories/machine-learning">machine-learning</a>
+  
+  </div>
+
+  <h1><span class="title">The R Function Definition for CRE Bacteria Data Analysis</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/classification">classification</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>這次是跟上次使用相同的資料，只是變成要定義一個規定格式的function，剛好上次的code裡面logistic regression的分類器有寫錯的部分，因此可以順便趁這次的機會修改之前錯誤的地方，部分內容可參考以前那篇blog(CRE Bacteria Data Analysis: <a href="https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/" class="uri">https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/</a>)<br />
+一樣我會將資料先進行倒轉，並且為前46個樣本上cre的標籤，後49則上非cre的標籤。<br />
+主要差異為，這次要進行pca，因此再倒轉資料時，並未挑選重要的前50個變數，而是將1000多個變數倒轉後直接進行pca，並用數個主成分來進行分類預測。
+下面這張圖為指導老師用mathematica跑完後呈現的結果，<br />
+<img src="/post/2019-12-10-the-r-function-definition-for-cre-bacteria-data-analysis_files/1.JPG" /><br />
+分別為CRE個數、非CRE個數、使用多少主成分、方法名稱、總體預測正確個數、總體準確率、CRE正確個數、非CRE正確個數、CRE準確率、非CRE準確率。<br />
+他希望我定義一個R function來直接建立這個形式的輸出，這也是我第一次定義一個較複雜的function，在除錯上確實花了一點時間，但最後還是完成了這隻code，下面將一一說明。</p>
+<div id="data-processing" class="section level1">
+<h1>Data processing</h1>
+<div id="read-data" class="section level2">
+<h2>Read data</h2>
+<p>先將資料讀入r</p>
+<pre class="r"><code>data_csv &lt;- read.csv(&quot;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial - PCA/20191202_1471_CRE_46-non-CRE_49_Intensity.csv&quot;)</code></pre>
+</div>
+<div id="rearrange" class="section level2">
+<h2>Rearrange</h2>
+<p>使用tidyverse將資料重新排整，主要將蛋白質的影響轉至columns，以樣本數作為rows，並在導轉後幫樣本進行labeling。</p>
+<pre class="r"><code>if (!require(tidyverse)) install.packages(&#39;tidyverse&#39;)
+library(tidyverse)
+
+#sort data by p.value
+data_csv &lt;- arrange(data_csv,p.value)
+
+#transpose data
+name_protein &lt;- data_csv[,1]
+data &lt;- as.data.frame(t(data_csv))
+data &lt;- data[-c(1:3),]
+
+#data name
+name_variable &lt;- names(data)
+data_name &lt;- data.frame(name_variable,name_protein)
+data_name &lt;- as.data.frame(t(data_name))
+
+#label CRE as factor
+data$CRE &lt;- as.factor(c(rep(1,46),rep(0,49)))</code></pre>
+</div>
+<div id="pca" class="section level2">
+<h2>PCA</h2>
+<p>對資料(不包含Response)進行PCA，並建立新的dataframe為data_pca</p>
+<pre class="r"><code>pca &lt;- prcomp(~.-CRE, data=data, center=TRUE, scale=TRUE) 
+data_pca &lt;- as.data.frame(pca$x)
+data_pca$CRE &lt;- data$CRE </code></pre>
+</div>
+</div>
+<div id="bulid-the-classificators" class="section level1">
+<h1>Bulid the Classificators</h1>
+<p>在這裡我會先定義完整個function，接著使用定義好的function來輸出我們要的表格。
+## Def function
+先在function外部切好cre以及非cre資料，這樣才不會每次run function時都做重複的事情浪費運算效率。<br />
+function的input總共有8個，分別為CRE樣本個數、非CRE樣本個數、是否要運算Logistic Regression、是否要運算Naive Bayes、是否要運算K-NearestNeighbors、是否要運算Random Forest、是否要運算Support Vector Machine以及要幾個主成分作為變數，但分類器都已預設為執行，因此僅需輸入其餘三者即可運行。</p>
+<p>function內部前面以重組資料至df為主，會先重組新的樣本數資料至df1，在依據需要的pca個數切入df，後續分類器則都以df進行分析，這次一樣是使用LOOCV的方式進行運算分析，因此最終也皆會以LOOCV的結果呈現，至於方法的超參數皆可在function內部進行調整。這裡有一些預設值：<br />
+1.random forest, n = 150<br />
+2.knn, k = 10<br />
+3.logistic regression, div p in 0.5
+4.svm &amp; naive bayes all default</p>
+<pre class="r"><code>#filter cre $ non-cre
+cre = data_pca[which(data_pca$CRE == 1),]
+non = data_pca[which(data_pca$CRE == 0),]
+#classification function
+pca.clf &lt;- function(num_cre,num_ncre,lgr = TRUE,nb = TRUE,knn = TRUE,rf = TRUE,svm = TRUE,pca){
+  #merge the data by num
+  df1 = rbind(cre[sample(dim(cre)[1],num_cre),],non[sample(dim(non)[1], num_ncre),])
+  #filter pca num
+  df = as.data.frame(df1[,c(1:pca)])
+  names(df) = names(df1[c(1:pca)])
+  df$CRE = df1$CRE
+  #ml model training
+  #svm
+  if(svm){
+    if (!require(e1071))install.packages(&#39;e1071&#39;)
+    library(e1071)
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ] 
+
+      svm_model = svm(formula = CRE ~ .,data = train)
+      test.pred[i] = as.integer(predict(svm_model, test))-1
+      }
+    #result present
+    confus.matrix = table(test.pred,df$CRE)
+    svm &lt;- c(&quot;SupportVectorMachine&quot;,sum(diag(confus.matrix)),sum(diag(confus.matrix))/sum(confus.matrix),confus.matrix[2,2],as.integer(confus.matrix[1,1]),sum(confus.matrix[2,2])/sum(confus.matrix[,2]),sum(confus.matrix[1,1])/sum(confus.matrix[,1]))
+  }
+  #rf
+  if(rf){
+    if (!require(randomForest)) install.packages(&#39;randomForest&#39;)
+    library(randomForest)
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      
+      rf_model = randomForest(CRE~.,data=train,ntree=150# num of decision Tree
+                        )
+      test.pred[i] = as.integer(predict(rf_model, test))-1
+      }
+    #result present
+    confus.matrix = table(test.pred,df$CRE)
+    rf &lt;- c(&quot;RandomForest&quot;,sum(diag(confus.matrix)),sum(diag(confus.matrix))/sum(confus.matrix),confus.matrix[2,2],as.integer(confus.matrix[1,1]),sum(confus.matrix[2,2])/sum(confus.matrix[,2]),sum(confus.matrix[1,1])/sum(confus.matrix[,1]))
+  }
+  # knn
+  if(knn){
+    if (!require(class))install.packages(&quot;class&quot;)
+    library(class)
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      test.pred[i] &lt;- knn(train = train[,-length(train)], test = test[,-length(test)], cl = train[,length(train)], k = 5)   # knn distance = 5
+      #test.pred[i] = as.integer(predict(knn_model, test))-1
+      }
+    #result present
+    confus.matrix = table(test.pred,df$CRE)
+    knn &lt;- c(&quot;NearestNeighbors&quot;,sum(diag(confus.matrix)),sum(diag(confus.matrix))/sum(confus.matrix),confus.matrix[2,2],as.integer(confus.matrix[1,1]),sum(confus.matrix[2,2])/sum(confus.matrix[,2]),sum(confus.matrix[1,1])/sum(confus.matrix[,1]))
+  }
+  # nb
+  if(nb){
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      nb_model=naiveBayes(CRE~., data=train)
+      test.pred[i] = as.integer(predict(nb_model, test))-1
+      }
+    #result present
+    confus.matrix = table(test.pred,df$CRE)
+    nb &lt;- c(&quot;NaiveBayes&quot;,sum(diag(confus.matrix)),sum(diag(confus.matrix))/sum(confus.matrix),confus.matrix[2,2],as.integer(confus.matrix[1,1]),sum(confus.matrix[2,2])/sum(confus.matrix[,2]),sum(confus.matrix[1,1])/sum(confus.matrix[,1]))
+  }
+  #lgr
+  if(lgr){
+    test.pred &lt;- vector()
+    df$CRE = as.numeric(df$CRE)-1
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      lr_model&lt;-glm(formula=CRE~.,data=train,family=binomial)
+      test.pred[i] &lt;- ifelse(predict(lr_model, test,type = &quot;response&quot;) &gt; 0.5, 1, 0)
+      }
+    #result present
+    confus.matrix = table(test.pred,df$CRE)
+    lgr &lt;- c(&quot;LogisticRegression&quot;,sum(diag(confus.matrix)),sum(diag(confus.matrix))/sum(confus.matrix),confus.matrix[2,2],as.integer(confus.matrix[1,1]),sum(confus.matrix[2,2])/sum(confus.matrix[,2]),sum(confus.matrix[1,1])/sum(confus.matrix[,1]))
+  }
+  #return results
+  result &lt;- c(num_cre,num_ncre,pca,lgr,nb,knn,rf,svm)
+  return(result)
+}</code></pre>
+<div id="generate-results" class="section level2">
+<h2>Generate results</h2>
+<p>如果你想要一份24:24的樣本進行主成分1個至25個的比較列表，則可執行下列的迴圈進行運算。</p>
+<pre class="r"><code>a = as.data.frame(t(pca.clf(24,24,pca=1)))
+for(i in c(2:25)){
+  b = as.data.frame(t(pca.clf(24,24,pca=i)))
+  a = rbind(a,b) 
+}</code></pre>
+</div>
+<div id="names-columns" class="section level2">
+<h2>names columns</h2>
+<p>因資料上未取名，這裡上Columns names</p>
+<pre class="r"><code>names(a) = c(&quot;num_cre&quot;,&quot;num_non&quot;,&quot;num_pca&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;)</code></pre>
+</div>
+<div id="write-csv" class="section level2">
+<h2>write csv</h2>
+<p>最後寫出csv</p>
+<pre class="r"><code>write.csv(a,file = &quot;pca_result.csv&quot;,row.names = FALSE)</code></pre>
+<p><img src="/post/2019-12-10-the-r-function-definition-for-cre-bacteria-data-analysis_files/2.JPG" /></p>
+<p>大致上是這樣，雖然function內部的迴圈感覺可以再更優化，但再看看之後有沒有時間吧…</p>
+</div>
+</div>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2019/12/04/using-rvest-crawler-on-simple-chiness-web/">Using Rvest Crawler On Simple Chiness Web &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+<script src="//yihui.name/js/math-code.js"></script>
+<script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+
