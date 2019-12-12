@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Fix The R Function  | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-12-12</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-12-12-fix-the-r-function.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+     &hercon; <a href="/categories/r">R</a>
+  
+  </div>
+
+  <h1><span class="title">Fix The R Function </span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/classification">classification</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>這禮拜我做的那個function執行順序上跟老師所要求的有所不同，因此這次將結果修改為老師所要的執行方式。<br />
+原先我以為是要先將所有資料的變數進行pca轉換後再進行分類器leave one out的訓練，因此是將訓練以及測試的資料同時PCA轉換，大致流程為下圖：<br />
+<img src="/post/2019-12-12-fix-the-r-function_files/1.JPG" />
+因此訓練資料的正交化與測試資料的正交是同時進行的，因此與老師所要求的流程上不同。<br />
+老師是希望先將資料切分為1:ALL-1，並以ALL-1的Training Set 來進行PCA轉換、訓練分類器，最後將測試資料乘上訓練用的PCA轉換矩陣，並將其結果帶入分類器上來驗證分類預測結果，以此循環進行LOOCV，流程大致如下圖：<br />
+<img src="/post/2019-12-12-fix-the-r-function_files/2.JPG" /><br />
+因此最大的差別即，PCA從迴圈外改至迴圈內，但因一個分類方法就一個迴圈，而我並未進行程式速度的優化(合併迴圈減少PCA計算量)，因此PCA將會依照方法數量來執行數次。</p>
+<p>另外，老師說不需要調整樣本數量，因此取消有關樣本數的函數輸入參數。</p>
+<p>下面是程式代碼。</p>
+<div id="def-function" class="section level2">
+<h2>def function</h2>
+<pre class="r"><code># Read data
+data_csv &lt;- read.csv(&quot;20191202_1471_CRE_46-non-CRE_49_Intensity.csv&quot;)
+
+# arrange
+if (!require(tidyverse)) install.packages(&#39;tidyverse&#39;)
+library(tidyverse)
+
+#sort data by p.value
+data_csv &lt;- arrange(data_csv,p.value)
+
+#transpose data
+name_protein &lt;- data_csv[,1]
+data &lt;- as.data.frame(t(data_csv))
+data &lt;- data[-c(1:3),]
+
+#data name
+name_variable &lt;- names(data)
+data_name &lt;- data.frame(name_variable,name_protein)
+data_name &lt;- as.data.frame(t(data_name))
+
+#label CRE as factor
+data$CRE &lt;- as.factor(c(rep(1,46),rep(0,49)))
+df1 = data
+
+#classification function
+pca.clf &lt;- function(lgr = TRUE,nb = TRUE,knn = TRUE,rf = TRUE,svm = TRUE,pca_num){
+  #filter pca num
+  df = as.data.frame(df1[,c(1:pca_num)])
+  names(df) = names(df1[c(1:pca_num)])
+  df$CRE = df1$CRE
+  #ml model training
+  library(caret)
+  #svm
+  if(svm){
+    if (!require(e1071))install.packages(&#39;e1071&#39;)
+    library(e1071)
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      
+      #pca processing
+      pca &lt;- prcomp(~.-CRE, data=train) 
+      train_pca &lt;- as.data.frame(pca$x)
+      train_pca$CRE &lt;- train$CRE 
+      
+      #Matrix multiplication
+      test_pca = as.data.frame(as.matrix(test[,-dim(test)[2]])%*%as.matrix(pca$rotation))
+      test_pca$CRE &lt;- test$CRE 
+
+      svm_model = svm(formula = CRE ~ .,data = train_pca)
+      test.pred[i] = as.integer(predict(svm_model, test_pca))-1
+      }
+    #result present
+    confus.matrix = table(test.pred,df$CRE)
+    if(dim(confus.matrix)[1] &gt; 1){
+      num11 &lt;- confus.matrix[2,2]
+      num00 &lt;- confus.matrix[1,1]
+    }else{
+      num11 = confus.matrix[1,2]
+      num00 = 0
+      }
+    svm &lt;- c(&quot;SupportVectorMachine&quot;,num11+num00,(num11+num00)/sum(confus.matrix),num11,as.integer(num00),num11/sum(confus.matrix[,2]),num00/sum(confus.matrix[,1]))
+  }
+  #rf
+  if(rf){
+    if (!require(randomForest)) install.packages(&#39;randomForest&#39;)
+    library(randomForest)
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      
+      #pca processing
+      pca &lt;- prcomp(~.-CRE, data=train) 
+      train_pca &lt;- as.data.frame(pca$x)
+      train_pca$CRE &lt;- train$CRE 
+      
+      #Matrix multiplication
+      test_pca = as.data.frame(as.matrix(test[,-dim(test)[2]])%*%as.matrix(pca$rotation))
+      test_pca$CRE &lt;- test$CRE 
+      
+      rf_model = randomForest(CRE~.,data=train_pca,ntree=150# num of decision Tree
+                        )
+      test.pred[i] = as.integer(predict(rf_model, test_pca))-1
+      }
+      #result present
+    confus.matrix = table(test.pred,df$CRE)
+    if(dim(confus.matrix)[1] &gt; 1){
+      num11 &lt;- confus.matrix[2,2]
+      num00 &lt;- confus.matrix[1,1]
+    }else{
+      num11 = confus.matrix[1,2]
+      num00 = 0
+      }
+    rf &lt;- c(&quot;RandomForest&quot;,num11+num00,(num11+num00)/sum(confus.matrix),num11,as.integer(num00),num11/sum(confus.matrix[,2]),num00/sum(confus.matrix[,1]))
+  }
+  # knn
+  if(knn){
+    if (!require(class))install.packages(&quot;class&quot;)
+    library(class)
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      #pca processing
+      pca &lt;- prcomp(~.-CRE, data=train) 
+      train_pca &lt;- as.data.frame(pca$x)
+      train_pca$CRE &lt;- train$CRE 
+      
+      #Matrix multiplication
+      test_pca = as.data.frame(as.matrix(test[,-dim(test)[2]])%*%as.matrix(pca$rotation))
+      test_pca$CRE &lt;- test$CRE 
+      
+      #pred
+      test.pred[i] &lt;- knn(train = train_pca[,-length(train_pca)], test = test_pca[,-length(test_pca)], cl = train_pca[,length(train_pca)], k = 5)   # knn distance = 5
+      }
+      #result present
+    confus.matrix = table(test.pred,df$CRE)
+    if(dim(confus.matrix)[1] &gt; 1){
+      num11 &lt;- confus.matrix[2,2]
+      num00 &lt;- confus.matrix[1,1]
+    }else{
+      num11 = confus.matrix[1,2]
+      num00 = 0
+      }
+    knn &lt;- c(&quot;NearestNeighbors&quot;,num11+num00,(num11+num00)/sum(confus.matrix),num11,as.integer(num00),num11/sum(confus.matrix[,2]),num00/sum(confus.matrix[,1]))
+  }
+  # nb
+  if(nb){
+    test.pred &lt;- vector()
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      #pca processing
+      pca &lt;- prcomp(~.-CRE, data=train) 
+      train_pca &lt;- as.data.frame(pca$x)
+      train_pca$CRE &lt;- train$CRE 
+      
+      #Matrix multiplication
+      test_pca = as.data.frame(as.matrix(test[,-dim(test)[2]])%*%as.matrix(pca$rotation))
+      test_pca$CRE &lt;- test$CRE 
+      
+      #pred
+      nb_model=naiveBayes(CRE~., data=train_pca)
+      test.pred[i] = as.integer(predict(nb_model, test_pca))-1
+      }
+      #result present
+    confus.matrix = table(test.pred,df$CRE)
+    if(dim(confus.matrix)[1] &gt; 1){
+      num11 &lt;- confus.matrix[2,2]
+      num00 &lt;- confus.matrix[1,1]
+    }else{
+      num11 = confus.matrix[1,2]
+      num00 = 0
+      }
+     nb &lt;- c(&quot;NavieBayes&quot;,num11+num00,(num11+num00)/sum(confus.matrix),num11,as.integer(num00),num11/sum(confus.matrix[,2]),num00/sum(confus.matrix[,1]))
+  }
+  #lgr
+  if(lgr){
+    test.pred &lt;- vector()
+    df$CRE = as.numeric(df$CRE)-1
+    #pca processing
+    pca &lt;- prcomp(~.-CRE, data=train) 
+    train_pca &lt;- as.data.frame(pca$x)
+    train_pca$CRE &lt;- train$CRE 
+      
+    #Matrix multiplication
+    test_pca = as.data.frame(as.matrix(test[,-dim(test)[2]])%*%as.matrix(pca$rotation))
+    test_pca$CRE &lt;- test$CRE 
+      
+    #pred
+    for(i in c(1:dim(df)[1])){
+      train = df[-i, ]
+      test  = df[i, ]
+      lr_model&lt;-glm(formula=CRE~.,data=train,family=binomial)
+      test.pred[i] &lt;- ifelse(predict(lr_model, test,type = &quot;response&quot;) &gt; 0.5, 1, 0)
+      }
+      #result present
+    confus.matrix = table(test.pred,df$CRE)
+    if(dim(confus.matrix)[1] &gt; 1){
+      num11 &lt;- confus.matrix[2,2]
+      num00 &lt;- confus.matrix[1,1]
+    }else{
+      num11 = confus.matrix[1,2]
+      num00 = 0
+      }
+     lgr &lt;- c(&quot;LogisticRegression&quot;,num11+num00,(num11+num00)/sum(confus.matrix),num11,as.integer(num00),num11/sum(confus.matrix[,2]),num00/sum(confus.matrix[,1]))
+  }
+  #return results
+  result &lt;- c(46,49,pca_num,lgr,nb,knn,rf,svm)
+  return(result)
+}</code></pre>
+</div>
+<div id="present-results" class="section level2">
+<h2>present results</h2>
+<p>測試PC1至PC22，並將結果存於dataframe a。</p>
+<pre class="r"><code>a = as.data.frame(t(pca.clf(pca=1)))
+for(i in c(2:25)){
+  b = as.data.frame(t(pca.clf(pca=i)))
+  a = rbind(a,b) 
+}</code></pre>
+</div>
+<div id="names-columns" class="section level2">
+<h2>names columns</h2>
+<p>為dataframe命名column name</p>
+<pre class="r"><code>names(a) = c(&quot;num_cre&quot;,&quot;num_non&quot;,&quot;num_pca&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;,&quot;method&quot;,&quot;right_pred_num&quot;,&quot;acc&quot;,&quot;right_pred_cre_num&quot;,&quot;right_pred_ncre_num&quot;,&quot;right_pred_cre_acc&quot;,&quot;right_pred_ncre_acc&quot;)</code></pre>
+</div>
+<div id="write-csv" class="section level2">
+<h2>write csv</h2>
+<p>將結果輸出至代碼所在路徑。</p>
+<pre class="r"><code>write.csv(a,file = &quot;pca_result.csv&quot;,row.names = FALSE)</code></pre>
+<p>輸出結果如下：<br />
+<img src="/post/2019-12-12-fix-the-r-function_files/3.JPG" /></p>
+</div>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2019/12/10/the-r-function-definition-for-cre-bacteria-data-analysis/">The R Function Definition for CRE Bacteria Data Analysis &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+<script src="//yihui.name/js/math-code.js"></script>
+<script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+

@@ -6,10 +6,19 @@
     <description>Recent content in R on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 10 Dec 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 12 Dec 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Fix The R Function </title>
+      <link>/post/2019/12/12/fix-the-r-function/</link>
+      <pubDate>Thu, 12 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2019/12/12/fix-the-r-function/</guid>
+      <description>這禮拜我做的那個function執行順序上跟老師所要求的有所不同，因此這次將結果修改為老師所要的執行方式。 原先我以為是要先將所有資料的變數進</description>
+    </item>
     
     <item>
       <title>The R Function Definition for CRE Bacteria Data Analysis</title>
