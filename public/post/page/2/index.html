@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Posts</span>
-        <span>2019-12-13</span>
+        <span>2019-12-17</span>
         
         <span>2 / 5</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/">GAN Sampling Versus Other Sampling Method On Credit Card Fraud Detection Data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-11-19</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-11-19-gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data_files/1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次，我將使用一個來自kaggle的不平衡數據資料(link:https://www.kaggle.com/mlg-ulb/creditcardfraud/version/1).
+該數據集包含了歐洲持卡人2013年9月通過信用卡進行的交易。這些交易發生在兩天之內，在這裡我們有492筆詐騙資料以及284807正常交易資料。該數據集是非常不平衡的，其中陰性樣本（詐欺）佔所有交易的0.172％。它的變量包含數值輸入變量後PCA變換的結果。不幸的是，由於保密問題我們不能得到原始數據的更多背景信息。特徵V1，V2，…… V28與PCA獲得的主成分，還沒有被轉化與PCA的變量是“交易時間”和“交易金額”。&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -185,38 +216,6 @@
     由Goodfellow等人在2014年推出的生成對抗神經網路適用於學習圖像空間VAE的替代方法。藉由強制讓聲稱ˊ圖像與真實圖片在統計上幾乎無法分別的條件下，生成相當逼真的合成圖像。
 若要以直覺的方式來理解GAN，可以想像一個偽造者試圖創造衣服偽造的畢卡索畫作。起先，偽造者的偽造作品非常糟糕。然後他將依些假貨與真正的畫作混合在一起，並給鑑定師鑑定。鑑定師對每幅畫進行真實性評估，並給予位作者意見回饋。接著偽造者根據意見回饋再準備一些新的假貨，隨時間的推移偽造者跟鑑定師也越來越專業，到最後便能產出一個專業偽造者與鑑定師。
 這就是GAN的運作原理：為偽造神經網路以及專家神經網路。因此由兩部分組成：&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/10/16/dropout/">Dropout </a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-10-16</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/10/16/dropout/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-10-16-dropout_files/1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    Drop 是由Geoff Hinton與多倫多大學的學生所開發的神經網路常規化技術之一。神經網路層的丟棄法，主要是在訓練期間隨機丟棄layer的一些輸出特徵。假設某個輸出向量為[0.2,0.5,1.3,0.8,1.1]的向量，在使用丟棄法後將隨機幾個向量的特徵歸零:[0.2,0,1.3,0,1.1]，而控制丟失多少值一般是採用丟失率來計算，大約0.2~0.5的一個數值。而在test階段不會丟棄任何值，而是按照丟棄率去比例縮小，以平衡被歸零的影響。
-實務上，我們可以在訓練時執行dropout然後把輸出值同比例放大，這樣做就不用再測試做任何變動了。
-這個看似隨興的方法為何可以有效降&hellip;
     </a>
   </div>
 </section>

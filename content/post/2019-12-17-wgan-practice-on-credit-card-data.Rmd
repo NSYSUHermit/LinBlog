@@ -1,0 +1,897 @@
+---
+title: WGAN Practice On Credit Card Data
+author: Hermit
+date: '2019-12-17'
+slug: wgan-practice-on-credit-card-data
+categories:
+  - deep-learning
+  - gan
+  - Python
+tags:
+  - classification
+  - neural network
+---
+前幾篇我有提到WGAN在訓練過程中可以改善兩個神經網路loss很難調教的問題(很常判別器的loss下降，生成器的卻一直上升，或是情況相反)，因此我將在此篇裡使用WGAN的規則來修改神經網路的一些參數，條件如下：  
+
+# Set Networks  
+The WGAN limits:  
+1.判別器最後一層去掉sigmoid  
+2.生成器和判別器的loss不取log  
+3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c  
+4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行  
+
+# 讀取資料
+```python
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('C:/Users/User/OneDrive - student.nsysu.edu.tw/Documents/dataset/creditcard.csv')
+```
+
+# 繪製簡單的視覺化
+盜刷與正常資料呈現不平衡的狀態，詳細資料介紹可看之前那篇文章：GAN Sampling Versus Other Sampling Method On Credit Card Fraud Detection Data(Link Source：https://reurl.cc/RdgDzz/)  
+```python
+from sklearn.model_selection import train_test_split
+fraud = df[df['Class'].isin([1])]
+normal = df[df['Class'].isin([0])]
+
+train_nor, test_nor = train_test_split(normal, test_size = 0.5)
+train_fra, test_fra = train_test_split(fraud, test_size = 0.5)
+data_train = pd.concat([train_nor,train_fra], axis=0)
+data_test = pd.concat([test_nor,test_fra], axis=0) 
+
+f_x = train_fra.iloc[:,0:30]
+```
+
+
+```python
+%matplotlib inline
+by_fraud = df.groupby('Class')
+by_fraud.size().plot(kind = 'bar')
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x23373d19cc0>
+
+
+
+![](/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_2_1.png)
+
+
+
+
+```python
+print(data_train[data_train['Class'].isin([1])].shape,data_train[data_train['Class'].isin([0])].shape)
+```
+
+    (246, 31) (142157, 31)
+    
+
+
+# 生成對抗網路
+這次定義了oneclass的function讓他可在訓練網路裡呈現各epoch中的error值，這裡定義的error為：使用真實資料先生成一個one class svm，找出所有實際值在classfier score的上下限，並生成資料拿去通過同一個svm classfier，若其score不在真實值範圍則定義為error
+，而生成器一次將生成真實樣本的數量，因此這裡我error rate就是sum(normal)/sum(errors)，並且想辦法讓gan的epoch往error rate低的方向收斂。  
+
+```python
+# import modules
+%matplotlib inline
+import os
+import random
+import keras
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tqdm import tqdm_notebook as tqdm
+from keras.models import Model
+from keras.layers import Input, Reshape
+from keras.layers.core import Dense, Activation, Dropout, Flatten
+from keras.layers.normalization import BatchNormalization
+from keras.layers.convolutional import UpSampling1D, Conv1D
+from keras.layers.advanced_activations import LeakyReLU
+from keras.optimizers import Adam, SGD
+from keras.callbacks import TensorBoard
+from sklearn.preprocessing import StandardScaler
+
+# set parameters
+dim = 30
+num = 246
+g_data = f_x
+
+# Standard Scaler
+ss = StandardScaler()
+g_data = pd.DataFrame(ss.fit_transform(g_data))
+
+
+# generator
+def get_generative(G_in, dense_dim=200, out_dim= dim, lr=1e-3):
+    x = Dense(dense_dim)(G_in)
+    x = Activation('tanh')(x)
+    G_out = Dense(out_dim, activation='tanh')(x)
+    G = Model(G_in, G_out)
+    opt = keras.optimizers.RMSprop(lr=lr)#原先為SGD
+    G.compile(loss='binary_crossentropy', optimizer=opt)
+    return G, G_out
+
+G_in = Input(shape=[10])
+G, G_out = get_generative(G_in)
+G.summary()
+
+# discriminator
+def get_discriminative(D_in, lr=1e-3, drate=.25, n_channels= dim, conv_sz=5, leak=.2):
+    x = Reshape((-1, 1))(D_in)
+    x = Conv1D(n_channels, conv_sz, activation='relu')(x)
+    x = Dropout(drate)(x)
+    x = Flatten()(x)
+    x = Dense(n_channels)(x)
+    D_out = Dense(2, activation='relu')(x)#sigmoid
+    D = Model(D_in, D_out)
+    dopt = keras.optimizers.RMSprop(lr=lr)#原先為Adam
+    D.compile(loss='binary_crossentropy', optimizer=dopt)
+    return D, D_out
+
+D_in = Input(shape=[dim])
+D, D_out = get_discriminative(D_in)
+D.summary()
+
+# set up gan
+def set_trainability(model, trainable=False):
+    model.trainable = trainable
+    for layer in model.layers:
+        layer.trainable = trainable
+        
+def make_gan(GAN_in, G, D):
+    set_trainability(D, False)
+    x = G(GAN_in)
+    GAN_out = D(x)
+    GAN = Model(GAN_in, GAN_out)
+    GAN.compile(loss='binary_crossentropy', optimizer=G.optimizer)
+    return GAN, GAN_out
+
+GAN_in = Input([10])
+GAN, GAN_out = make_gan(GAN_in, G, D)
+GAN.summary()
+
+# pre train
+def sample_data_and_gen(G, noise_dim=10, n_samples= num):
+    XT = np.array(g_data)
+    XN_noise = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    XN = G.predict(XN_noise)
+    X = np.concatenate((XT, XN))
+    y = np.zeros((2*n_samples, 2))
+    y[:n_samples, 1] = 1
+    y[n_samples:, 0] = 1
+    return X, y
+
+def pretrain(G, D, noise_dim=10, n_samples = num, batch_size=32):
+    X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+    set_trainability(D, True)
+    D.fit(X, y, epochs=1, batch_size=batch_size)
+    
+pretrain(G, D)
+
+def sample_noise(G, noise_dim=10, n_samples=num):
+    X = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    y = np.zeros((n_samples, 2))
+    y[:, 1] = 1
+    return X, y
+
+# one class detector
+def oneclass(data,kernel = 'rbf',gamma = 'auto'):
+    num1 = int(len(data)/2)
+    num2 = int(len(data)+1)
+    from sklearn import svm
+    clf = svm.OneClassSVM(kernel=kernel, gamma=gamma).fit(data[0:num1])
+    origin = pd.DataFrame(clf.score_samples(data[0:num1]))
+    new = pd.DataFrame(clf.score_samples(data[num1:num2]))
+
+    occ = pd.concat([pd.DataFrame(new[0] < origin[0].min()),pd.DataFrame(new[0] > origin[0].max())], axis=1)
+    occ['ava'] = pd.DataFrame(occ.iloc[:,1:2] == occ.iloc[:,0:1])
+    err = sum(occ['ava'] == False)/len(occ['ava'])
+    return err
+
+# training
+def train(GAN, G, D, epochs=500, n_samples= num, noise_dim=10, batch_size=32, verbose=False, v_freq=dim,):
+    d_loss = []
+    g_loss = []
+    e_range = range(epochs)
+    if verbose:
+        e_range = tqdm(e_range)
+    for epoch in e_range:
+        X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, True)
+        d_loss.append(D.train_on_batch(X, y))
+        xx,yy = X,y
+        err = oneclass(xx) 
+        print("The %d times epoch one class svm Error Rate=%f" %(epoch, err))
+        
+        X, y = sample_noise(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, False)
+        g_loss.append(GAN.train_on_batch(X, y))
+        if verbose and (epoch + 1) % v_freq == 0:
+            print("Epoch #{}: Generative Loss: {}, Discriminative Loss: {}".format(epoch + 1, g_loss[-1], d_loss[-1]))       
+            
+    return d_loss, g_loss, xx, yy
+
+d_loss, g_loss ,xx,yy= train(GAN, G, D, verbose=True)
+```
+
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_52 (InputLayer)        (None, 10)                0         
+    _________________________________________________________________
+    dense_73 (Dense)             (None, 200)               2200      
+    _________________________________________________________________
+    activation_19 (Activation)   (None, 200)               0         
+    _________________________________________________________________
+    dense_74 (Dense)             (None, 30)                6030      
+    =================================================================
+    Total params: 8,230
+    Trainable params: 8,230
+    Non-trainable params: 0
+    _________________________________________________________________
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_53 (InputLayer)        (None, 30)                0         
+    _________________________________________________________________
+    reshape_19 (Reshape)         (None, 30, 1)             0         
+    _________________________________________________________________
+    conv1d_19 (Conv1D)           (None, 26, 30)            180       
+    _________________________________________________________________
+    dropout_19 (Dropout)         (None, 26, 30)            0         
+    _________________________________________________________________
+    flatten_19 (Flatten)         (None, 780)               0         
+    _________________________________________________________________
+    dense_75 (Dense)             (None, 30)                23430     
+    _________________________________________________________________
+    dense_76 (Dense)             (None, 2)                 62        
+    =================================================================
+    Total params: 23,672
+    Trainable params: 23,672
+    Non-trainable params: 0
+    _________________________________________________________________
+    _________________________________________________________________
+    Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_54 (InputLayer)        (None, 10)                0         
+    _________________________________________________________________
+    model_52 (Model)             (None, 30)                8230      
+    _________________________________________________________________
+    model_53 (Model)             (None, 2)                 23672     
+    =================================================================
+    Total params: 31,902
+    Trainable params: 8,230
+    Non-trainable params: 23,672
+    _________________________________________________________________
+    Epoch 1/1
+    492/492 [==============================] - ETA: 20s - loss: 7.26 - 1s 3ms/step - loss: 4.4403
+    
+
+
+    HBox(children=(IntProgress(value=0, max=500), HTML(value='')))
+
+
+    The 0 times epoch one class svm Error Rate=1.000000
+    The 1 times epoch one class svm Error Rate=1.000000
+    The 2 times epoch one class svm Error Rate=1.000000
+    The 3 times epoch one class svm Error Rate=1.000000
+    The 4 times epoch one class svm Error Rate=1.000000
+    The 5 times epoch one class svm Error Rate=1.000000
+    The 6 times epoch one class svm Error Rate=1.000000
+    The 7 times epoch one class svm Error Rate=1.000000
+    The 8 times epoch one class svm Error Rate=1.000000
+    The 9 times epoch one class svm Error Rate=1.000000
+    The 10 times epoch one class svm Error Rate=1.000000
+    The 11 times epoch one class svm Error Rate=1.000000
+    The 12 times epoch one class svm Error Rate=1.000000
+    The 13 times epoch one class svm Error Rate=1.000000
+    The 14 times epoch one class svm Error Rate=1.000000
+    The 15 times epoch one class svm Error Rate=1.000000
+    The 16 times epoch one class svm Error Rate=1.000000
+    The 17 times epoch one class svm Error Rate=1.000000
+    The 18 times epoch one class svm Error Rate=0.979675
+    The 19 times epoch one class svm Error Rate=0.987805
+    The 20 times epoch one class svm Error Rate=0.987805
+    The 21 times epoch one class svm Error Rate=0.979675
+    The 22 times epoch one class svm Error Rate=0.943089
+    The 23 times epoch one class svm Error Rate=0.934959
+    The 24 times epoch one class svm Error Rate=0.906504
+    The 25 times epoch one class svm Error Rate=0.947154
+    The 26 times epoch one class svm Error Rate=0.955285
+    The 27 times epoch one class svm Error Rate=0.971545
+    The 28 times epoch one class svm Error Rate=0.979675
+    The 29 times epoch one class svm Error Rate=0.995935
+    Epoch #30: Generative Loss: 3.091670274734497, Discriminative Loss: 0.24617470800876617
+    The 30 times epoch one class svm Error Rate=1.000000
+    The 31 times epoch one class svm Error Rate=0.975610
+    The 32 times epoch one class svm Error Rate=0.995935
+    The 33 times epoch one class svm Error Rate=0.987805
+    The 34 times epoch one class svm Error Rate=0.987805
+    The 35 times epoch one class svm Error Rate=0.869919
+    The 36 times epoch one class svm Error Rate=0.914634
+    The 37 times epoch one class svm Error Rate=0.971545
+    The 38 times epoch one class svm Error Rate=0.995935
+    The 39 times epoch one class svm Error Rate=1.000000
+    The 40 times epoch one class svm Error Rate=1.000000
+    The 41 times epoch one class svm Error Rate=1.000000
+    The 42 times epoch one class svm Error Rate=1.000000
+    The 43 times epoch one class svm Error Rate=1.000000
+    The 44 times epoch one class svm Error Rate=1.000000
+    The 45 times epoch one class svm Error Rate=1.000000
+    The 46 times epoch one class svm Error Rate=0.991870
+    The 47 times epoch one class svm Error Rate=0.979675
+    The 48 times epoch one class svm Error Rate=0.934959
+    The 49 times epoch one class svm Error Rate=0.898374
+    The 50 times epoch one class svm Error Rate=0.926829
+    The 51 times epoch one class svm Error Rate=0.865854
+    The 52 times epoch one class svm Error Rate=0.853659
+    The 53 times epoch one class svm Error Rate=0.804878
+    The 54 times epoch one class svm Error Rate=0.837398
+    The 55 times epoch one class svm Error Rate=0.796748
+    The 56 times epoch one class svm Error Rate=0.731707
+    The 57 times epoch one class svm Error Rate=0.756098
+    The 58 times epoch one class svm Error Rate=0.654472
+    The 59 times epoch one class svm Error Rate=0.650407
+    Epoch #60: Generative Loss: 1.0775084495544434, Discriminative Loss: 0.5125947594642639
+    The 60 times epoch one class svm Error Rate=0.560976
+    The 61 times epoch one class svm Error Rate=0.626016
+    The 62 times epoch one class svm Error Rate=0.532520
+    The 63 times epoch one class svm Error Rate=0.548780
+    The 64 times epoch one class svm Error Rate=0.581301
+    The 65 times epoch one class svm Error Rate=0.268293
+    The 66 times epoch one class svm Error Rate=0.313008
+    The 67 times epoch one class svm Error Rate=0.235772
+    The 68 times epoch one class svm Error Rate=0.256098
+    The 69 times epoch one class svm Error Rate=0.300813
+    The 70 times epoch one class svm Error Rate=0.325203
+    The 71 times epoch one class svm Error Rate=0.280488
+    The 72 times epoch one class svm Error Rate=0.321138
+    The 73 times epoch one class svm Error Rate=0.292683
+    The 74 times epoch one class svm Error Rate=0.304878
+    The 75 times epoch one class svm Error Rate=0.097561
+    The 76 times epoch one class svm Error Rate=0.154472
+    The 77 times epoch one class svm Error Rate=0.138211
+    The 78 times epoch one class svm Error Rate=0.207317
+    The 79 times epoch one class svm Error Rate=0.170732
+    The 80 times epoch one class svm Error Rate=0.150407
+    The 81 times epoch one class svm Error Rate=0.130081
+    The 82 times epoch one class svm Error Rate=0.178862
+    The 83 times epoch one class svm Error Rate=0.121951
+    The 84 times epoch one class svm Error Rate=0.235772
+    The 85 times epoch one class svm Error Rate=0.207317
+    The 86 times epoch one class svm Error Rate=0.191057
+    The 87 times epoch one class svm Error Rate=0.199187
+    The 88 times epoch one class svm Error Rate=0.154472
+    The 89 times epoch one class svm Error Rate=0.162602
+    Epoch #90: Generative Loss: 7.745787143707275, Discriminative Loss: 0.29893621802330017
+    The 90 times epoch one class svm Error Rate=0.199187
+    The 91 times epoch one class svm Error Rate=0.191057
+    The 92 times epoch one class svm Error Rate=0.223577
+    The 93 times epoch one class svm Error Rate=0.235772
+    The 94 times epoch one class svm Error Rate=0.170732
+    The 95 times epoch one class svm Error Rate=0.211382
+    The 96 times epoch one class svm Error Rate=0.252033
+    The 97 times epoch one class svm Error Rate=0.313008
+    The 98 times epoch one class svm Error Rate=0.292683
+    The 99 times epoch one class svm Error Rate=0.300813
+    The 100 times epoch one class svm Error Rate=0.260163
+    The 101 times epoch one class svm Error Rate=0.247967
+    The 102 times epoch one class svm Error Rate=0.272358
+    The 103 times epoch one class svm Error Rate=0.300813
+    The 104 times epoch one class svm Error Rate=0.345528
+    The 105 times epoch one class svm Error Rate=0.345528
+    The 106 times epoch one class svm Error Rate=0.308943
+    The 107 times epoch one class svm Error Rate=0.386179
+    The 108 times epoch one class svm Error Rate=0.390244
+    The 109 times epoch one class svm Error Rate=0.341463
+    The 110 times epoch one class svm Error Rate=0.390244
+    The 111 times epoch one class svm Error Rate=0.361789
+    The 112 times epoch one class svm Error Rate=0.394309
+    The 113 times epoch one class svm Error Rate=0.451220
+    The 114 times epoch one class svm Error Rate=0.414634
+    The 115 times epoch one class svm Error Rate=0.426829
+    The 116 times epoch one class svm Error Rate=0.414634
+    The 117 times epoch one class svm Error Rate=0.439024
+    The 118 times epoch one class svm Error Rate=0.325203
+    The 119 times epoch one class svm Error Rate=0.296748
+    Epoch #120: Generative Loss: 13.057535171508789, Discriminative Loss: 0.0875466987490654
+    The 120 times epoch one class svm Error Rate=0.329268
+    The 121 times epoch one class svm Error Rate=0.329268
+    The 122 times epoch one class svm Error Rate=0.357724
+    The 123 times epoch one class svm Error Rate=0.373984
+    The 124 times epoch one class svm Error Rate=0.361789
+    The 125 times epoch one class svm Error Rate=0.341463
+    The 126 times epoch one class svm Error Rate=0.459350
+    The 127 times epoch one class svm Error Rate=0.402439
+    The 128 times epoch one class svm Error Rate=0.402439
+    The 129 times epoch one class svm Error Rate=0.414634
+    The 130 times epoch one class svm Error Rate=0.487805
+    The 131 times epoch one class svm Error Rate=0.382114
+    The 132 times epoch one class svm Error Rate=0.443089
+    The 133 times epoch one class svm Error Rate=0.475610
+    The 134 times epoch one class svm Error Rate=0.500000
+    The 135 times epoch one class svm Error Rate=0.430894
+    The 136 times epoch one class svm Error Rate=0.491870
+    The 137 times epoch one class svm Error Rate=0.479675
+    The 138 times epoch one class svm Error Rate=0.410569
+    The 139 times epoch one class svm Error Rate=0.439024
+    The 140 times epoch one class svm Error Rate=0.439024
+    The 141 times epoch one class svm Error Rate=0.341463
+    The 142 times epoch one class svm Error Rate=0.373984
+    The 143 times epoch one class svm Error Rate=0.422764
+    The 144 times epoch one class svm Error Rate=0.394309
+    The 145 times epoch one class svm Error Rate=0.414634
+    The 146 times epoch one class svm Error Rate=0.398374
+    The 147 times epoch one class svm Error Rate=0.247967
+    The 148 times epoch one class svm Error Rate=0.243902
+    The 149 times epoch one class svm Error Rate=0.256098
+    Epoch #150: Generative Loss: 13.754234313964844, Discriminative Loss: 0.041622038930654526
+    The 150 times epoch one class svm Error Rate=0.256098
+    The 151 times epoch one class svm Error Rate=0.247967
+    The 152 times epoch one class svm Error Rate=0.239837
+    The 153 times epoch one class svm Error Rate=0.284553
+    The 154 times epoch one class svm Error Rate=0.215447
+    The 155 times epoch one class svm Error Rate=0.304878
+    The 156 times epoch one class svm Error Rate=0.313008
+    The 157 times epoch one class svm Error Rate=0.276423
+    The 158 times epoch one class svm Error Rate=0.243902
+    The 159 times epoch one class svm Error Rate=0.292683
+    The 160 times epoch one class svm Error Rate=0.349593
+    The 161 times epoch one class svm Error Rate=0.268293
+    The 162 times epoch one class svm Error Rate=0.280488
+    The 163 times epoch one class svm Error Rate=0.268293
+    The 164 times epoch one class svm Error Rate=0.300813
+    The 165 times epoch one class svm Error Rate=0.296748
+    The 166 times epoch one class svm Error Rate=0.333333
+    The 167 times epoch one class svm Error Rate=0.296748
+    The 168 times epoch one class svm Error Rate=0.304878
+    The 169 times epoch one class svm Error Rate=0.313008
+    The 170 times epoch one class svm Error Rate=0.337398
+    The 171 times epoch one class svm Error Rate=0.369919
+    The 172 times epoch one class svm Error Rate=0.292683
+    The 173 times epoch one class svm Error Rate=0.361789
+    The 174 times epoch one class svm Error Rate=0.313008
+    The 175 times epoch one class svm Error Rate=0.410569
+    The 176 times epoch one class svm Error Rate=0.378049
+    The 177 times epoch one class svm Error Rate=0.414634
+    The 178 times epoch one class svm Error Rate=0.378049
+    The 179 times epoch one class svm Error Rate=0.382114
+    Epoch #180: Generative Loss: 15.43078899383545, Discriminative Loss: 0.0465940460562706
+    The 180 times epoch one class svm Error Rate=0.373984
+    The 181 times epoch one class svm Error Rate=0.390244
+    The 182 times epoch one class svm Error Rate=0.418699
+    The 183 times epoch one class svm Error Rate=0.386179
+    The 184 times epoch one class svm Error Rate=0.341463
+    The 185 times epoch one class svm Error Rate=0.256098
+    The 186 times epoch one class svm Error Rate=0.231707
+    The 187 times epoch one class svm Error Rate=0.203252
+    The 188 times epoch one class svm Error Rate=0.178862
+    The 189 times epoch one class svm Error Rate=0.166667
+    The 190 times epoch one class svm Error Rate=0.158537
+    The 191 times epoch one class svm Error Rate=0.134146
+    The 192 times epoch one class svm Error Rate=0.134146
+    The 193 times epoch one class svm Error Rate=0.117886
+    The 194 times epoch one class svm Error Rate=0.077236
+    The 195 times epoch one class svm Error Rate=0.085366
+    The 196 times epoch one class svm Error Rate=0.101626
+    The 197 times epoch one class svm Error Rate=0.081301
+    The 198 times epoch one class svm Error Rate=0.089431
+    The 199 times epoch one class svm Error Rate=0.126016
+    The 200 times epoch one class svm Error Rate=0.101626
+    The 201 times epoch one class svm Error Rate=0.069106
+    The 202 times epoch one class svm Error Rate=0.093496
+    The 203 times epoch one class svm Error Rate=0.060976
+    The 204 times epoch one class svm Error Rate=0.093496
+    The 205 times epoch one class svm Error Rate=0.077236
+    The 206 times epoch one class svm Error Rate=0.048780
+    The 207 times epoch one class svm Error Rate=0.052846
+    The 208 times epoch one class svm Error Rate=0.052846
+    The 209 times epoch one class svm Error Rate=0.044715
+    Epoch #210: Generative Loss: 9.725569725036621, Discriminative Loss: 0.9999033808708191
+    The 210 times epoch one class svm Error Rate=0.016260
+    The 211 times epoch one class svm Error Rate=0.040650
+    The 212 times epoch one class svm Error Rate=0.032520
+    The 213 times epoch one class svm Error Rate=0.036585
+    The 214 times epoch one class svm Error Rate=0.028455
+    The 215 times epoch one class svm Error Rate=0.040650
+    The 216 times epoch one class svm Error Rate=0.032520
+    The 217 times epoch one class svm Error Rate=0.032520
+    The 218 times epoch one class svm Error Rate=0.028455
+    The 219 times epoch one class svm Error Rate=0.028455
+    The 220 times epoch one class svm Error Rate=0.008130
+    The 221 times epoch one class svm Error Rate=0.012195
+    The 222 times epoch one class svm Error Rate=0.008130
+    The 223 times epoch one class svm Error Rate=0.000000
+    The 224 times epoch one class svm Error Rate=0.016260
+    The 225 times epoch one class svm Error Rate=0.024390
+    The 226 times epoch one class svm Error Rate=0.016260
+    The 227 times epoch one class svm Error Rate=0.012195
+    The 228 times epoch one class svm Error Rate=0.000000
+    The 229 times epoch one class svm Error Rate=0.020325
+    The 230 times epoch one class svm Error Rate=0.012195
+    The 231 times epoch one class svm Error Rate=0.012195
+    The 232 times epoch one class svm Error Rate=0.000000
+    The 233 times epoch one class svm Error Rate=0.008130
+    The 234 times epoch one class svm Error Rate=0.004065
+    The 235 times epoch one class svm Error Rate=0.012195
+    The 236 times epoch one class svm Error Rate=0.000000
+    The 237 times epoch one class svm Error Rate=0.004065
+    The 238 times epoch one class svm Error Rate=0.000000
+    The 239 times epoch one class svm Error Rate=0.000000
+    Epoch #240: Generative Loss: 5.924355983734131, Discriminative Loss: 2.2241828441619873
+    The 240 times epoch one class svm Error Rate=0.000000
+    The 241 times epoch one class svm Error Rate=0.004065
+    The 242 times epoch one class svm Error Rate=0.008130
+    The 243 times epoch one class svm Error Rate=0.004065
+    The 244 times epoch one class svm Error Rate=0.000000
+    The 245 times epoch one class svm Error Rate=0.000000
+    The 246 times epoch one class svm Error Rate=0.000000
+    The 247 times epoch one class svm Error Rate=0.000000
+    The 248 times epoch one class svm Error Rate=0.000000
+    The 249 times epoch one class svm Error Rate=0.004065
+    The 250 times epoch one class svm Error Rate=0.000000
+    The 251 times epoch one class svm Error Rate=0.000000
+    The 252 times epoch one class svm Error Rate=0.000000
+    The 253 times epoch one class svm Error Rate=0.000000
+    The 254 times epoch one class svm Error Rate=0.000000
+    The 255 times epoch one class svm Error Rate=0.000000
+    The 256 times epoch one class svm Error Rate=0.000000
+    The 257 times epoch one class svm Error Rate=0.000000
+    The 258 times epoch one class svm Error Rate=0.000000
+    The 259 times epoch one class svm Error Rate=0.000000
+    The 260 times epoch one class svm Error Rate=0.000000
+    The 261 times epoch one class svm Error Rate=0.004065
+    The 262 times epoch one class svm Error Rate=0.000000
+    The 263 times epoch one class svm Error Rate=0.000000
+    The 264 times epoch one class svm Error Rate=0.000000
+    The 265 times epoch one class svm Error Rate=0.000000
+    The 266 times epoch one class svm Error Rate=0.000000
+    The 267 times epoch one class svm Error Rate=0.000000
+    The 268 times epoch one class svm Error Rate=0.000000
+    The 269 times epoch one class svm Error Rate=0.000000
+    Epoch #270: Generative Loss: 9.801362037658691, Discriminative Loss: 2.071434259414673
+    The 270 times epoch one class svm Error Rate=0.000000
+    The 271 times epoch one class svm Error Rate=0.000000
+    The 272 times epoch one class svm Error Rate=0.000000
+    The 273 times epoch one class svm Error Rate=0.000000
+    The 274 times epoch one class svm Error Rate=0.000000
+    The 275 times epoch one class svm Error Rate=0.000000
+    The 276 times epoch one class svm Error Rate=0.000000
+    The 277 times epoch one class svm Error Rate=0.000000
+    The 278 times epoch one class svm Error Rate=0.000000
+    The 279 times epoch one class svm Error Rate=0.000000
+    The 280 times epoch one class svm Error Rate=0.000000
+    The 281 times epoch one class svm Error Rate=0.000000
+    The 282 times epoch one class svm Error Rate=0.000000
+    The 283 times epoch one class svm Error Rate=0.000000
+    The 284 times epoch one class svm Error Rate=0.000000
+    The 285 times epoch one class svm Error Rate=0.000000
+    The 286 times epoch one class svm Error Rate=0.000000
+    The 287 times epoch one class svm Error Rate=0.000000
+    The 288 times epoch one class svm Error Rate=0.000000
+    The 289 times epoch one class svm Error Rate=0.000000
+    The 290 times epoch one class svm Error Rate=0.000000
+    The 291 times epoch one class svm Error Rate=0.000000
+    The 292 times epoch one class svm Error Rate=0.000000
+    The 293 times epoch one class svm Error Rate=0.000000
+    The 294 times epoch one class svm Error Rate=0.000000
+    The 295 times epoch one class svm Error Rate=0.000000
+    The 296 times epoch one class svm Error Rate=0.000000
+    The 297 times epoch one class svm Error Rate=0.000000
+    The 298 times epoch one class svm Error Rate=0.000000
+    The 299 times epoch one class svm Error Rate=0.000000
+    Epoch #300: Generative Loss: 9.602219581604004, Discriminative Loss: 1.2407653331756592
+    The 300 times epoch one class svm Error Rate=0.000000
+    The 301 times epoch one class svm Error Rate=0.000000
+    The 302 times epoch one class svm Error Rate=0.000000
+    The 303 times epoch one class svm Error Rate=0.000000
+    The 304 times epoch one class svm Error Rate=0.000000
+    The 305 times epoch one class svm Error Rate=0.000000
+    The 306 times epoch one class svm Error Rate=0.000000
+    The 307 times epoch one class svm Error Rate=0.000000
+    The 308 times epoch one class svm Error Rate=0.000000
+    The 309 times epoch one class svm Error Rate=0.000000
+    The 310 times epoch one class svm Error Rate=0.000000
+    The 311 times epoch one class svm Error Rate=0.000000
+    The 312 times epoch one class svm Error Rate=0.000000
+    The 313 times epoch one class svm Error Rate=0.000000
+    The 314 times epoch one class svm Error Rate=0.000000
+    The 315 times epoch one class svm Error Rate=0.000000
+    The 316 times epoch one class svm Error Rate=0.000000
+    The 317 times epoch one class svm Error Rate=0.000000
+    The 318 times epoch one class svm Error Rate=0.000000
+    The 319 times epoch one class svm Error Rate=0.000000
+    The 320 times epoch one class svm Error Rate=0.000000
+    The 321 times epoch one class svm Error Rate=0.000000
+    The 322 times epoch one class svm Error Rate=0.000000
+    The 323 times epoch one class svm Error Rate=0.000000
+    The 324 times epoch one class svm Error Rate=0.000000
+    The 325 times epoch one class svm Error Rate=0.000000
+    The 326 times epoch one class svm Error Rate=0.000000
+    The 327 times epoch one class svm Error Rate=0.000000
+    The 328 times epoch one class svm Error Rate=0.000000
+    The 329 times epoch one class svm Error Rate=0.000000
+    Epoch #330: Generative Loss: 7.252541542053223, Discriminative Loss: 0.8582528829574585
+    The 330 times epoch one class svm Error Rate=0.000000
+    The 331 times epoch one class svm Error Rate=0.000000
+    The 332 times epoch one class svm Error Rate=0.000000
+    The 333 times epoch one class svm Error Rate=0.000000
+    The 334 times epoch one class svm Error Rate=0.000000
+    The 335 times epoch one class svm Error Rate=0.000000
+    The 336 times epoch one class svm Error Rate=0.000000
+    The 337 times epoch one class svm Error Rate=0.000000
+    The 338 times epoch one class svm Error Rate=0.000000
+    The 339 times epoch one class svm Error Rate=0.000000
+    The 340 times epoch one class svm Error Rate=0.000000
+    The 341 times epoch one class svm Error Rate=0.000000
+    The 342 times epoch one class svm Error Rate=0.000000
+    The 343 times epoch one class svm Error Rate=0.000000
+    The 344 times epoch one class svm Error Rate=0.000000
+    The 345 times epoch one class svm Error Rate=0.000000
+    The 346 times epoch one class svm Error Rate=0.000000
+    The 347 times epoch one class svm Error Rate=0.000000
+    The 348 times epoch one class svm Error Rate=0.000000
+    The 349 times epoch one class svm Error Rate=0.000000
+    The 350 times epoch one class svm Error Rate=0.000000
+    The 351 times epoch one class svm Error Rate=0.000000
+    The 352 times epoch one class svm Error Rate=0.000000
+    The 353 times epoch one class svm Error Rate=0.000000
+    The 354 times epoch one class svm Error Rate=0.000000
+    The 355 times epoch one class svm Error Rate=0.000000
+    The 356 times epoch one class svm Error Rate=0.000000
+    The 357 times epoch one class svm Error Rate=0.000000
+    The 358 times epoch one class svm Error Rate=0.000000
+    The 359 times epoch one class svm Error Rate=0.000000
+    Epoch #360: Generative Loss: 12.310481071472168, Discriminative Loss: 0.957058310508728
+    The 360 times epoch one class svm Error Rate=0.000000
+    The 361 times epoch one class svm Error Rate=0.000000
+    The 362 times epoch one class svm Error Rate=0.000000
+    The 363 times epoch one class svm Error Rate=0.000000
+    The 364 times epoch one class svm Error Rate=0.000000
+    The 365 times epoch one class svm Error Rate=0.000000
+    The 366 times epoch one class svm Error Rate=0.000000
+    The 367 times epoch one class svm Error Rate=0.000000
+    The 368 times epoch one class svm Error Rate=0.000000
+    The 369 times epoch one class svm Error Rate=0.000000
+    The 370 times epoch one class svm Error Rate=0.000000
+    The 371 times epoch one class svm Error Rate=0.000000
+    The 372 times epoch one class svm Error Rate=0.000000
+    The 373 times epoch one class svm Error Rate=0.000000
+    The 374 times epoch one class svm Error Rate=0.000000
+    The 375 times epoch one class svm Error Rate=0.000000
+    The 376 times epoch one class svm Error Rate=0.000000
+    The 377 times epoch one class svm Error Rate=0.000000
+    The 378 times epoch one class svm Error Rate=0.000000
+    The 379 times epoch one class svm Error Rate=0.000000
+    The 380 times epoch one class svm Error Rate=0.000000
+    The 381 times epoch one class svm Error Rate=0.000000
+    The 382 times epoch one class svm Error Rate=0.000000
+    The 383 times epoch one class svm Error Rate=0.000000
+    The 384 times epoch one class svm Error Rate=0.000000
+    The 385 times epoch one class svm Error Rate=0.000000
+    The 386 times epoch one class svm Error Rate=0.000000
+    The 387 times epoch one class svm Error Rate=0.000000
+    The 388 times epoch one class svm Error Rate=0.000000
+    The 389 times epoch one class svm Error Rate=0.000000
+    Epoch #390: Generative Loss: 4.789226531982422, Discriminative Loss: 2.3003053665161133
+    The 390 times epoch one class svm Error Rate=0.000000
+    The 391 times epoch one class svm Error Rate=0.000000
+    The 392 times epoch one class svm Error Rate=0.000000
+    The 393 times epoch one class svm Error Rate=0.000000
+    The 394 times epoch one class svm Error Rate=0.000000
+    The 395 times epoch one class svm Error Rate=0.000000
+    The 396 times epoch one class svm Error Rate=0.000000
+    The 397 times epoch one class svm Error Rate=0.000000
+    The 398 times epoch one class svm Error Rate=0.000000
+    The 399 times epoch one class svm Error Rate=0.000000
+    The 400 times epoch one class svm Error Rate=0.000000
+    The 401 times epoch one class svm Error Rate=0.000000
+    The 402 times epoch one class svm Error Rate=0.000000
+    The 403 times epoch one class svm Error Rate=0.000000
+    The 404 times epoch one class svm Error Rate=0.000000
+    The 405 times epoch one class svm Error Rate=0.000000
+    The 406 times epoch one class svm Error Rate=0.000000
+    The 407 times epoch one class svm Error Rate=0.000000
+    The 408 times epoch one class svm Error Rate=0.000000
+    The 409 times epoch one class svm Error Rate=0.000000
+    The 410 times epoch one class svm Error Rate=0.000000
+    The 411 times epoch one class svm Error Rate=0.000000
+    The 412 times epoch one class svm Error Rate=0.000000
+    The 413 times epoch one class svm Error Rate=0.000000
+    The 414 times epoch one class svm Error Rate=0.000000
+    The 415 times epoch one class svm Error Rate=0.000000
+    The 416 times epoch one class svm Error Rate=0.000000
+    The 417 times epoch one class svm Error Rate=0.000000
+    The 418 times epoch one class svm Error Rate=0.000000
+    The 419 times epoch one class svm Error Rate=0.000000
+    Epoch #420: Generative Loss: 6.851884841918945, Discriminative Loss: 2.5857698917388916
+    The 420 times epoch one class svm Error Rate=0.000000
+    The 421 times epoch one class svm Error Rate=0.000000
+    The 422 times epoch one class svm Error Rate=0.000000
+    The 423 times epoch one class svm Error Rate=0.000000
+    The 424 times epoch one class svm Error Rate=0.000000
+    The 425 times epoch one class svm Error Rate=0.000000
+    The 426 times epoch one class svm Error Rate=0.000000
+    The 427 times epoch one class svm Error Rate=0.000000
+    The 428 times epoch one class svm Error Rate=0.000000
+    The 429 times epoch one class svm Error Rate=0.000000
+    The 430 times epoch one class svm Error Rate=0.000000
+    The 431 times epoch one class svm Error Rate=0.000000
+    The 432 times epoch one class svm Error Rate=0.000000
+    The 433 times epoch one class svm Error Rate=0.000000
+    The 434 times epoch one class svm Error Rate=0.000000
+    The 435 times epoch one class svm Error Rate=0.000000
+    The 436 times epoch one class svm Error Rate=0.000000
+    The 437 times epoch one class svm Error Rate=0.000000
+    The 438 times epoch one class svm Error Rate=0.000000
+    The 439 times epoch one class svm Error Rate=0.000000
+    The 440 times epoch one class svm Error Rate=0.000000
+    The 441 times epoch one class svm Error Rate=0.000000
+    The 442 times epoch one class svm Error Rate=0.000000
+    The 443 times epoch one class svm Error Rate=0.000000
+    The 444 times epoch one class svm Error Rate=0.000000
+    The 445 times epoch one class svm Error Rate=0.000000
+    The 446 times epoch one class svm Error Rate=0.000000
+    The 447 times epoch one class svm Error Rate=0.000000
+    The 448 times epoch one class svm Error Rate=0.000000
+    The 449 times epoch one class svm Error Rate=0.000000
+    Epoch #450: Generative Loss: 8.908618927001953, Discriminative Loss: 1.3398958444595337
+    The 450 times epoch one class svm Error Rate=0.000000
+    The 451 times epoch one class svm Error Rate=0.000000
+    The 452 times epoch one class svm Error Rate=0.000000
+    The 453 times epoch one class svm Error Rate=0.000000
+    The 454 times epoch one class svm Error Rate=0.000000
+    The 455 times epoch one class svm Error Rate=0.000000
+    The 456 times epoch one class svm Error Rate=0.000000
+    The 457 times epoch one class svm Error Rate=0.000000
+    The 458 times epoch one class svm Error Rate=0.000000
+    The 459 times epoch one class svm Error Rate=0.000000
+    The 460 times epoch one class svm Error Rate=0.000000
+    The 461 times epoch one class svm Error Rate=0.000000
+    The 462 times epoch one class svm Error Rate=0.000000
+    The 463 times epoch one class svm Error Rate=0.000000
+    The 464 times epoch one class svm Error Rate=0.000000
+    The 465 times epoch one class svm Error Rate=0.000000
+    The 466 times epoch one class svm Error Rate=0.000000
+    The 467 times epoch one class svm Error Rate=0.000000
+    The 468 times epoch one class svm Error Rate=0.000000
+    The 469 times epoch one class svm Error Rate=0.000000
+    The 470 times epoch one class svm Error Rate=0.000000
+    The 471 times epoch one class svm Error Rate=0.000000
+    The 472 times epoch one class svm Error Rate=0.000000
+    The 473 times epoch one class svm Error Rate=0.000000
+    The 474 times epoch one class svm Error Rate=0.000000
+    The 475 times epoch one class svm Error Rate=0.000000
+    The 476 times epoch one class svm Error Rate=0.000000
+    The 477 times epoch one class svm Error Rate=0.000000
+    The 478 times epoch one class svm Error Rate=0.000000
+    The 479 times epoch one class svm Error Rate=0.000000
+    Epoch #480: Generative Loss: 11.32304859161377, Discriminative Loss: 1.2117078304290771
+    The 480 times epoch one class svm Error Rate=0.000000
+    The 481 times epoch one class svm Error Rate=0.000000
+    The 482 times epoch one class svm Error Rate=0.000000
+    The 483 times epoch one class svm Error Rate=0.000000
+    The 484 times epoch one class svm Error Rate=0.000000
+    The 485 times epoch one class svm Error Rate=0.000000
+    The 486 times epoch one class svm Error Rate=0.000000
+    The 487 times epoch one class svm Error Rate=0.000000
+    The 488 times epoch one class svm Error Rate=0.000000
+    The 489 times epoch one class svm Error Rate=0.000000
+    The 490 times epoch one class svm Error Rate=0.000000
+    The 491 times epoch one class svm Error Rate=0.000000
+    The 492 times epoch one class svm Error Rate=0.000000
+    The 493 times epoch one class svm Error Rate=0.000000
+    The 494 times epoch one class svm Error Rate=0.000000
+    The 495 times epoch one class svm Error Rate=0.000000
+    The 496 times epoch one class svm Error Rate=0.000000
+    The 497 times epoch one class svm Error Rate=0.000000
+    The 498 times epoch one class svm Error Rate=0.000000
+    The 499 times epoch one class svm Error Rate=0.000000
+    
+    
+迭代500次之後error rate 基本為0，確定其收斂方向即error rate。   
+
+
+
+# 繪製loss function走勢
+ 
+```python
+ax = pd.DataFrame(
+    {
+        'Generative Loss': g_loss,
+        'Discriminative Loss': d_loss,
+    }
+).plot(title='Training loss', logy=True)
+ax.set_xlabel("Epochs")
+ax.set_ylabel("Loss")
+```
+
+
+
+
+    Text(0, 0.5, 'Loss')
+
+
+
+
+![](/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_6_1.png)
+可以發現不再像之前兩個彼此一上一下的情況，可以有辦法透過超參數的調整讓兩者皆下降。  
+
+# Generate Available Data
+
+
+```python
+#data generate 
+re = 576#number of data generated 
+
+num1 = int(len(xx)/2)
+num2 = int(len(xx)+1)
+new_data = pd.DataFrame(ss.inverse_transform(xx))
+for i in range(re):
+    d_loss, g_loss ,x1,yy= train(GAN, G, D, epochs=1,verbose=True)
+    new_data1 = pd.DataFrame(ss.inverse_transform(x1[num1:num2]))
+    new_data = pd.concat([new_data,new_data1], axis=0)
+
+new_data['Class'] = 1
+```
+
+```python
+new_data.columns = train_nor.columns
+new_data_train = pd.concat([train_nor,new_data],axis = 0)
+```
+
+# 建構分類器
+
+
+```python
+from sklearn.model_selection import train_test_split
+from sklearn import ensemble
+from sklearn import metrics
+
+train_X = new_data_train.iloc[:,0:30]
+test_X = data_test.iloc[:,0:30]
+train_y = new_data_train["Class"]
+test_y = data_test["Class"]
+
+
+forest = ensemble.RandomForestClassifier(n_estimators = 100)
+forest_fit = forest.fit(train_X, train_y)
+
+test_y_predicted = forest.predict(test_X)
+accuracy_rf = metrics.accuracy_score(test_y, test_y_predicted)
+print(accuracy_rf)
+
+
+test_auc = metrics.roc_auc_score(test_y, test_y_predicted)
+print (test_auc)
+```
+
+    0.999726131288447
+    0.9389927353247279
+這個結果比之前的各種方法都來的更好，因此可以說WGAN有機會生成比其他方法好的樣本，但是方向卻與error rate有些許不一致。  
+
+# Result
+```{r}
+result <- data.frame()
+result = data.frame(c(0.9994803480263759,0.8678545237199384))
+result$Under_Sampling = data.frame(c(0.9995084373222475,0.8901876266312907))
+result$SMOTE = data.frame(c(0.9994663033784401,0.9023405417267101))
+result$ADASYN = data.frame(c(0.9993890578147933,0.8982438459344533))
+result$GAN = data.frame(c(0.999557596696722,0.9003572630796582))
+result$WGAN = data.frame(c(0.999726131288447,0.9389927353247279))
+colnames(result) <- c("Non Sampling","Under Sampling","SMOTE","ADASYN","GAN","WGAN")
+rownames(result) <- c("ACC","AUC")
+
+result  = data.frame(t(result))
+result
+
+library(ggplot2)
+ggplot(data = result)+
+  geom_point(mapping = aes(x = ACC,y = AUC,color = rownames(result)),size=7)
+```
+
+這是將這次結果與之前的結果相結合，可以看出不論是在AUC 與 ACC上，WGAN確實表現都來的比其他的好。  

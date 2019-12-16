@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>classification</span>
-        <span>2019-12-13</span>
+        <span>2019-12-17</span>
         
         <span>1 / 2</span>
       
@@ -33,6 +33,42 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">WGAN Practice On Credit Card Data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-17</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_2_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    前幾篇我有提到WGAN在訓練過程中可以改善兩個神經網路loss很難調教的問題(很常判別器的loss下降，生成器的卻一直上升，或是情況相反)，因此我將在此篇裡使用WGAN的規則來修改神經網路的一些參數，條件如下：
+[&hellip;] The WGAN limits:
+1.判別器最後一層去掉sigmoid
+2.生成器和判別器的loss不取log
+3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
+4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
+[&hellip;] import pandas as pdimport numpy&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -189,36 +225,6 @@ There is the paper resource link:&hellip;
     
     這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
 [&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/">Using GAN to generate some non image data with CRE bateria data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-06</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-06-using-gan-to-generate-some-non-image-data-with-cre-bateria-data_files/output_3_0.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次我將修改前次的生成對抗網路，希望能夠調整為一個自動生成樣本的神經網路。我這次將使用以前曾經使用過的CRE Bacteria data(https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/ )。我先建立一個簡單的分類模型，一將使用p_value前五個維度當作解釋變數，先建立一個簡單的分類模型，並將第一類的46個當作樣本輸入至生成對抗網路，調整訓練參數，且試圖讓神經網路能夠產生第一類別的資料。最後，經由生成器生成的資料我將匯入原先的分類模型，觀察是否能產生類似於第一類別的資料，並最終計算其生成準確&hellip;
     </a>
   </div>
 </section>
