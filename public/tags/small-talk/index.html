@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>small-talk | Lin&#39;s Blog</title>
+    <title>small talk | Lin&#39;s Blog</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -21,8 +21,8 @@
 
       <div class="head-meta">
       
-        <span>small-talk</span>
-        <span>2019-12-17</span>
+        <span>small talk</span>
+        <span>2019-12-24</span>
         
         <span>1 / 2</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/">Paper Review [OCGAN: One-class Novelty Detection Using GANs with Constrained Latent Representations]</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-23</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-23-paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations_files/1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜看完一篇有關生成對抗網路與One Class Learning 結合的論文(Source Link:https://arxiv.org/abs/1903.08550) ，其名稱為&lt;&gt;，因此主要方法與我目前在用的內容有很大的相關性。
+[&hellip;] 中文翻譯過來 新奇檢測，不完全等同於異常檢測。通俗來講就是訓練樣本中只有單類（one-class）樣本，測試中需要檢測到不屬於該類的樣本。常用的方法有基於差異度量（重構誤差）和基於分佈（GMM）。對於基於距離度量方法，常用就是auto-encoder，通過單類樣本訓練一個AE，我們期望它對該類重構的誤差越小越好，同時對於其他類&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -187,38 +218,6 @@ There is the paper resource link:&hellip;
     
     不平衡資料 (Imbalanced Data)是很常見於結構化資料的情境之一。比如說我們有一筆保險客戶的資料，有非常多的客戶基本資料(如:居住地、學歷等等)，以及一個對應的反應變數:是否有投保，而這個變量有極大的可能多數為非投保狀態，這種情況就稱為Imbalanced Data，因為最近遇到這個類型的資料分析問題，因此從數篇文章中整理幾個常見的解決方法，這裡主要針對反應變數為binary classificaion的狀態。
 [&hellip;] 因為極度不平衡的資料，將導致我們在訓練分類模型的時候有過度去預測某一類的情況。比如說上述的保險資料，我們持有10萬筆客戶訓練資料，但僅有2000筆資&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/python">Python</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/08/27/how-to-compose-a-python-or-r-script-on-linux-commander/">How to compose a python(or R) script on linux commander.</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-08-27</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/08/27/how-to-compose-a-python-or-r-script-on-linux-commander/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-08-27-how-to-compose-a-python-or-r-script-on-linux-commander_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    In this article I will show how to bulid a script file on your location. And how to compose the script on Python (or R). You should bulid the Python script on your virtual environment if you want to use the keras CUDA.
-You should enter your server at begining.
-[&hellip;] You can key “dir” to check&hellip;
     </a>
   </div>
 </section>
