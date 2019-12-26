@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Paper Review [LOTUS:Logistic Tree with Unbiased Selection] | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2019-12-26</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2019-12-26-paper-review-lotus-logistic-tree-with-unbiased-selection.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  </div>
+
+  <h1><span class="title">Paper Review [LOTUS:Logistic Tree with Unbiased Selection]</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/classification">classification</a>; <a href="/tags/small-talk">small-talk</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>因為修統計書報的關係，這次也被分配要報告一個章節，雖然那本書是工具書取向，但是發現該作者有在2004年寫了一篇有關logistic regression的演算法，他稱之為LOTUS，主要是希望可以解決當時logistic regression的一些問題。</p>
+<p><img src="/post/2019-12-26-paper-review-lotus-logistic-tree-with-unbiased-selection_files/1.jpg" /></p>
+<p>Logistic Regression主要優勢是在他算法快、存處資源低；缺點是如果模型存在共線性、非線性、或交互作用存在，則模型並不好解釋。</p>
+<p>為了克服以上問題，作者提出了一種模型：LOTUS(Logistic Regression with Unbiasd Selection)
+通過樹狀分割數據並且fit不同的Logistic Regression 在每個partition，因為樹狀結構包含了完整模型的描述，因此產生的模型較容易解釋。</p>
+<p>書中提到：<br />
+LOTUS has five properties that make it desirable for analysis and interpretation of large datasets:</p>
+<ol style="list-style-type: decimal">
+<li>negligible bias in split variable selection,<br />
+</li>
+<li>relatively fast training speed<br />
+</li>
+<li>applicability to quantitative and categorical variables<br />
+</li>
+<li>choice of multiple or simple linear logistic node models, and<br />
+</li>
+<li>suitability for datasets with missing values.</li>
+</ol>
+<p>————————————————————————————————————————————– 書這邊有個UCI上面的荷蘭保險資料範例(data link:<a href="https://archive.ics.uci.edu/ml/datasets/Insurance+Company+Benchmark+%28COIL+2000%29" class="uri">https://archive.ics.uci.edu/ml/datasets/Insurance+Company+Benchmark+%28COIL+2000%29</a> )，這邊做個簡單的資料描述：</p>
+<p>1.5,822 筆顧客資料. 一共85個解釋變數</p>
+<p>2.反應變數為caravan，1表示客戶擁有車輛保險</p>
+<p>3.5,822 customers only 348 (or 6%) own caravan insurance policies.</p>
+<p>LOTUS的呈現結果如下圖：<br />
+<img src="/post/2019-12-26-paper-review-lotus-logistic-tree-with-unbiased-selection_files/2.jpg" /><br />
+LOTUS的 terminal node logistic regression 如下圖：<br />
+<img src="/post/2019-12-26-paper-review-lotus-logistic-tree-with-unbiased-selection_files/3.jpg" /></p>
+<p>在有這棵樹的情況下，我們模型的解釋程度相對就提升了許多，因此若是需要解釋、資料存在不想處裡的遺失值等需求，則這將會是一個很好的模型選擇。</p>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/">Paper Review [OCGAN: One-class Novelty Detection Using GANs with Constrained Latent Representations] &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+
+
+
+
+
+</body>
+</html>
+

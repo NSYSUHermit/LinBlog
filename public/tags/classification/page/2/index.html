@@ -22,9 +22,9 @@
       <div class="head-meta">
       
         <span>classification</span>
-        <span>2019-12-24</span>
+        <span>2019-12-26</span>
         
-        <span>2 / 2</span>
+        <span>2 / 3</span>
       
       </div>
     </nav>
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">Practice in GAN with One Class Learning</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-11-14</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_2_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
+[&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -192,39 +223,6 @@ Our target is predicting whether the team will enter the next year playoff or no
   </div>
 </section>
 
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/r">R</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/04/24/cre-bacteria-data-analysis/">CRE Bacteria Data Analysis</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-04-24</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/04/24/cre-bacteria-data-analysis/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-04-24-cre-bacteria-data-analysis_files/figure-html/unnamed-chunk-2-1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    在這個資料中，我們有兩種細菌。前面的46個觀察值是CRE，後面的49個則不是。
-我們希望將資料分類為是否為 CRE。Peak是蛋白質的名稱，而P_value是各蛋白質的重要程度，較低的p_value意味著對是否為CRE的影響更大。因此， 我們將選取較低的p_value變數來構建分類器。
-資料是水平資料。因此我們先將資料轉置成一個95個觀測值與1471個變數的格式，標記何者為CRE， 然後使用機器學習方法對資料進行分類。最後，使用Leave-One-Out交叉驗證來比較各方法的測試精準度。
-In this data, we have two types bacteria. The front&hellip;
-    </a>
-  </div>
-</section>
-
 </main>
 <nav>
 
@@ -262,12 +260,23 @@ In this data, we have two types bacteria. The front&hellip;
     <li class="page-item active"><a class="page-link" href="/tags/classification/page/2/">2</a></li>
     
     
-    <li class="page-item disabled">
-    <a  class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
+    
+    
+    
+    
+        
+        
+    
+    
+    <li class="page-item"><a class="page-link" href="/tags/classification/page/3/">3</a></li>
+    
+    
+    <li class="page-item">
+    <a href="/tags/classification/page/3/" class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
     </li>
     
     <li class="page-item">
-        <a href="/tags/classification/page/2/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
+        <a href="/tags/classification/page/3/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
     </li>
     
 </ul>

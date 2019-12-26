@@ -4,30 +4,53 @@
   
   <url>
     <loc>/categories/</loc>
-    <lastmod>2019-12-23T00:00:00+00:00</lastmod>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/</loc>
-    <lastmod>2019-12-23T00:00:00+00:00</lastmod>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/</loc>
-    <lastmod>2019-12-23T00:00:00+00:00</lastmod>
+    <loc>/post/2019/12/26/paper-review-lotus-logistic-tree-with-unbiased-selection/</loc>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2019-12-23T00:00:00+00:00</lastmod>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2019-12-23T00:00:00+00:00</lastmod>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/classification/</loc>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/categories/machine-learning/</loc>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/small-talk/</loc>
+    <lastmod>2019-12-26T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/</loc>
+    <lastmod>2019-12-23T00:00:00+00:00</lastmod>
   </url>
   
   <url>
@@ -49,12 +72,6 @@
   </url>
   
   <url>
-    <loc>/tags/small-talk/</loc>
-    <lastmod>2019-12-23T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>/categories/python/</loc>
     <lastmod>2019-12-17T00:00:00+00:00</lastmod>
     <priority>0</priority>
@@ -66,24 +83,12 @@
   </url>
   
   <url>
-    <loc>/tags/classification/</loc>
-    <lastmod>2019-12-17T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>/post/2019/12/12/fix-the-r-function/</loc>
     <lastmod>2019-12-12T00:00:00+00:00</lastmod>
   </url>
   
   <url>
     <loc>/categories/r/</loc>
-    <lastmod>2019-12-12T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/categories/machine-learning/</loc>
     <lastmod>2019-12-12T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
