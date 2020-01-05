@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 26 Dec 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 06 Jan 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>SQL Query Optimization</title>
+      <link>/post/2020/01/06/sql-query-optimization/</link>
+      <pubDate>Mon, 06 Jan 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/01/06/sql-query-optimization/</guid>
+      <description>這學期修的資管系資料庫系統期末報告，主要是建立一個有著大資料表的資料庫系統，並且針對系統下三個查詢語句，並且進行查詢句的優化，老師有說可使用</description>
+    </item>
     
     <item>
       <title>Paper Review [LOTUS:Logistic Tree with Unbiased Selection]</title>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SQL on Lin&#39;s Blog</title>
+    <link>/categories/sql/</link>
+    <description>Recent content in SQL on Lin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 Jan 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/categories/sql/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>SQL Query Optimization</title>
+      <link>/post/2020/01/06/sql-query-optimization/</link>
+      <pubDate>Mon, 06 Jan 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/01/06/sql-query-optimization/</guid>
+      <description>這學期修的資管系資料庫系統期末報告，主要是建立一個有著大資料表的資料庫系統，並且針對系統下三個查詢語句，並且進行查詢句的優化，老師有說可使用</description>
+    </item>
+    
+  </channel>
+</rss>
