@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>gan</span>
-        <span>2020-01-06</span>
+        <span>2020-01-16</span>
         
         <span>2 / 2</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/11/09/gan-with-one-class-learning/">GAN with One Class Learning</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-11-09</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/11/09/gan-with-one-class-learning/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-11-09-gan-with-one-class-learning_files/1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    先前幾次我嘗試使用生成對抗網路產生一系列資料，但我們知道GAN的訓練很難調整，除非將生成資料直接拿去訓練比照結果，否則很難知道這次生成樣本的品質(這裡的品質是指有時候樣本過少時，我們產生所需的假資料是否能完美的當作一般樣本進行後續分析)，因此我想透過一些外部機制來當作衡量生成器生成的品質驗證，後來思考其實這有點像是異常檢測，若是先將真實資料做一個一元的異常檢測分類器，我們便可將GAN產生的資料用此當作二次確認(第一次確認是在GAN當中的判別器)，構想圖如下：
+我們將想要生成的某類資料匯入後，先建構一個一元分類器，並將所有資料點都包含於正常資料。接著將原資料匯入GAN當中，經過幾次迭代後，我們&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">

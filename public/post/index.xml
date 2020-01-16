@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 16 Jan 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>OCGAN Tuning</title>
+      <link>/post/2020/01/16/ocgan-tuning/</link>
+      <pubDate>Thu, 16 Jan 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/01/16/ocgan-tuning/</guid>
+      <description>基本上生成樣本已經是可以達成的事情，目前就是調整gan各處的結構，如優化器、激活函數、損失函數等等，目前嘗試皆以randomforest(n</description>
+    </item>
     
     <item>
       <title>SQL Query Optimization</title>

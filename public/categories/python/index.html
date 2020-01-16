@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Python</span>
-        <span>2020-01-06</span>
+        <span>2020-01-16</span>
         
         <span>1 / 2</span>
       
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/01/16/ocgan-tuning/">OCGAN Tuning</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-01-16</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/01/16/ocgan-tuning/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-01-16-ocgan-tuning_files/1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    基本上生成樣本已經是可以達成的事情，目前就是調整gan各處的結構，如優化器、激活函數、損失函數等等，目前嘗試皆以randomforest(n=100)當作統一的模型。下圖是一般神經網路的結構：
+而生成對抗網路則有生成器與判別器兩個神經網路的串接，因此排列組合十分多種，且echo的次數與每個組合的效果並不一定相同，不一定回傳越多次效果越好，因此想先比較完大部分組合後再從中擇優，以下是將之前信用卡資料切分為train:test為1:1後的比較結果，比較傳統oversampling、undersampling與Non Sampling的效果，結果如下圖：
+接下來與gan進行比較，gan的各種組合下表&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -189,38 +221,6 @@
     
     先前幾次我嘗試使用生成對抗網路產生一系列資料，但我們知道GAN的訓練很難調整，除非將生成資料直接拿去訓練比照結果，否則很難知道這次生成樣本的品質(這裡的品質是指有時候樣本過少時，我們產生所需的假資料是否能完美的當作一般樣本進行後續分析)，因此我想透過一些外部機制來當作衡量生成器生成的品質驗證，後來思考其實這有點像是異常檢測，若是先將真實資料做一個一元的異常檢測分類器，我們便可將GAN產生的資料用此當作二次確認(第一次確認是在GAN當中的判別器)，構想圖如下：
 我們將想要生成的某類資料匯入後，先建構一個一元分類器，並將所有資料點都包含於正常資料。接著將原資料匯入GAN當中，經過幾次迭代後，我們&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/machine-learning">machine-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/10/02/one-class-learning/">One Class Learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-10-02</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/10/02/one-class-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-10-02-one-class-learning_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    在資料探勘中，異常檢測:anomaly detection對不符合預期模式或資料集中其他專案的專案、事件或觀測值的辨識。 通常異常專案會轉變成銀行欺詐、結構缺陷、醫療問題、文字錯誤等類型的問題。異常也被稱為離群值、新奇、噪聲、偏差和例外。
-特別是在檢測濫用與網路入侵時，有趣性物件往往不是罕見物件，但卻是超出預料的突發活動。這種模式不遵循通常統計定義中把異常點看作是罕見物件，於是許多異常檢測方法（特別是無監督的方法）將對此類資料失效，除非進行了合適的聚集。相反，群集分析演算法可能可以檢測出這些模式形成的微群集。
-有三大類異常檢測方法。在假設資料集中大多數實體都是正常的前提下，無監督異常檢測方法能&hellip;
     </a>
   </div>
 </section>

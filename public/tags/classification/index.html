@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>classification</span>
-        <span>2020-01-06</span>
+        <span>2020-01-16</span>
         
         <span>1 / 3</span>
       
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/01/16/ocgan-tuning/">OCGAN Tuning</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-01-16</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/01/16/ocgan-tuning/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-01-16-ocgan-tuning_files/1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    基本上生成樣本已經是可以達成的事情，目前就是調整gan各處的結構，如優化器、激活函數、損失函數等等，目前嘗試皆以randomforest(n=100)當作統一的模型。下圖是一般神經網路的結構：
+而生成對抗網路則有生成器與判別器兩個神經網路的串接，因此排列組合十分多種，且echo的次數與每個組合的效果並不一定相同，不一定回傳越多次效果越好，因此想先比較完大部分組合後再從中擇優，以下是將之前信用卡資料切分為train:test為1:1後的比較結果，比較傳統oversampling、undersampling與Non Sampling的效果，結果如下圖：
+接下來與gan進行比較，gan的各種組合下表&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -195,37 +227,6 @@ Logistic Regression主要優勢是在他算法快、存處資源低；缺點是�
     
     I read some paper about GAN for generate synthetic sample data. Then I find a paper it’s framework works similar with my one-class-GAN. So I want to record the paper’s marrows this time.
 There is the paper resource link:&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/">GAN Sampling Versus Other Sampling Method On Credit Card Fraud Detection Data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-19</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-19-gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data_files/1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次，我將使用一個來自kaggle的不平衡數據資料(link:https://www.kaggle.com/mlg-ulb/creditcardfraud/version/1).
-該數據集包含了歐洲持卡人2013年9月通過信用卡進行的交易。這些交易發生在兩天之內，在這裡我們有492筆詐騙資料以及284807正常交易資料。該數據集是非常不平衡的，其中陰性樣本（詐欺）佔所有交易的0.172％。它的變量包含數值輸入變量後PCA變換的結果。不幸的是，由於保密問題我們不能得到原始數據的更多背景信息。特徵V1，V2，…… V28與PCA獲得的主成分，還沒有被轉化與PCA的變量是“交易時間”和“交易金額”。&hellip;
     </a>
   </div>
 </section>
