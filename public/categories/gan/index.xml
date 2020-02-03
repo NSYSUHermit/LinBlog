@@ -6,10 +6,19 @@
     <description>Recent content in gan on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 16 Jan 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 04 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/gan/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>OCGAN Pratice: CRE Bateria data</title>
+      <link>/post/2020/02/04/ocgan-pratice-cre-bateria-data/</link>
+      <pubDate>Tue, 04 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/04/ocgan-pratice-cre-bateria-data/</guid>
+      <description>這次使用之前分析過的CRE資料，來嘗試使用OCGAN，但因原先資料CRE:NON比數為46:49，為了達到不平衡的效果，因此最後採用16:4</description>
+    </item>
     
     <item>
       <title>OCGAN Tuning</title>

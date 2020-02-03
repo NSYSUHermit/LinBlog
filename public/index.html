@@ -23,7 +23,7 @@
       <div class="head-meta">
       
         <span>Lin&#39;s Blog</span>
-        <span>2020-01-16</span>
+        <span>2020-02-04</span>
         
         <span>1 / 6</span>
       
@@ -34,6 +34,40 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">OCGAN Pratice: CRE Bateria data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-04</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-04-ocgan-pratice-cre-bateria-data_files/output_1_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次使用之前分析過的CRE資料，來嘗試使用OCGAN，但因原先資料CRE:NON比數為46:49，為了達到不平衡的效果，因此最後採用16:49的比例，從46個CRE中取隨機16個，而資料的訓練集以及驗證集比例為下：
+Train Set(CRE:Non): 6:19
+Validation Set(CRE:Non): 10:30
+接著我們將分為有使用OCGAN平衡數據集的資料以及未平衡數據集的資料進行分別建模，兩者皆使用SVM的方式建模，並且先透過LOOCV的方式在數據集Tuning模型，最後套入驗證集計算總準確率、f1 score、auc等，比較有無平衡的效果。
+[&hellip;]&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -193,40 +227,6 @@ Logistic Regression主要優勢是在他算法快、存處資源低；缺點是�
 3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
 4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
 [&hellip;] import pandas as pdimport numpy&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/machine-learning">machine-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/12/12/fix-the-r-function/">Fix The R Function </a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-12-12</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/12/12/fix-the-r-function/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-12-12-fix-the-r-function_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這禮拜我做的那個function執行順序上跟老師所要求的有所不同，因此這次將結果修改為老師所要的執行方式。
-原先我以為是要先將所有資料的變數進行pca轉換後再進行分類器leave one out的訓練，因此是將訓練以及測試的資料同時PCA轉換，大致流程為下圖：
-因此訓練資料的正交化與測試資料的正交是同時進行的，因此與老師所要求的流程上不同。
-老師是希望先將資料切分為1:ALL-1，並以ALL-1的Training Set 來進行PCA轉換、訓練分類器，最後將測試資料乘上訓練用的PCA轉換矩陣，並將其結果帶入分類器上來驗證分類預測結果，以此循環進行LOOCV，流程大致如下圖：
-因此最大的差別&hellip;
     </a>
   </div>
 </section>

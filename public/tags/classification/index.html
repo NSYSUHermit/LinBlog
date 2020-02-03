@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>classification</span>
-        <span>2020-01-16</span>
+        <span>2020-02-04</span>
         
         <span>1 / 3</span>
       
@@ -33,6 +33,40 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">OCGAN Pratice: CRE Bateria data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-04</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-04-ocgan-pratice-cre-bateria-data_files/output_1_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次使用之前分析過的CRE資料，來嘗試使用OCGAN，但因原先資料CRE:NON比數為46:49，為了達到不平衡的效果，因此最後採用16:49的比例，從46個CRE中取隨機16個，而資料的訓練集以及驗證集比例為下：
+Train Set(CRE:Non): 6:19
+Validation Set(CRE:Non): 10:30
+接著我們將分為有使用OCGAN平衡數據集的資料以及未平衡數據集的資料進行分別建模，兩者皆使用SVM的方式建模，並且先透過LOOCV的方式在數據集Tuning模型，最後套入驗證集計算總準確率、f1 score、auc等，比較有無平衡的效果。
+[&hellip;]&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -196,37 +230,6 @@ Logistic Regression主要優勢是在他算法快、存處資源低；缺點是�
     這次是跟上次使用相同的資料，只是變成要定義一個規定格式的function，剛好上次的code裡面logistic regression的分類器有寫錯的部分，因此可以順便趁這次的機會修改之前錯誤的地方，部分內容可參考以前那篇blog(CRE Bacteria Data Analysis: https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/)
 一樣我會將資料先進行倒轉，並且為前46個樣本上cre的標籤，後49則上非cre的標籤。
 主要差異為，這次要進行pca，因此再倒轉資料時，並未挑選重要的前50個變&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/25/gan-based-small-sample-augmentation/">GAN Based Small Sample Augmentation</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-25</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/25/gan-based-small-sample-augmentation/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-25-gan-based-small-sample-augmentation_files/1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    I read some paper about GAN for generate synthetic sample data. Then I find a paper it’s framework works similar with my one-class-GAN. So I want to record the paper’s marrows this time.
-There is the paper resource link:&hellip;
     </a>
   </div>
 </section>

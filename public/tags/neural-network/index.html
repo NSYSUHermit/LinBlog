@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>neural network</span>
-        <span>2020-01-16</span>
+        <span>2020-02-04</span>
         
         <span>1 / 2</span>
       
@@ -33,6 +33,40 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">OCGAN Pratice: CRE Bateria data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-04</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-04-ocgan-pratice-cre-bateria-data_files/output_1_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次使用之前分析過的CRE資料，來嘗試使用OCGAN，但因原先資料CRE:NON比數為46:49，為了達到不平衡的效果，因此最後採用16:49的比例，從46個CRE中取隨機16個，而資料的訓練集以及驗證集比例為下：
+Train Set(CRE:Non): 6:19
+Validation Set(CRE:Non): 10:30
+接著我們將分為有使用OCGAN平衡數據集的資料以及未平衡數據集的資料進行分別建模，兩者皆使用SVM的方式建模，並且先透過LOOCV的方式在數據集Tuning模型，最後套入驗證集計算總準確率、f1 score、auc等，比較有無平衡的效果。
+[&hellip;]&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -191,37 +225,6 @@ There is the paper resource link:&hellip;
     
     這次，我將使用一個來自kaggle的不平衡數據資料(link:https://www.kaggle.com/mlg-ulb/creditcardfraud/version/1).
 該數據集包含了歐洲持卡人2013年9月通過信用卡進行的交易。這些交易發生在兩天之內，在這裡我們有492筆詐騙資料以及284807正常交易資料。該數據集是非常不平衡的，其中陰性樣本（詐欺）佔所有交易的0.172％。它的變量包含數值輸入變量後PCA變換的結果。不幸的是，由於保密問題我們不能得到原始數據的更多背景信息。特徵V1，V2，…… V28與PCA獲得的主成分，還沒有被轉化與PCA的變量是“交易時間”和“交易金額”。&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">Practice in GAN with One Class Learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-14</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_2_1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
-[&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
     </a>
   </div>
 </section>
