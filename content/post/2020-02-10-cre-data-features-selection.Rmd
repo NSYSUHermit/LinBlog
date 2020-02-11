@@ -1,0 +1,2015 @@
+---
+title: CRE data features selection
+author: Hermit
+date: '2020-02-10'
+slug: cre-data-features-selection
+categories:
+  - Python
+  - R
+  - machine-learning
+tags:
+  - classification
+---
+這次僅針對CRE data的模型變數選擇，主要以下面python的forward backward selection的方式進行挑選，主要方式為：將所有資料的百分之六十切出，進行變數篩選，並使用loocv的方式比較不同變數模型的準確度差異。
+
+## 讀取與切分資料
+```python
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv')
+from sklearn.model_selection import train_test_split
+import random
+cre = df[df['CRE'].isin([1])].iloc[:,:]
+cre['CRE'] = 1
+normal = df[df['CRE'].isin([0])].iloc[:,:]
+normal['CRE'] = 0
+
+random.seed(3)
+train_nor, test_nor = train_test_split(normal, test_size = 0.6)
+train_cre, test_cre = train_test_split(cre, test_size = 0.6)
+data_train = pd.concat([train_nor,train_cre], axis=0)
+data_test = pd.concat([test_nor,test_cre], axis=0) 
+
+f_x = train_cre.iloc[:,:]
+```
+
+## 定義 forward backward selection function
+```python
+from sklearn.datasets import load_boston
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+import statsmodels.api as sm
+
+def stepwise_selection(X, y, 
+                       initial_list=[], 
+                       threshold_in=0.01, 
+                       threshold_out = 0.05, 
+                       verbose=True):
+    """ Perform a forward-backward feature selection 
+    based on p-value from statsmodels.api.OLS
+    Arguments:
+        X - pandas.DataFrame with candidate features
+        y - list-like with the target
+        initial_list - list of features to start with (column names of X)
+        threshold_in - include a feature if its p-value < threshold_in
+        threshold_out - exclude a feature if its p-value > threshold_out
+        verbose - whether to print the sequence of inclusions and exclusions
+    Returns: list of selected features 
+    Always set threshold_in < threshold_out to avoid infinite looping.
+    See https://en.wikipedia.org/wiki/Stepwise_regression for the details
+    """
+    included = list(initial_list)
+    while True:
+        changed=False
+        # forward step
+        excluded = list(set(X.columns)-set(included))
+        new_pval = pd.Series(index=excluded)
+        for new_column in excluded:
+            model = sm.OLS(y, sm.add_constant(pd.DataFrame(X[included+[new_column]]))).fit()
+            new_pval[new_column] = model.pvalues[new_column]
+        best_pval = new_pval.min()
+        if best_pval < threshold_in:
+            best_feature = new_pval.argmin()
+            included.append(best_feature)
+            changed=True
+            if verbose:
+                print('Add  {:30} with p-value {:.6}'.format(best_feature, best_pval))
+
+        # backward step
+        model = sm.OLS(y, sm.add_constant(pd.DataFrame(X[included]))).fit()
+        # use all coefs except intercept
+        pvalues = model.pvalues.iloc[1:]
+        worst_pval = pvalues.max() # null if pvalues is empty
+        if worst_pval > threshold_out:
+            changed=True
+            worst_feature = pvalues.argmax()
+            included.remove(worst_feature)
+            if verbose:
+                print('Drop {:30} with p-value {:.6}'.format(worst_feature, worst_pval))
+        if not changed:
+            break
+    return included
+```
+
+## 挑選100次變數組合並輸出結果
+```python
+f_list = {}
+for i in range(100):
+    #m1 ,m2  = train_test_split(df, test_size = 0.6)
+    import time
+    tStart = time.time()#計時開始
+    
+    train_nor, test_nor = train_test_split(normal, test_size = 0.6)
+    data_train = pd.concat([train_nor,train_cre], axis=0)
+    
+    X = data_train.iloc[:,0:1471]
+    y = data_train.iloc[:,1471:1472]
+    result = stepwise_selection(X, y)
+    a = i
+    cname=str(a)
+    f_list.setdefault(cname,result)
+
+    #end of 模擬要測量的function
+ 
+    tEnd = time.time()#計時結束
+    #列印結果
+    print ("It cost %f sec" % (tEnd - tStart))#會自動做近位
+    print (tEnd - tStart)#原型長這樣
+```
+    Add  V1201                          with p-value 8.84384e-08
+    Add  V1098                          with p-value 2.85678e-06
+    Add  V483                           with p-value 5.06239e-05
+    Add  V12                            with p-value 0.00063702
+    Add  V503                           with p-value 0.00201273
+    Add  V936                           with p-value 0.0010971
+    Add  V130                           with p-value 0.0010447
+    Add  V131                           with p-value 1.43096e-07
+    Add  V589                           with p-value 0.0013715
+    Add  V47                            with p-value 0.00011529
+    Add  V1225                          with p-value 0.000221064
+    Add  V220                           with p-value 3.62875e-05
+    Add  V354                           with p-value 8.08712e-05
+    Add  V50                            with p-value 0.00585102
+    Add  V372                           with p-value 0.00478135
+    Add  V141                           with p-value 0.0055529
+    Add  V533                           with p-value 0.00270015
+    Add  V324                           with p-value 0.000643428
+    Add  V875                           with p-value 0.000698599
+    Add  V509                           with p-value 0.00418121
+    Add  V197                           with p-value 0.00646997
+    Add  V608                           with p-value 0.00819923
+    It cost 141.595159 sec
+    141.59515857696533
+
+```python
+c = pd.DataFrame(dict([(k, pd.Series(v
+                                    
+                                    )) for k, v in f_list.items()]))
+c3 = c
+c3
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>...</th>
+      <th>90</th>
+      <th>91</th>
+      <th>92</th>
+      <th>93</th>
+      <th>94</th>
+      <th>95</th>
+      <th>96</th>
+      <th>97</th>
+      <th>98</th>
+      <th>99</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1139</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>...</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+      <td>V1201</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V503</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>...</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+      <td>V1098</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>V483</td>
+      <td>V109</td>
+      <td>V483</td>
+      <td>V591</td>
+      <td>V512</td>
+      <td>V483</td>
+      <td>V229</td>
+      <td>V229</td>
+      <td>V1221</td>
+      <td>V483</td>
+      <td>...</td>
+      <td>V1058</td>
+      <td>V483</td>
+      <td>V109</td>
+      <td>V483</td>
+      <td>V1019</td>
+      <td>V109</td>
+      <td>V1019</td>
+      <td>V109</td>
+      <td>V109</td>
+      <td>V1019</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>V12</td>
+      <td>V216</td>
+      <td>V503</td>
+      <td>V61</td>
+      <td>V5</td>
+      <td>V936</td>
+      <td>V130</td>
+      <td>V130</td>
+      <td>V188</td>
+      <td>V12</td>
+      <td>...</td>
+      <td>V358</td>
+      <td>V484</td>
+      <td>V503</td>
+      <td>V12</td>
+      <td>V188</td>
+      <td>V358</td>
+      <td>V188</td>
+      <td>V304</td>
+      <td>V304</td>
+      <td>V188</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>V503</td>
+      <td>V694</td>
+      <td>V936</td>
+      <td>V376</td>
+      <td>V1072</td>
+      <td>V148</td>
+      <td>V456</td>
+      <td>V456</td>
+      <td>V247</td>
+      <td>V936</td>
+      <td>...</td>
+      <td>V130</td>
+      <td>V503</td>
+      <td>V304</td>
+      <td>V201</td>
+      <td>V936</td>
+      <td>V217</td>
+      <td>V1386</td>
+      <td>V503</td>
+      <td>V447</td>
+      <td>V694</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>V936</td>
+      <td>V42</td>
+      <td>V109</td>
+      <td>V270</td>
+      <td>V133</td>
+      <td>V456</td>
+      <td>V936</td>
+      <td>V936</td>
+      <td>V12</td>
+      <td>V503</td>
+      <td>...</td>
+      <td>V131</td>
+      <td>V717</td>
+      <td>V945</td>
+      <td>V1352</td>
+      <td>V39</td>
+      <td>V887</td>
+      <td>V336</td>
+      <td>V1084</td>
+      <td>V62</td>
+      <td>V960</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>V130</td>
+      <td>V1438</td>
+      <td>V185</td>
+      <td>V1154</td>
+      <td>V523</td>
+      <td>V995</td>
+      <td>V382</td>
+      <td>V382</td>
+      <td>V1165</td>
+      <td>V130</td>
+      <td>...</td>
+      <td>V614</td>
+      <td>V945</td>
+      <td>V1086</td>
+      <td>V217</td>
+      <td>V604</td>
+      <td>V694</td>
+      <td>V931</td>
+      <td>V131</td>
+      <td>V875</td>
+      <td>V399</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>V131</td>
+      <td>V970</td>
+      <td>V158</td>
+      <td>V323</td>
+      <td>V1</td>
+      <td>V993</td>
+      <td>V491</td>
+      <td>V191</td>
+      <td>V1068</td>
+      <td>V131</td>
+      <td>...</td>
+      <td>V247</td>
+      <td>V943</td>
+      <td>V48</td>
+      <td>V8</td>
+      <td>V548</td>
+      <td>V399</td>
+      <td>V135</td>
+      <td>V70</td>
+      <td>V94</td>
+      <td>V1095</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>V589</td>
+      <td>V887</td>
+      <td>V96</td>
+      <td>V12</td>
+      <td>V995</td>
+      <td>V89</td>
+      <td>V241</td>
+      <td>V1134</td>
+      <td>V150</td>
+      <td>V589</td>
+      <td>...</td>
+      <td>V6</td>
+      <td>V708</td>
+      <td>V59</td>
+      <td>V269</td>
+      <td>V9</td>
+      <td>V1424</td>
+      <td>V503</td>
+      <td>V16</td>
+      <td>V997</td>
+      <td>V1424</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>V47</td>
+      <td>V600</td>
+      <td>NaN</td>
+      <td>V455</td>
+      <td>V1062</td>
+      <td>V696</td>
+      <td>V31</td>
+      <td>V505</td>
+      <td>V473</td>
+      <td>V47</td>
+      <td>...</td>
+      <td>V936</td>
+      <td>V699</td>
+      <td>V139</td>
+      <td>V11</td>
+      <td>V571</td>
+      <td>V600</td>
+      <td>V273</td>
+      <td>V338</td>
+      <td>V694</td>
+      <td>V859</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>V1225</td>
+      <td>V532</td>
+      <td>NaN</td>
+      <td>V197</td>
+      <td>V645</td>
+      <td>V912</td>
+      <td>V820</td>
+      <td>V1263</td>
+      <td>V1142</td>
+      <td>V1225</td>
+      <td>...</td>
+      <td>V456</td>
+      <td>V670</td>
+      <td>V127</td>
+      <td>V938</td>
+      <td>V557</td>
+      <td>V859</td>
+      <td>V178</td>
+      <td>V223</td>
+      <td>V1112</td>
+      <td>V887</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>V220</td>
+      <td>V399</td>
+      <td>NaN</td>
+      <td>V63</td>
+      <td>V665</td>
+      <td>V651</td>
+      <td>V487</td>
+      <td>V5</td>
+      <td>V508</td>
+      <td>V220</td>
+      <td>...</td>
+      <td>V1245</td>
+      <td>V912</td>
+      <td>V852</td>
+      <td>V475</td>
+      <td>V868</td>
+      <td>V1095</td>
+      <td>NaN</td>
+      <td>V321</td>
+      <td>V1447</td>
+      <td>V336</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>V354</td>
+      <td>V886</td>
+      <td>NaN</td>
+      <td>V296</td>
+      <td>V112</td>
+      <td>V705</td>
+      <td>V824</td>
+      <td>V588</td>
+      <td>V819</td>
+      <td>V580</td>
+      <td>...</td>
+      <td>V619</td>
+      <td>V346</td>
+      <td>V235</td>
+      <td>V341</td>
+      <td>V665</td>
+      <td>V665</td>
+      <td>NaN</td>
+      <td>V438</td>
+      <td>V112</td>
+      <td>V931</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>V50</td>
+      <td>V226</td>
+      <td>NaN</td>
+      <td>V1062</td>
+      <td>V232</td>
+      <td>V699</td>
+      <td>V931</td>
+      <td>V234</td>
+      <td>V131</td>
+      <td>V509</td>
+      <td>...</td>
+      <td>V955</td>
+      <td>V705</td>
+      <td>V611</td>
+      <td>V573</td>
+      <td>V914</td>
+      <td>V394</td>
+      <td>NaN</td>
+      <td>V138</td>
+      <td>V665</td>
+      <td>V226</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>V372</td>
+      <td>V386</td>
+      <td>NaN</td>
+      <td>V809</td>
+      <td>V914</td>
+      <td>V670</td>
+      <td>V1054</td>
+      <td>V813</td>
+      <td>V541</td>
+      <td>V334</td>
+      <td>...</td>
+      <td>V53</td>
+      <td>V651</td>
+      <td>V480</td>
+      <td>V1053</td>
+      <td>V112</td>
+      <td>V915</td>
+      <td>NaN</td>
+      <td>V583</td>
+      <td>V668</td>
+      <td>V92</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>V141</td>
+      <td>V1013</td>
+      <td>NaN</td>
+      <td>V1110</td>
+      <td>V1112</td>
+      <td>V708</td>
+      <td>V388</td>
+      <td>NaN</td>
+      <td>V1166</td>
+      <td>V952</td>
+      <td>...</td>
+      <td>V223</td>
+      <td>V1439</td>
+      <td>V613</td>
+      <td>V450</td>
+      <td>V668</td>
+      <td>V645</td>
+      <td>NaN</td>
+      <td>V249</td>
+      <td>V645</td>
+      <td>V447</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>V533</td>
+      <td>V366</td>
+      <td>NaN</td>
+      <td>V389</td>
+      <td>V668</td>
+      <td>V346</td>
+      <td>V1244</td>
+      <td>NaN</td>
+      <td>V6</td>
+      <td>V451</td>
+      <td>...</td>
+      <td>V515</td>
+      <td>V641</td>
+      <td>V33</td>
+      <td>V129</td>
+      <td>V645</td>
+      <td>V1447</td>
+      <td>NaN</td>
+      <td>V389</td>
+      <td>V951</td>
+      <td>V99</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>V324</td>
+      <td>V53</td>
+      <td>NaN</td>
+      <td>V406</td>
+      <td>V958</td>
+      <td>V641</td>
+      <td>V298</td>
+      <td>NaN</td>
+      <td>V122</td>
+      <td>V148</td>
+      <td>...</td>
+      <td>V824</td>
+      <td>V696</td>
+      <td>V723</td>
+      <td>V852</td>
+      <td>V1447</td>
+      <td>V232</td>
+      <td>NaN</td>
+      <td>V350</td>
+      <td>V859</td>
+      <td>V1183</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>V875</td>
+      <td>V456</td>
+      <td>NaN</td>
+      <td>V508</td>
+      <td>V8</td>
+      <td>V1381</td>
+      <td>V1067</td>
+      <td>NaN</td>
+      <td>V503</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V507</td>
+      <td>V347</td>
+      <td>V1307</td>
+      <td>V750</td>
+      <td>V519</td>
+      <td>V1112</td>
+      <td>NaN</td>
+      <td>V92</td>
+      <td>V399</td>
+      <td>V321</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>V509</td>
+      <td>V205</td>
+      <td>NaN</td>
+      <td>V932</td>
+      <td>V985</td>
+      <td>V717</td>
+      <td>V992</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V171</td>
+      <td>V187</td>
+      <td>V318</td>
+      <td>V1120</td>
+      <td>V1368</td>
+      <td>V112</td>
+      <td>NaN</td>
+      <td>V99</td>
+      <td>V190</td>
+      <td>V851</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>V197</td>
+      <td>V163</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V326</td>
+      <td>V62</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V732</td>
+      <td>V14</td>
+      <td>V122</td>
+      <td>V179</td>
+      <td>V878</td>
+      <td>V668</td>
+      <td>NaN</td>
+      <td>V744</td>
+      <td>V993</td>
+      <td>V1060</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>V608</td>
+      <td>V613</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V241</td>
+      <td>V851</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V285</td>
+      <td>V598</td>
+      <td>V555</td>
+      <td>V130</td>
+      <td>V658</td>
+      <td>V875</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V943</td>
+      <td>V271</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>NaN</td>
+      <td>V1159</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V499</td>
+      <td>V224</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V1223</td>
+      <td>V604</td>
+      <td>V468</td>
+      <td>V586</td>
+      <td>V1305</td>
+      <td>V46</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V113</td>
+      <td>V296</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>NaN</td>
+      <td>V200</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V205</td>
+      <td>V44</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V1031</td>
+      <td>V566</td>
+      <td>V388</td>
+      <td>V1024</td>
+      <td>V405</td>
+      <td>V197</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V180</td>
+      <td>V217</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>NaN</td>
+      <td>V1022</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V852</td>
+      <td>V358</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V568</td>
+      <td>V1133</td>
+      <td>V1019</td>
+      <td>V1158</td>
+      <td>V145</td>
+      <td>V9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V945</td>
+      <td>V102</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>NaN</td>
+      <td>V108</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V934</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V174</td>
+      <td>V323</td>
+      <td>V143</td>
+      <td>V1133</td>
+      <td>V129</td>
+      <td>V22</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V1018</td>
+      <td>V1345</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>NaN</td>
+      <td>V1047</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V419</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V446</td>
+      <td>V610</td>
+      <td>V544</td>
+      <td>V57</td>
+      <td>V994</td>
+      <td>V1026</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V853</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>NaN</td>
+      <td>V203</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V235</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V1132</td>
+      <td>V10</td>
+      <td>V1221</td>
+      <td>V1029</td>
+      <td>V493</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V510</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>NaN</td>
+      <td>V1051</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V623</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V1065</td>
+      <td>V469</td>
+      <td>V328</td>
+      <td>V602</td>
+      <td>V30</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V311</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>NaN</td>
+      <td>V331</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V910</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V848</td>
+      <td>V318</td>
+      <td>V982</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V835</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>NaN</td>
+      <td>V1194</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V1232</td>
+      <td>NaN</td>
+      <td>V617</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V485</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>NaN</td>
+      <td>V1192</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V23</td>
+      <td>NaN</td>
+      <td>V816</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V502</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>NaN</td>
+      <td>V1043</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V822</td>
+      <td>NaN</td>
+      <td>V837</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V51</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>NaN</td>
+      <td>V955</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>V559</td>
+      <td>NaN</td>
+      <td>V919</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V388</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>NaN</td>
+      <td>V915</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>V568</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>NaN</td>
+      <td>V1447</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>NaN</td>
+      <td>V668</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>NaN</td>
+      <td>V914</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>NaN</td>
+      <td>V645</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>NaN</td>
+      <td>V665</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>NaN</td>
+      <td>V875</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>51</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>52</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>53</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>55</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>57</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>59</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>60</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>61 rows × 100 columns</p>
+</div>
+
+
+
+
+```python
+c3.describe()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>...</th>
+      <th>90</th>
+      <th>91</th>
+      <th>92</th>
+      <th>93</th>
+      <th>94</th>
+      <th>95</th>
+      <th>96</th>
+      <th>97</th>
+      <th>98</th>
+      <th>99</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>22</td>
+      <td>42</td>
+      <td>9</td>
+      <td>20</td>
+      <td>20</td>
+      <td>30</td>
+      <td>25</td>
+      <td>15</td>
+      <td>19</td>
+      <td>18</td>
+      <td>...</td>
+      <td>35</td>
+      <td>31</td>
+      <td>35</td>
+      <td>29</td>
+      <td>29</td>
+      <td>27</td>
+      <td>11</td>
+      <td>21</td>
+      <td>36</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>unique</th>
+      <td>22</td>
+      <td>42</td>
+      <td>9</td>
+      <td>20</td>
+      <td>20</td>
+      <td>30</td>
+      <td>25</td>
+      <td>15</td>
+      <td>19</td>
+      <td>18</td>
+      <td>...</td>
+      <td>35</td>
+      <td>31</td>
+      <td>35</td>
+      <td>29</td>
+      <td>29</td>
+      <td>27</td>
+      <td>11</td>
+      <td>21</td>
+      <td>36</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>top</th>
+      <td>V608</td>
+      <td>V875</td>
+      <td>V158</td>
+      <td>V1110</td>
+      <td>V645</td>
+      <td>V651</td>
+      <td>V456</td>
+      <td>V1263</td>
+      <td>V1068</td>
+      <td>V334</td>
+      <td>...</td>
+      <td>V456</td>
+      <td>V651</td>
+      <td>V59</td>
+      <td>V11</td>
+      <td>V1305</td>
+      <td>V217</td>
+      <td>V1098</td>
+      <td>V338</td>
+      <td>V190</td>
+      <td>V217</td>
+    </tr>
+    <tr>
+      <th>freq</th>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>...</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<p>4 rows × 100 columns</p>
+</div>
+
+
+
+
+```python
+result = np.array(c1.iloc[:,0:1])
+result
+```
+
+
+
+
+    array([['V1201'],
+           ['V1098'],
+           ['V12'],
+           ['V892'],
+           ['V188'],
+           ['V205'],
+           ['V376'],
+           ['V187'],
+           ['V666'],
+           ['V1062'],
+           ['V1211'],
+           ['V692'],
+           ['V689'],
+           ['V1223'],
+           ['V48'],
+           ['V634'],
+           ['V668'],
+           ['V841'],
+           ['V665'],
+           ['V645'],
+           ['V490'],
+           ['V148'],
+           ['V936'],
+           ['V529'],
+           ['V472'],
+           ['V886'],
+           ['V391'],
+           ['V888'],
+           ['V1203'],
+           ['V667'],
+           ['V1457'],
+           ['V1155'],
+           ['V395'],
+           ['V646'],
+           ['V712'],
+           ['V931'],
+           ['V1340'],
+           ['V1341'],
+           ['V389'],
+           ['V398']], dtype=object)
+
+
+
+
+```python
+#Write the csv
+c1.to_csv("c1.csv",index=False,sep=',')
+```
+
+# Models Building
+
+```{r}
+# Read data
+data_csv <- read.csv("C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Educations\\NSYSU\\fu_chung\\bacterial - PCA\\20191202_1471_CRE_46-non-CRE_49_Intensity.csv")
+
+# arrange
+if (!require(tidyverse)) install.packages("tidyverse")
+library(tidyverse)
+
+#sort data by p.value
+data_csv <- arrange(data_csv,p.value)
+
+#transpose data
+name_protein <- data_csv[,1]
+data <- as.data.frame(t(data_csv))
+data <- data[-c(1:3),]
+
+#data name
+name_variable <- names(data)
+data_name <- data.frame(name_variable,name_protein)
+data_name <- as.data.frame(t(data_name))
+data$CRE <- as.factor(c(rep(1,46),rep(0,49)))
+```
+
+## forward backward selection
+```{r}
+library(raster)
+feature_csv <- read.csv("C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Documents\\Python\\GAN\\feature.csv")
+#best = c("V993","V322","V864","V689","V598","V1156","V240","V395","V1255","V1218","V634","V529", "V869", "V410", "V521", "V32", "V1201", "V478", "V306", "V964", "V1122", "V485", "V690", "V947", "V677", "V1444", "V832", "V1", "V517", "V351", "V9", "V109", "V872", "V518", "V1239", "V270", "V695", "V147", "V524", "V679", "V320", "V356", "V232", "V687", "V112", "V983", "V146", "V345", "V520", "V198", "V59", "V408", "V110", "V250", "V1275", "V60", "V1253", "V459", "V522", "V889", "V403", "V269", "V87", "V530", "V839", "V399", "V861", "V242", "V823", "V58", "V627", "V84", "V321", "V50", "V483", "V475", "V1396", "V1411", "V1285", "V1093", "V1378", "V413", "V525", "V671", "V30", "V95", "V1199", "V767", "V809", "V1404", "V1401", "V113", "V1198", "V1405", "V1398", "V1209", "V1407", "V1352", "V271", "V528", "V805", "V1397", "V753", "V200", "V1400", "V1408", "V1394", "V593", "V1157", "V233", "V268", "V576", "V181", "V1395", "V820", "V1257", "V514", "V669", "V943", "V489", "V937", "V486", "V513", "V1143", "V966", "V980", "V1274", "V1403", "V343", "V686", "V653", "V1281", "V234", "V1279", "V523", "V870", "V959", "V1278", "V871", "V5", "V775", "V845", "V1211", "V1110", "V1273", "V995", "V1276", "V873", "V595", "V1280", "V1034", "V1228", "V1012", "V1226", "V1094", "V511", "V944", "V1068", "V1146", "V313", "V821", "V122", "V1227", "V386", "V771", "V551", "V538", "V1220", "V1179")
+num = 1
+best = as.character(feature_csv[1:(61 - length(which(feature_csv[,num] == ""))),num])
+
+bestdf = data[,best]
+bestdf$CRE <- as.factor(c(rep(1,46),rep(0,49)))
+```
+
+# loocv
+#tuning rf
+```{r}
+library(randomForest)
+rf_model = randomForest(CRE~.,
+                        data=data,
+                        ntree=500        # num of decision Tree
+                        )
+plot(rf_model)
+which.min(rf_model$err.rate[,1])
+A = as.data.frame(rf_model$importance)
+A$names <- row.names(A)
+A = A[order(A$MeanDecreaseGini,decreasing = T),]
+impo <- A[1:50,2]
+A[c(1:50),]
+impodf = data[,impo]
+impodf$CRE <- as.factor(c(rep(1,46),rep(0,49)))
+```
+
+# output the importance list
+```
+library(randomForest)
+mean_loocv <- vector()
+for(j in c(1:20)){
+rf_loocv_accuracy <- vector()
+
+for(i in c(1:95)){
+  train = bestdf[-i, ]
+  test  = bestdf[i, ]
+  
+  rf_model = randomForest(CRE~.,
+                        data=train,
+                        ntree=100        # num of decision Tree
+                        )
+  
+  test.pred = predict(rf_model, test)
+
+  #Accuracy
+  confus.matrix = table(real=test$CRE, predict=test.pred)
+  rf_loocv_accuracy[i]=sum(diag(confus.matrix))/sum(confus.matrix)
+}
+
+#LOOCV test accuracy
+mean_loocv[j] = mean(rf_loocv_accuracy) # Accurary with LOOCV = 0.9157895
+mean(rf_loocv_accuracy)
+}
+mean_loocv
+write.csv(mean_loocv,"mean_loocv.csv")
+```
+
+# loocv rf for 100 times 60% fb features
+```
+result <- as.data.frame(matrix())
+for(k in c(1:101)){
+num = k
+best = as.character(feature_csv[1:(61 - length(which(feature_csv[,num] == ""))),num])
+
+bestdf = data[,best]
+bestdf$CRE <- as.factor(c(rep(1,46),rep(0,49)))
+
+library(randomForest)
+mean_loocv <- vector()
+for(j in c(1:20)){
+  rf_loocv_accuracy <- vector()
+
+  for(i in c(1:95)){
+    train = bestdf[-i, ]
+    test  = bestdf[i, ]
+  
+    rf_model = randomForest(CRE~.,
+                          data=train,
+                          ntree=100        # num of decision Tree
+                          )
+  
+    test.pred = predict(rf_model, test)
+
+    #Accuracy
+    confus.matrix = table(real=test$CRE, predict=test.pred)
+    rf_loocv_accuracy[i]=sum(diag(confus.matrix))/sum(confus.matrix)
+  }
+
+  #LOOCV test accuracy
+  mean_loocv[j] = mean(rf_loocv_accuracy) # Accurary with LOOCV = 0.9157895
+  mean(rf_loocv_accuracy)
+  }
+  result <- cbind(result, as.data.frame(mean_loocv))
+}
+write.csv(result,"result.csv")
+```
+# the final result
+```{r}
+label <- read.csv("C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Educations\\NSYSU\\fu_chung\\bacterial - PCA\\label.csv")
+label
+```
+
+The link of the label.csv:https://studentnsysuedutw-my.sharepoint.com/:x:/g/personal/m072040030_student_nsysu_edu_tw/EYwoKAr8XOlFm1I8k0VirVgBqPQ13h-RlyFu9oycsf6lwA?e=Ghlwsf
+
+

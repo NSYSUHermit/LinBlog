@@ -23,7 +23,7 @@
       <div class="head-meta">
       
         <span>Lin&#39;s Blog</span>
-        <span>2020-02-04</span>
+        <span>2020-02-11</span>
         
         <span>4 / 6</span>
       
@@ -34,6 +34,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/10/16/dropout/">Dropout </a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-10-16</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/10/16/dropout/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-10-16-dropout_files/1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    Drop 是由Geoff Hinton與多倫多大學的學生所開發的神經網路常規化技術之一。神經網路層的丟棄法，主要是在訓練期間隨機丟棄layer的一些輸出特徵。假設某個輸出向量為[0.2,0.5,1.3,0.8,1.1]的向量，在使用丟棄法後將隨機幾個向量的特徵歸零:[0.2,0,1.3,0,1.1]，而控制丟失多少值一般是採用丟失率來計算，大約0.2~0.5的一個數值。而在test階段不會丟棄任何值，而是按照丟棄率去比例縮小，以平衡被歸零的影響。
+實務上，我們可以在訓練時執行dropout然後把輸出值同比例放大，這樣做就不用再測試做任何變動了。
+這個看似隨興的方法為何可以有效降&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -194,38 +226,6 @@ You should enter your server at begining.
 應該許多人看過以下這張圖：
 因此不免俗的，先簡介這三者，再深入探討我們所要談論的“深度”學習。
 [&hellip;] 人工智慧大約於1950年代，當時電腦科學領域內所電腦是否能用來“思考”，在最開始的&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/python">Python</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/08/19/mlb-playoff-prediction/">MLB playoff prediction with SVM &amp; Randomforest</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-08-19</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/08/19/mlb-playoff-prediction/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-05-02-web-crawler-on-simple-chinese-web_files/2018-07-17_19-00-33.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    In the same theme,MLB.
-I will show how to use Python to train a randomforest and SVM classifier.
-Our target is predicting whether the team will enter the next year playoff or not. Since the playoff qualification depends on the same year&rsquo;s season game win rate. If we predict the same year&hellip;
     </a>
   </div>
 </section>

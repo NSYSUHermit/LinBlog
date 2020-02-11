@@ -23,7 +23,7 @@
       <div class="head-meta">
       
         <span>Lin&#39;s Blog</span>
-        <span>2020-02-04</span>
+        <span>2020-02-11</span>
         
         <span>1 / 6</span>
       
@@ -34,6 +34,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/python">Python</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/10/cre-data-features-selection/">CRE data features selection</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-10</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/10/cre-data-features-selection/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-10-cre-data-features-selection_files/figure-html/unnamed-chunk-3-1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次僅針對CRE data的模型變數選擇，主要以下面python的forward backward selection的方式進行挑選，主要方式為：將所有資料的百分之六十切出，進行變數篩選，並使用loocv的方式比較不同變數模型的準確度差異。
+[&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv&#39;)from&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -191,42 +222,6 @@ Logistic Regression主要優勢是在他算法快、存處資源低；缺點是�
     
     這禮拜看完一篇有關生成對抗網路與One Class Learning 結合的論文(Source Link:https://arxiv.org/abs/1903.08550) ，其名稱為&lt;&gt;，因此主要方法與我目前在用的內容有關。
 作者提出了一種稱為OCGAN的檢測模型，其目的是確定是否樣本來自同一個種類。作者的方案是基於使用auto-encoder network來學習神經網路單類樣本的潛在表示。而本篇文章的模型可明確限制潛在空間。為了實現這一目標，首先迫使潛在空間通過以tanh的激活函數引入編碼器的輸出。其次，利用adversariallyr鑑別潛在空間，確保同類的編碼表示類似於從&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">WGAN Practice On Credit Card Data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-12-17</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_2_1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    前幾篇我有提到WGAN在訓練過程中可以改善兩個神經網路loss很難調教的問題(很常判別器的loss下降，生成器的卻一直上升，或是情況相反)，因此我將在此篇裡使用WGAN的規則來修改神經網路的一些參數，條件如下：
-[&hellip;] The WGAN limits:
-1.判別器最後一層去掉sigmoid
-2.生成器和判別器的loss不取log
-3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
-4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
-[&hellip;] import pandas as pdimport numpy&hellip;
     </a>
   </div>
 </section>

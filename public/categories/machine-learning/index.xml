@@ -6,10 +6,19 @@
     <description>Recent content in machine-learning on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 26 Dec 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 10 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/machine-learning/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>CRE data features selection</title>
+      <link>/post/2020/02/10/cre-data-features-selection/</link>
+      <pubDate>Mon, 10 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/10/cre-data-features-selection/</guid>
+      <description>這次僅針對CRE data的模型變數選擇，主要以下面python的forward backward selection的方式進行挑選，主要方式為：將所有資料的百</description>
+    </item>
     
     <item>
       <title>Paper Review [LOTUS:Logistic Tree with Unbiased Selection]</title>

@@ -1,0 +1,5432 @@
+---
+title: CRE data features selection
+author: Hermit
+date: '2020-02-10'
+slug: cre-data-features-selection
+categories:
+  - Python
+  - R
+  - machine-learning
+tags:
+  - classification
+---
+
+
+
+<p>這次僅針對CRE data的模型變數選擇，主要以下面python的forward backward selection的方式進行挑選，主要方式為：將所有資料的百分之六十切出，進行變數篩選，並使用loocv的方式比較不同變數模型的準確度差異。</p>
+<div id="section" class="section level2">
+<h2>讀取與切分資料</h2>
+<pre class="python"><code>import pandas as pd
+import numpy as np
+
+df = pd.read_csv(&#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv&#39;)
+from sklearn.model_selection import train_test_split
+import random
+cre = df[df[&#39;CRE&#39;].isin([1])].iloc[:,:]
+cre[&#39;CRE&#39;] = 1
+normal = df[df[&#39;CRE&#39;].isin([0])].iloc[:,:]
+normal[&#39;CRE&#39;] = 0
+
+random.seed(3)
+train_nor, test_nor = train_test_split(normal, test_size = 0.6)
+train_cre, test_cre = train_test_split(cre, test_size = 0.6)
+data_train = pd.concat([train_nor,train_cre], axis=0)
+data_test = pd.concat([test_nor,test_cre], axis=0) 
+
+f_x = train_cre.iloc[:,:]</code></pre>
+</div>
+<div id="forward-backward-selection-function" class="section level2">
+<h2>定義 forward backward selection function</h2>
+<pre class="python"><code>from sklearn.datasets import load_boston
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+import statsmodels.api as sm
+
+def stepwise_selection(X, y, 
+                       initial_list=[], 
+                       threshold_in=0.01, 
+                       threshold_out = 0.05, 
+                       verbose=True):
+    &quot;&quot;&quot; Perform a forward-backward feature selection 
+    based on p-value from statsmodels.api.OLS
+    Arguments:
+        X - pandas.DataFrame with candidate features
+        y - list-like with the target
+        initial_list - list of features to start with (column names of X)
+        threshold_in - include a feature if its p-value &lt; threshold_in
+        threshold_out - exclude a feature if its p-value &gt; threshold_out
+        verbose - whether to print the sequence of inclusions and exclusions
+    Returns: list of selected features 
+    Always set threshold_in &lt; threshold_out to avoid infinite looping.
+    See https://en.wikipedia.org/wiki/Stepwise_regression for the details
+    &quot;&quot;&quot;
+    included = list(initial_list)
+    while True:
+        changed=False
+        # forward step
+        excluded = list(set(X.columns)-set(included))
+        new_pval = pd.Series(index=excluded)
+        for new_column in excluded:
+            model = sm.OLS(y, sm.add_constant(pd.DataFrame(X[included+[new_column]]))).fit()
+            new_pval[new_column] = model.pvalues[new_column]
+        best_pval = new_pval.min()
+        if best_pval &lt; threshold_in:
+            best_feature = new_pval.argmin()
+            included.append(best_feature)
+            changed=True
+            if verbose:
+                print(&#39;Add  {:30} with p-value {:.6}&#39;.format(best_feature, best_pval))
+
+        # backward step
+        model = sm.OLS(y, sm.add_constant(pd.DataFrame(X[included]))).fit()
+        # use all coefs except intercept
+        pvalues = model.pvalues.iloc[1:]
+        worst_pval = pvalues.max() # null if pvalues is empty
+        if worst_pval &gt; threshold_out:
+            changed=True
+            worst_feature = pvalues.argmax()
+            included.remove(worst_feature)
+            if verbose:
+                print(&#39;Drop {:30} with p-value {:.6}&#39;.format(worst_feature, worst_pval))
+        if not changed:
+            break
+    return included</code></pre>
+</div>
+<div id="section-1" class="section level2">
+<h2>挑選100次變數組合並輸出結果</h2>
+<pre class="python"><code>f_list = {}
+for i in range(100):
+    #m1 ,m2  = train_test_split(df, test_size = 0.6)
+    import time
+    tStart = time.time()#計時開始
+    
+    train_nor, test_nor = train_test_split(normal, test_size = 0.6)
+    data_train = pd.concat([train_nor,train_cre], axis=0)
+    
+    X = data_train.iloc[:,0:1471]
+    y = data_train.iloc[:,1471:1472]
+    result = stepwise_selection(X, y)
+    a = i
+    cname=str(a)
+    f_list.setdefault(cname,result)
+
+    #end of 模擬要測量的function
+ 
+    tEnd = time.time()#計時結束
+    #列印結果
+    print (&quot;It cost %f sec&quot; % (tEnd - tStart))#會自動做近位
+    print (tEnd - tStart)#原型長這樣</code></pre>
+<pre><code>Add  V1201                          with p-value 8.84384e-08
+Add  V1098                          with p-value 2.85678e-06
+Add  V483                           with p-value 5.06239e-05
+Add  V12                            with p-value 0.00063702
+Add  V503                           with p-value 0.00201273
+Add  V936                           with p-value 0.0010971
+Add  V130                           with p-value 0.0010447
+Add  V131                           with p-value 1.43096e-07
+Add  V589                           with p-value 0.0013715
+Add  V47                            with p-value 0.00011529
+Add  V1225                          with p-value 0.000221064
+Add  V220                           with p-value 3.62875e-05
+Add  V354                           with p-value 8.08712e-05
+Add  V50                            with p-value 0.00585102
+Add  V372                           with p-value 0.00478135
+Add  V141                           with p-value 0.0055529
+Add  V533                           with p-value 0.00270015
+Add  V324                           with p-value 0.000643428
+Add  V875                           with p-value 0.000698599
+Add  V509                           with p-value 0.00418121
+Add  V197                           with p-value 0.00646997
+Add  V608                           with p-value 0.00819923
+It cost 141.595159 sec
+141.59515857696533</code></pre>
+<pre class="python"><code>c = pd.DataFrame(dict([(k, pd.Series(v
+                                    
+                                    )) for k, v in f_list.items()]))
+c3 = c
+c3</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th>
+</th>
+<th>
+0
+</th>
+<th>
+1
+</th>
+<th>
+2
+</th>
+<th>
+3
+</th>
+<th>
+4
+</th>
+<th>
+5
+</th>
+<th>
+6
+</th>
+<th>
+7
+</th>
+<th>
+8
+</th>
+<th>
+9
+</th>
+<th>
+…
+</th>
+<th>
+90
+</th>
+<th>
+91
+</th>
+<th>
+92
+</th>
+<th>
+93
+</th>
+<th>
+94
+</th>
+<th>
+95
+</th>
+<th>
+96
+</th>
+<th>
+97
+</th>
+<th>
+98
+</th>
+<th>
+99
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1139
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+…
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+<td>
+V1201
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V503
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+…
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+<td>
+V1098
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+V483
+</td>
+<td>
+V109
+</td>
+<td>
+V483
+</td>
+<td>
+V591
+</td>
+<td>
+V512
+</td>
+<td>
+V483
+</td>
+<td>
+V229
+</td>
+<td>
+V229
+</td>
+<td>
+V1221
+</td>
+<td>
+V483
+</td>
+<td>
+…
+</td>
+<td>
+V1058
+</td>
+<td>
+V483
+</td>
+<td>
+V109
+</td>
+<td>
+V483
+</td>
+<td>
+V1019
+</td>
+<td>
+V109
+</td>
+<td>
+V1019
+</td>
+<td>
+V109
+</td>
+<td>
+V109
+</td>
+<td>
+V1019
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+V12
+</td>
+<td>
+V216
+</td>
+<td>
+V503
+</td>
+<td>
+V61
+</td>
+<td>
+V5
+</td>
+<td>
+V936
+</td>
+<td>
+V130
+</td>
+<td>
+V130
+</td>
+<td>
+V188
+</td>
+<td>
+V12
+</td>
+<td>
+…
+</td>
+<td>
+V358
+</td>
+<td>
+V484
+</td>
+<td>
+V503
+</td>
+<td>
+V12
+</td>
+<td>
+V188
+</td>
+<td>
+V358
+</td>
+<td>
+V188
+</td>
+<td>
+V304
+</td>
+<td>
+V304
+</td>
+<td>
+V188
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+V503
+</td>
+<td>
+V694
+</td>
+<td>
+V936
+</td>
+<td>
+V376
+</td>
+<td>
+V1072
+</td>
+<td>
+V148
+</td>
+<td>
+V456
+</td>
+<td>
+V456
+</td>
+<td>
+V247
+</td>
+<td>
+V936
+</td>
+<td>
+…
+</td>
+<td>
+V130
+</td>
+<td>
+V503
+</td>
+<td>
+V304
+</td>
+<td>
+V201
+</td>
+<td>
+V936
+</td>
+<td>
+V217
+</td>
+<td>
+V1386
+</td>
+<td>
+V503
+</td>
+<td>
+V447
+</td>
+<td>
+V694
+</td>
+</tr>
+<tr>
+<th>
+5
+</th>
+<td>
+V936
+</td>
+<td>
+V42
+</td>
+<td>
+V109
+</td>
+<td>
+V270
+</td>
+<td>
+V133
+</td>
+<td>
+V456
+</td>
+<td>
+V936
+</td>
+<td>
+V936
+</td>
+<td>
+V12
+</td>
+<td>
+V503
+</td>
+<td>
+…
+</td>
+<td>
+V131
+</td>
+<td>
+V717
+</td>
+<td>
+V945
+</td>
+<td>
+V1352
+</td>
+<td>
+V39
+</td>
+<td>
+V887
+</td>
+<td>
+V336
+</td>
+<td>
+V1084
+</td>
+<td>
+V62
+</td>
+<td>
+V960
+</td>
+</tr>
+<tr>
+<th>
+6
+</th>
+<td>
+V130
+</td>
+<td>
+V1438
+</td>
+<td>
+V185
+</td>
+<td>
+V1154
+</td>
+<td>
+V523
+</td>
+<td>
+V995
+</td>
+<td>
+V382
+</td>
+<td>
+V382
+</td>
+<td>
+V1165
+</td>
+<td>
+V130
+</td>
+<td>
+…
+</td>
+<td>
+V614
+</td>
+<td>
+V945
+</td>
+<td>
+V1086
+</td>
+<td>
+V217
+</td>
+<td>
+V604
+</td>
+<td>
+V694
+</td>
+<td>
+V931
+</td>
+<td>
+V131
+</td>
+<td>
+V875
+</td>
+<td>
+V399
+</td>
+</tr>
+<tr>
+<th>
+7
+</th>
+<td>
+V131
+</td>
+<td>
+V970
+</td>
+<td>
+V158
+</td>
+<td>
+V323
+</td>
+<td>
+V1
+</td>
+<td>
+V993
+</td>
+<td>
+V491
+</td>
+<td>
+V191
+</td>
+<td>
+V1068
+</td>
+<td>
+V131
+</td>
+<td>
+…
+</td>
+<td>
+V247
+</td>
+<td>
+V943
+</td>
+<td>
+V48
+</td>
+<td>
+V8
+</td>
+<td>
+V548
+</td>
+<td>
+V399
+</td>
+<td>
+V135
+</td>
+<td>
+V70
+</td>
+<td>
+V94
+</td>
+<td>
+V1095
+</td>
+</tr>
+<tr>
+<th>
+8
+</th>
+<td>
+V589
+</td>
+<td>
+V887
+</td>
+<td>
+V96
+</td>
+<td>
+V12
+</td>
+<td>
+V995
+</td>
+<td>
+V89
+</td>
+<td>
+V241
+</td>
+<td>
+V1134
+</td>
+<td>
+V150
+</td>
+<td>
+V589
+</td>
+<td>
+…
+</td>
+<td>
+V6
+</td>
+<td>
+V708
+</td>
+<td>
+V59
+</td>
+<td>
+V269
+</td>
+<td>
+V9
+</td>
+<td>
+V1424
+</td>
+<td>
+V503
+</td>
+<td>
+V16
+</td>
+<td>
+V997
+</td>
+<td>
+V1424
+</td>
+</tr>
+<tr>
+<th>
+9
+</th>
+<td>
+V47
+</td>
+<td>
+V600
+</td>
+<td>
+NaN
+</td>
+<td>
+V455
+</td>
+<td>
+V1062
+</td>
+<td>
+V696
+</td>
+<td>
+V31
+</td>
+<td>
+V505
+</td>
+<td>
+V473
+</td>
+<td>
+V47
+</td>
+<td>
+…
+</td>
+<td>
+V936
+</td>
+<td>
+V699
+</td>
+<td>
+V139
+</td>
+<td>
+V11
+</td>
+<td>
+V571
+</td>
+<td>
+V600
+</td>
+<td>
+V273
+</td>
+<td>
+V338
+</td>
+<td>
+V694
+</td>
+<td>
+V859
+</td>
+</tr>
+<tr>
+<th>
+10
+</th>
+<td>
+V1225
+</td>
+<td>
+V532
+</td>
+<td>
+NaN
+</td>
+<td>
+V197
+</td>
+<td>
+V645
+</td>
+<td>
+V912
+</td>
+<td>
+V820
+</td>
+<td>
+V1263
+</td>
+<td>
+V1142
+</td>
+<td>
+V1225
+</td>
+<td>
+…
+</td>
+<td>
+V456
+</td>
+<td>
+V670
+</td>
+<td>
+V127
+</td>
+<td>
+V938
+</td>
+<td>
+V557
+</td>
+<td>
+V859
+</td>
+<td>
+V178
+</td>
+<td>
+V223
+</td>
+<td>
+V1112
+</td>
+<td>
+V887
+</td>
+</tr>
+<tr>
+<th>
+11
+</th>
+<td>
+V220
+</td>
+<td>
+V399
+</td>
+<td>
+NaN
+</td>
+<td>
+V63
+</td>
+<td>
+V665
+</td>
+<td>
+V651
+</td>
+<td>
+V487
+</td>
+<td>
+V5
+</td>
+<td>
+V508
+</td>
+<td>
+V220
+</td>
+<td>
+…
+</td>
+<td>
+V1245
+</td>
+<td>
+V912
+</td>
+<td>
+V852
+</td>
+<td>
+V475
+</td>
+<td>
+V868
+</td>
+<td>
+V1095
+</td>
+<td>
+NaN
+</td>
+<td>
+V321
+</td>
+<td>
+V1447
+</td>
+<td>
+V336
+</td>
+</tr>
+<tr>
+<th>
+12
+</th>
+<td>
+V354
+</td>
+<td>
+V886
+</td>
+<td>
+NaN
+</td>
+<td>
+V296
+</td>
+<td>
+V112
+</td>
+<td>
+V705
+</td>
+<td>
+V824
+</td>
+<td>
+V588
+</td>
+<td>
+V819
+</td>
+<td>
+V580
+</td>
+<td>
+…
+</td>
+<td>
+V619
+</td>
+<td>
+V346
+</td>
+<td>
+V235
+</td>
+<td>
+V341
+</td>
+<td>
+V665
+</td>
+<td>
+V665
+</td>
+<td>
+NaN
+</td>
+<td>
+V438
+</td>
+<td>
+V112
+</td>
+<td>
+V931
+</td>
+</tr>
+<tr>
+<th>
+13
+</th>
+<td>
+V50
+</td>
+<td>
+V226
+</td>
+<td>
+NaN
+</td>
+<td>
+V1062
+</td>
+<td>
+V232
+</td>
+<td>
+V699
+</td>
+<td>
+V931
+</td>
+<td>
+V234
+</td>
+<td>
+V131
+</td>
+<td>
+V509
+</td>
+<td>
+…
+</td>
+<td>
+V955
+</td>
+<td>
+V705
+</td>
+<td>
+V611
+</td>
+<td>
+V573
+</td>
+<td>
+V914
+</td>
+<td>
+V394
+</td>
+<td>
+NaN
+</td>
+<td>
+V138
+</td>
+<td>
+V665
+</td>
+<td>
+V226
+</td>
+</tr>
+<tr>
+<th>
+14
+</th>
+<td>
+V372
+</td>
+<td>
+V386
+</td>
+<td>
+NaN
+</td>
+<td>
+V809
+</td>
+<td>
+V914
+</td>
+<td>
+V670
+</td>
+<td>
+V1054
+</td>
+<td>
+V813
+</td>
+<td>
+V541
+</td>
+<td>
+V334
+</td>
+<td>
+…
+</td>
+<td>
+V53
+</td>
+<td>
+V651
+</td>
+<td>
+V480
+</td>
+<td>
+V1053
+</td>
+<td>
+V112
+</td>
+<td>
+V915
+</td>
+<td>
+NaN
+</td>
+<td>
+V583
+</td>
+<td>
+V668
+</td>
+<td>
+V92
+</td>
+</tr>
+<tr>
+<th>
+15
+</th>
+<td>
+V141
+</td>
+<td>
+V1013
+</td>
+<td>
+NaN
+</td>
+<td>
+V1110
+</td>
+<td>
+V1112
+</td>
+<td>
+V708
+</td>
+<td>
+V388
+</td>
+<td>
+NaN
+</td>
+<td>
+V1166
+</td>
+<td>
+V952
+</td>
+<td>
+…
+</td>
+<td>
+V223
+</td>
+<td>
+V1439
+</td>
+<td>
+V613
+</td>
+<td>
+V450
+</td>
+<td>
+V668
+</td>
+<td>
+V645
+</td>
+<td>
+NaN
+</td>
+<td>
+V249
+</td>
+<td>
+V645
+</td>
+<td>
+V447
+</td>
+</tr>
+<tr>
+<th>
+16
+</th>
+<td>
+V533
+</td>
+<td>
+V366
+</td>
+<td>
+NaN
+</td>
+<td>
+V389
+</td>
+<td>
+V668
+</td>
+<td>
+V346
+</td>
+<td>
+V1244
+</td>
+<td>
+NaN
+</td>
+<td>
+V6
+</td>
+<td>
+V451
+</td>
+<td>
+…
+</td>
+<td>
+V515
+</td>
+<td>
+V641
+</td>
+<td>
+V33
+</td>
+<td>
+V129
+</td>
+<td>
+V645
+</td>
+<td>
+V1447
+</td>
+<td>
+NaN
+</td>
+<td>
+V389
+</td>
+<td>
+V951
+</td>
+<td>
+V99
+</td>
+</tr>
+<tr>
+<th>
+17
+</th>
+<td>
+V324
+</td>
+<td>
+V53
+</td>
+<td>
+NaN
+</td>
+<td>
+V406
+</td>
+<td>
+V958
+</td>
+<td>
+V641
+</td>
+<td>
+V298
+</td>
+<td>
+NaN
+</td>
+<td>
+V122
+</td>
+<td>
+V148
+</td>
+<td>
+…
+</td>
+<td>
+V824
+</td>
+<td>
+V696
+</td>
+<td>
+V723
+</td>
+<td>
+V852
+</td>
+<td>
+V1447
+</td>
+<td>
+V232
+</td>
+<td>
+NaN
+</td>
+<td>
+V350
+</td>
+<td>
+V859
+</td>
+<td>
+V1183
+</td>
+</tr>
+<tr>
+<th>
+18
+</th>
+<td>
+V875
+</td>
+<td>
+V456
+</td>
+<td>
+NaN
+</td>
+<td>
+V508
+</td>
+<td>
+V8
+</td>
+<td>
+V1381
+</td>
+<td>
+V1067
+</td>
+<td>
+NaN
+</td>
+<td>
+V503
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V507
+</td>
+<td>
+V347
+</td>
+<td>
+V1307
+</td>
+<td>
+V750
+</td>
+<td>
+V519
+</td>
+<td>
+V1112
+</td>
+<td>
+NaN
+</td>
+<td>
+V92
+</td>
+<td>
+V399
+</td>
+<td>
+V321
+</td>
+</tr>
+<tr>
+<th>
+19
+</th>
+<td>
+V509
+</td>
+<td>
+V205
+</td>
+<td>
+NaN
+</td>
+<td>
+V932
+</td>
+<td>
+V985
+</td>
+<td>
+V717
+</td>
+<td>
+V992
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V171
+</td>
+<td>
+V187
+</td>
+<td>
+V318
+</td>
+<td>
+V1120
+</td>
+<td>
+V1368
+</td>
+<td>
+V112
+</td>
+<td>
+NaN
+</td>
+<td>
+V99
+</td>
+<td>
+V190
+</td>
+<td>
+V851
+</td>
+</tr>
+<tr>
+<th>
+20
+</th>
+<td>
+V197
+</td>
+<td>
+V163
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V326
+</td>
+<td>
+V62
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V732
+</td>
+<td>
+V14
+</td>
+<td>
+V122
+</td>
+<td>
+V179
+</td>
+<td>
+V878
+</td>
+<td>
+V668
+</td>
+<td>
+NaN
+</td>
+<td>
+V744
+</td>
+<td>
+V993
+</td>
+<td>
+V1060
+</td>
+</tr>
+<tr>
+<th>
+21
+</th>
+<td>
+V608
+</td>
+<td>
+V613
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V241
+</td>
+<td>
+V851
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V285
+</td>
+<td>
+V598
+</td>
+<td>
+V555
+</td>
+<td>
+V130
+</td>
+<td>
+V658
+</td>
+<td>
+V875
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V943
+</td>
+<td>
+V271
+</td>
+</tr>
+<tr>
+<th>
+22
+</th>
+<td>
+NaN
+</td>
+<td>
+V1159
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V499
+</td>
+<td>
+V224
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V1223
+</td>
+<td>
+V604
+</td>
+<td>
+V468
+</td>
+<td>
+V586
+</td>
+<td>
+V1305
+</td>
+<td>
+V46
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V113
+</td>
+<td>
+V296
+</td>
+</tr>
+<tr>
+<th>
+23
+</th>
+<td>
+NaN
+</td>
+<td>
+V200
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V205
+</td>
+<td>
+V44
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V1031
+</td>
+<td>
+V566
+</td>
+<td>
+V388
+</td>
+<td>
+V1024
+</td>
+<td>
+V405
+</td>
+<td>
+V197
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V180
+</td>
+<td>
+V217
+</td>
+</tr>
+<tr>
+<th>
+24
+</th>
+<td>
+NaN
+</td>
+<td>
+V1022
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V852
+</td>
+<td>
+V358
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V568
+</td>
+<td>
+V1133
+</td>
+<td>
+V1019
+</td>
+<td>
+V1158
+</td>
+<td>
+V145
+</td>
+<td>
+V9
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V945
+</td>
+<td>
+V102
+</td>
+</tr>
+<tr>
+<th>
+25
+</th>
+<td>
+NaN
+</td>
+<td>
+V108
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V934
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V174
+</td>
+<td>
+V323
+</td>
+<td>
+V143
+</td>
+<td>
+V1133
+</td>
+<td>
+V129
+</td>
+<td>
+V22
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V1018
+</td>
+<td>
+V1345
+</td>
+</tr>
+<tr>
+<th>
+26
+</th>
+<td>
+NaN
+</td>
+<td>
+V1047
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V419
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V446
+</td>
+<td>
+V610
+</td>
+<td>
+V544
+</td>
+<td>
+V57
+</td>
+<td>
+V994
+</td>
+<td>
+V1026
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V853
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+27
+</th>
+<td>
+NaN
+</td>
+<td>
+V203
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V235
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V1132
+</td>
+<td>
+V10
+</td>
+<td>
+V1221
+</td>
+<td>
+V1029
+</td>
+<td>
+V493
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V510
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+28
+</th>
+<td>
+NaN
+</td>
+<td>
+V1051
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V623
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V1065
+</td>
+<td>
+V469
+</td>
+<td>
+V328
+</td>
+<td>
+V602
+</td>
+<td>
+V30
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V311
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+29
+</th>
+<td>
+NaN
+</td>
+<td>
+V331
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V910
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V848
+</td>
+<td>
+V318
+</td>
+<td>
+V982
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V835
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+…
+</th>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+<td>
+…
+</td>
+</tr>
+<tr>
+<th>
+31
+</th>
+<td>
+NaN
+</td>
+<td>
+V1194
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V1232
+</td>
+<td>
+NaN
+</td>
+<td>
+V617
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V485
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+32
+</th>
+<td>
+NaN
+</td>
+<td>
+V1192
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V23
+</td>
+<td>
+NaN
+</td>
+<td>
+V816
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V502
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+33
+</th>
+<td>
+NaN
+</td>
+<td>
+V1043
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V822
+</td>
+<td>
+NaN
+</td>
+<td>
+V837
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V51
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+34
+</th>
+<td>
+NaN
+</td>
+<td>
+V955
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+V559
+</td>
+<td>
+NaN
+</td>
+<td>
+V919
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V388
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+35
+</th>
+<td>
+NaN
+</td>
+<td>
+V915
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+V568
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+36
+</th>
+<td>
+NaN
+</td>
+<td>
+V1447
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+37
+</th>
+<td>
+NaN
+</td>
+<td>
+V668
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+38
+</th>
+<td>
+NaN
+</td>
+<td>
+V914
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+39
+</th>
+<td>
+NaN
+</td>
+<td>
+V645
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+40
+</th>
+<td>
+NaN
+</td>
+<td>
+V665
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+41
+</th>
+<td>
+NaN
+</td>
+<td>
+V875
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+42
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+43
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+44
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+45
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+46
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+47
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+48
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+49
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+50
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+51
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+52
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+53
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+54
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+55
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+56
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+57
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+58
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+59
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<th>
+60
+</th>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+…
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+<td>
+NaN
+</td>
+</tr>
+</tbody>
+</table>
+<p>
+61 rows × 100 columns
+</p>
+</div>
+<pre class="python"><code>c3.describe()</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th>
+</th>
+<th>
+0
+</th>
+<th>
+1
+</th>
+<th>
+2
+</th>
+<th>
+3
+</th>
+<th>
+4
+</th>
+<th>
+5
+</th>
+<th>
+6
+</th>
+<th>
+7
+</th>
+<th>
+8
+</th>
+<th>
+9
+</th>
+<th>
+…
+</th>
+<th>
+90
+</th>
+<th>
+91
+</th>
+<th>
+92
+</th>
+<th>
+93
+</th>
+<th>
+94
+</th>
+<th>
+95
+</th>
+<th>
+96
+</th>
+<th>
+97
+</th>
+<th>
+98
+</th>
+<th>
+99
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+count
+</th>
+<td>
+22
+</td>
+<td>
+42
+</td>
+<td>
+9
+</td>
+<td>
+20
+</td>
+<td>
+20
+</td>
+<td>
+30
+</td>
+<td>
+25
+</td>
+<td>
+15
+</td>
+<td>
+19
+</td>
+<td>
+18
+</td>
+<td>
+…
+</td>
+<td>
+35
+</td>
+<td>
+31
+</td>
+<td>
+35
+</td>
+<td>
+29
+</td>
+<td>
+29
+</td>
+<td>
+27
+</td>
+<td>
+11
+</td>
+<td>
+21
+</td>
+<td>
+36
+</td>
+<td>
+26
+</td>
+</tr>
+<tr>
+<th>
+unique
+</th>
+<td>
+22
+</td>
+<td>
+42
+</td>
+<td>
+9
+</td>
+<td>
+20
+</td>
+<td>
+20
+</td>
+<td>
+30
+</td>
+<td>
+25
+</td>
+<td>
+15
+</td>
+<td>
+19
+</td>
+<td>
+18
+</td>
+<td>
+…
+</td>
+<td>
+35
+</td>
+<td>
+31
+</td>
+<td>
+35
+</td>
+<td>
+29
+</td>
+<td>
+29
+</td>
+<td>
+27
+</td>
+<td>
+11
+</td>
+<td>
+21
+</td>
+<td>
+36
+</td>
+<td>
+26
+</td>
+</tr>
+<tr>
+<th>
+top
+</th>
+<td>
+V608
+</td>
+<td>
+V875
+</td>
+<td>
+V158
+</td>
+<td>
+V1110
+</td>
+<td>
+V645
+</td>
+<td>
+V651
+</td>
+<td>
+V456
+</td>
+<td>
+V1263
+</td>
+<td>
+V1068
+</td>
+<td>
+V334
+</td>
+<td>
+…
+</td>
+<td>
+V456
+</td>
+<td>
+V651
+</td>
+<td>
+V59
+</td>
+<td>
+V11
+</td>
+<td>
+V1305
+</td>
+<td>
+V217
+</td>
+<td>
+V1098
+</td>
+<td>
+V338
+</td>
+<td>
+V190
+</td>
+<td>
+V217
+</td>
+</tr>
+<tr>
+<th>
+freq
+</th>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+…
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+1
+</td>
+</tr>
+</tbody>
+</table>
+<p>
+4 rows × 100 columns
+</p>
+</div>
+<pre class="python"><code>result = np.array(c1.iloc[:,0:1])
+result</code></pre>
+<p>array([[‘V1201’],
+[‘V1098’],
+[‘V12’],
+[‘V892’],
+[‘V188’],
+[‘V205’],
+[‘V376’],
+[‘V187’],
+[‘V666’],
+[‘V1062’],
+[‘V1211’],
+[‘V692’],
+[‘V689’],
+[‘V1223’],
+[‘V48’],
+[‘V634’],
+[‘V668’],
+[‘V841’],
+[‘V665’],
+[‘V645’],
+[‘V490’],
+[‘V148’],
+[‘V936’],
+[‘V529’],
+[‘V472’],
+[‘V886’],
+[‘V391’],
+[‘V888’],
+[‘V1203’],
+[‘V667’],
+[‘V1457’],
+[‘V1155’],
+[‘V395’],
+[‘V646’],
+[‘V712’],
+[‘V931’],
+[‘V1340’],
+[‘V1341’],
+[‘V389’],
+[‘V398’]], dtype=object)</p>
+<pre class="python"><code>#Write the csv
+c1.to_csv(&quot;c1.csv&quot;,index=False,sep=&#39;,&#39;)</code></pre>
+</div>
+<div id="models-building" class="section level1">
+<h1>Models Building</h1>
+<pre class="r"><code># Read data
+data_csv &lt;- read.csv(&quot;C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Educations\\NSYSU\\fu_chung\\bacterial - PCA\\20191202_1471_CRE_46-non-CRE_49_Intensity.csv&quot;)
+
+# arrange
+if (!require(tidyverse)) install.packages(&quot;tidyverse&quot;)</code></pre>
+<pre><code>## Loading required package: tidyverse</code></pre>
+<pre><code>## -- Attaching packages ------------------------------------------------------------------------------------------------ tidyverse 1.2.1 --</code></pre>
+<pre><code>## √ ggplot2 3.1.1       √ purrr   0.3.2  
+## √ tibble  2.1.1       √ dplyr   0.8.0.1
+## √ tidyr   0.8.3       √ stringr 1.4.0  
+## √ readr   1.3.1       √ forcats 0.4.0</code></pre>
+<pre><code>## -- Conflicts --------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(tidyverse)
+
+#sort data by p.value
+data_csv &lt;- arrange(data_csv,p.value)
+
+#transpose data
+name_protein &lt;- data_csv[,1]
+data &lt;- as.data.frame(t(data_csv))
+data &lt;- data[-c(1:3),]
+
+#data name
+name_variable &lt;- names(data)
+data_name &lt;- data.frame(name_variable,name_protein)
+data_name &lt;- as.data.frame(t(data_name))
+data$CRE &lt;- as.factor(c(rep(1,46),rep(0,49)))</code></pre>
+<div id="forward-backward-selection" class="section level2">
+<h2>forward backward selection</h2>
+<pre class="r"><code>library(raster)</code></pre>
+<pre><code>## Loading required package: sp</code></pre>
+<pre><code>## 
+## Attaching package: &#39;raster&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     select</code></pre>
+<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
+## 
+##     extract</code></pre>
+<pre class="r"><code>feature_csv &lt;- read.csv(&quot;C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Documents\\Python\\GAN\\feature.csv&quot;)
+#best = c(&quot;V993&quot;,&quot;V322&quot;,&quot;V864&quot;,&quot;V689&quot;,&quot;V598&quot;,&quot;V1156&quot;,&quot;V240&quot;,&quot;V395&quot;,&quot;V1255&quot;,&quot;V1218&quot;,&quot;V634&quot;,&quot;V529&quot;, &quot;V869&quot;, &quot;V410&quot;, &quot;V521&quot;, &quot;V32&quot;, &quot;V1201&quot;, &quot;V478&quot;, &quot;V306&quot;, &quot;V964&quot;, &quot;V1122&quot;, &quot;V485&quot;, &quot;V690&quot;, &quot;V947&quot;, &quot;V677&quot;, &quot;V1444&quot;, &quot;V832&quot;, &quot;V1&quot;, &quot;V517&quot;, &quot;V351&quot;, &quot;V9&quot;, &quot;V109&quot;, &quot;V872&quot;, &quot;V518&quot;, &quot;V1239&quot;, &quot;V270&quot;, &quot;V695&quot;, &quot;V147&quot;, &quot;V524&quot;, &quot;V679&quot;, &quot;V320&quot;, &quot;V356&quot;, &quot;V232&quot;, &quot;V687&quot;, &quot;V112&quot;, &quot;V983&quot;, &quot;V146&quot;, &quot;V345&quot;, &quot;V520&quot;, &quot;V198&quot;, &quot;V59&quot;, &quot;V408&quot;, &quot;V110&quot;, &quot;V250&quot;, &quot;V1275&quot;, &quot;V60&quot;, &quot;V1253&quot;, &quot;V459&quot;, &quot;V522&quot;, &quot;V889&quot;, &quot;V403&quot;, &quot;V269&quot;, &quot;V87&quot;, &quot;V530&quot;, &quot;V839&quot;, &quot;V399&quot;, &quot;V861&quot;, &quot;V242&quot;, &quot;V823&quot;, &quot;V58&quot;, &quot;V627&quot;, &quot;V84&quot;, &quot;V321&quot;, &quot;V50&quot;, &quot;V483&quot;, &quot;V475&quot;, &quot;V1396&quot;, &quot;V1411&quot;, &quot;V1285&quot;, &quot;V1093&quot;, &quot;V1378&quot;, &quot;V413&quot;, &quot;V525&quot;, &quot;V671&quot;, &quot;V30&quot;, &quot;V95&quot;, &quot;V1199&quot;, &quot;V767&quot;, &quot;V809&quot;, &quot;V1404&quot;, &quot;V1401&quot;, &quot;V113&quot;, &quot;V1198&quot;, &quot;V1405&quot;, &quot;V1398&quot;, &quot;V1209&quot;, &quot;V1407&quot;, &quot;V1352&quot;, &quot;V271&quot;, &quot;V528&quot;, &quot;V805&quot;, &quot;V1397&quot;, &quot;V753&quot;, &quot;V200&quot;, &quot;V1400&quot;, &quot;V1408&quot;, &quot;V1394&quot;, &quot;V593&quot;, &quot;V1157&quot;, &quot;V233&quot;, &quot;V268&quot;, &quot;V576&quot;, &quot;V181&quot;, &quot;V1395&quot;, &quot;V820&quot;, &quot;V1257&quot;, &quot;V514&quot;, &quot;V669&quot;, &quot;V943&quot;, &quot;V489&quot;, &quot;V937&quot;, &quot;V486&quot;, &quot;V513&quot;, &quot;V1143&quot;, &quot;V966&quot;, &quot;V980&quot;, &quot;V1274&quot;, &quot;V1403&quot;, &quot;V343&quot;, &quot;V686&quot;, &quot;V653&quot;, &quot;V1281&quot;, &quot;V234&quot;, &quot;V1279&quot;, &quot;V523&quot;, &quot;V870&quot;, &quot;V959&quot;, &quot;V1278&quot;, &quot;V871&quot;, &quot;V5&quot;, &quot;V775&quot;, &quot;V845&quot;, &quot;V1211&quot;, &quot;V1110&quot;, &quot;V1273&quot;, &quot;V995&quot;, &quot;V1276&quot;, &quot;V873&quot;, &quot;V595&quot;, &quot;V1280&quot;, &quot;V1034&quot;, &quot;V1228&quot;, &quot;V1012&quot;, &quot;V1226&quot;, &quot;V1094&quot;, &quot;V511&quot;, &quot;V944&quot;, &quot;V1068&quot;, &quot;V1146&quot;, &quot;V313&quot;, &quot;V821&quot;, &quot;V122&quot;, &quot;V1227&quot;, &quot;V386&quot;, &quot;V771&quot;, &quot;V551&quot;, &quot;V538&quot;, &quot;V1220&quot;, &quot;V1179&quot;)
+num = 1
+best = as.character(feature_csv[1:(61 - length(which(feature_csv[,num] == &quot;&quot;))),num])
+
+bestdf = data[,best]
+bestdf$CRE &lt;- as.factor(c(rep(1,46),rep(0,49)))</code></pre>
+</div>
+</div>
+<div id="loocv" class="section level1">
+<h1>loocv</h1>
+<p>#tuning rf</p>
+<pre class="r"><code>library(randomForest)</code></pre>
+<pre><code>## randomForest 4.6-14</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;randomForest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     combine</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     margin</code></pre>
+<pre class="r"><code>rf_model = randomForest(CRE~.,
+                        data=data,
+                        ntree=500        # num of decision Tree
+                        )
+plot(rf_model)</code></pre>
+<p><img src="/post/2020-02-10-cre-data-features-selection_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>which.min(rf_model$err.rate[,1])</code></pre>
+<pre><code>## [1] 74</code></pre>
+<pre class="r"><code>A = as.data.frame(rf_model$importance)
+A$names &lt;- row.names(A)
+A = A[order(A$MeanDecreaseGini,decreasing = T),]
+impo &lt;- A[1:50,2]
+A[c(1:50),]</code></pre>
+<pre><code>##       MeanDecreaseGini names
+## V1426        1.1834974 V1426
+## V1428        1.1720606 V1428
+## V609         1.1346092  V609
+## V994         1.0165750  V994
+## V1380        0.9374424 V1380
+## V172         0.9354806  V172
+## V1228        0.8636190 V1228
+## V935         0.8301419  V935
+## V830         0.7208998  V830
+## V1232        0.7141549 V1232
+## V931         0.7061418  V931
+## V84          0.6654969   V84
+## V32          0.6323930   V32
+## V205         0.6173588  V205
+## V1422        0.6090248 V1422
+## V227         0.5642872  V227
+## V288         0.5503869  V288
+## V242         0.5167885  V242
+## V1251        0.5014634 V1251
+## V37          0.4828901   V37
+## V819         0.4435789  V819
+## V480         0.4415222  V480
+## V1383        0.4247905 V1383
+## V1072        0.3728059 V1072
+## V131         0.3715223  V131
+## V1           0.3439218    V1
+## V1225        0.3430812 V1225
+## V63          0.3287690   V63
+## V473         0.3279806  V473
+## V306         0.3247634  V306
+## V328         0.3116401  V328
+## V188         0.3001575  V188
+## V420         0.2985464  V420
+## V834         0.2972513  V834
+## V4           0.2820016    V4
+## V92          0.2658130   V92
+## V222         0.2602544  V222
+## V1061        0.2516779 V1061
+## V181         0.2499993  V181
+## V218         0.2499116  V218
+## V975         0.2429895  V975
+## V21          0.2417658   V21
+## V20          0.2384349   V20
+## V3           0.2373746    V3
+## V224         0.2316701  V224
+## V129         0.2313994  V129
+## V9           0.2283912    V9
+## V264         0.2260261  V264
+## V611         0.2234616  V611
+## V123         0.2215867  V123</code></pre>
+<pre class="r"><code>impodf = data[,impo]
+impodf$CRE &lt;- as.factor(c(rep(1,46),rep(0,49)))</code></pre>
+</div>
+<div id="output-the-importance-list" class="section level1">
+<h1>output the importance list</h1>
+<pre><code>library(randomForest)
+mean_loocv &lt;- vector()
+for(j in c(1:20)){
+rf_loocv_accuracy &lt;- vector()
+
+for(i in c(1:95)){
+  train = bestdf[-i, ]
+  test  = bestdf[i, ]
+  
+  rf_model = randomForest(CRE~.,
+                        data=train,
+                        ntree=100        # num of decision Tree
+                        )
+  
+  test.pred = predict(rf_model, test)
+
+  #Accuracy
+  confus.matrix = table(real=test$CRE, predict=test.pred)
+  rf_loocv_accuracy[i]=sum(diag(confus.matrix))/sum(confus.matrix)
+}
+
+#LOOCV test accuracy
+mean_loocv[j] = mean(rf_loocv_accuracy) # Accurary with LOOCV = 0.9157895
+mean(rf_loocv_accuracy)
+}
+mean_loocv
+write.csv(mean_loocv,&quot;mean_loocv.csv&quot;)</code></pre>
+</div>
+<div id="loocv-rf-for-100-times-60-fb-features" class="section level1">
+<h1>loocv rf for 100 times 60% fb features</h1>
+<pre><code>result &lt;- as.data.frame(matrix())
+for(k in c(1:101)){
+num = k
+best = as.character(feature_csv[1:(61 - length(which(feature_csv[,num] == &quot;&quot;))),num])
+
+bestdf = data[,best]
+bestdf$CRE &lt;- as.factor(c(rep(1,46),rep(0,49)))
+
+library(randomForest)
+mean_loocv &lt;- vector()
+for(j in c(1:20)){
+  rf_loocv_accuracy &lt;- vector()
+
+  for(i in c(1:95)){
+    train = bestdf[-i, ]
+    test  = bestdf[i, ]
+  
+    rf_model = randomForest(CRE~.,
+                          data=train,
+                          ntree=100        # num of decision Tree
+                          )
+  
+    test.pred = predict(rf_model, test)
+
+    #Accuracy
+    confus.matrix = table(real=test$CRE, predict=test.pred)
+    rf_loocv_accuracy[i]=sum(diag(confus.matrix))/sum(confus.matrix)
+  }
+
+  #LOOCV test accuracy
+  mean_loocv[j] = mean(rf_loocv_accuracy) # Accurary with LOOCV = 0.9157895
+  mean(rf_loocv_accuracy)
+  }
+  result &lt;- cbind(result, as.data.frame(mean_loocv))
+}
+write.csv(result,&quot;result.csv&quot;)</code></pre>
+</div>
+<div id="the-final-result" class="section level1">
+<h1>the final result</h1>
+<pre class="r"><code>label &lt;- read.csv(&quot;C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Educations\\NSYSU\\fu_chung\\bacterial - PCA\\label.csv&quot;)
+label</code></pre>
+<pre><code>##           Names     loop1     loop2     loop3     loop4     loop5
+## 1          best 0.9473684 0.9578947 0.9263158 0.9157895 0.9263158
+## 2    impoall_50 0.9473684 0.9789474 0.9578947 0.9473684 0.9368421
+## 3    impoall_60 0.9473684 0.9473684 0.9578947 0.9684211 0.9684211
+## 4    impoall_80 0.9684211 0.9684211 0.9684211 0.9578947 0.9578947
+## 5   impoall_100 0.9578947 0.9473684 0.9578947 0.9684211 0.9684211
+## 6        fb60_1 0.8105263 0.7578947 0.7789474 0.8210526 0.7684211
+## 7        fb60_2 0.8315789 0.8315789 0.8105263 0.8000000 0.8000000
+## 8        fb60_3 0.6947368 0.6736842 0.7157895 0.6947368 0.7157895
+## 9        fb60_4 0.7894737 0.8105263 0.8105263 0.8210526 0.8105263
+## 10       fb60_5 0.8421053 0.8631579 0.8421053 0.8526316 0.8526316
+## 11       fb60_6 0.8000000 0.7894737 0.7684211 0.8000000 0.7578947
+## 12       fb60_7 0.8947368 0.8105263 0.8736842 0.8315789 0.8736842
+## 13       fb60_8 0.7684211 0.7684211 0.7894737 0.7894737 0.7578947
+## 14       fb60_9 0.8210526 0.8315789 0.8421053 0.8421053 0.8631579
+## 15      fb60_10 0.7684211 0.7894737 0.8105263 0.8105263 0.8210526
+## 16      fb60_11 0.7894737 0.8000000 0.7789474 0.7894737 0.7894737
+## 17      fb60_12 0.8421053 0.8526316 0.8421053 0.8526316 0.8526316
+## 18      fb60_13 0.7894737 0.8000000 0.7894737 0.8210526 0.7789474
+## 19      fb60_14 0.7052632 0.6947368 0.7052632 0.7263158 0.6631579
+## 20      fb60_15 0.8526316 0.8736842 0.8210526 0.8000000 0.8105263
+## 21      fb60_16 0.6947368 0.6736842 0.6631579 0.6947368 0.6736842
+## 22      fb60_17 0.6105263 0.5789474 0.6210526 0.6210526 0.6210526
+## 23      fb60_18 0.8631579 0.8105263 0.8315789 0.8315789 0.8210526
+## 24      fb60_19 0.8315789 0.8526316 0.8315789 0.8315789 0.8210526
+## 25      fb60_20 0.8947368 0.8842105 0.8947368 0.8842105 0.9052632
+## 26      fb60_21 0.8105263 0.8105263 0.8105263 0.7789474 0.8000000
+## 27      fb60_22 0.7578947 0.7368421 0.7263158 0.7368421 0.7263158
+## 28      fb60_23 0.6526316 0.6526316 0.6631579 0.6736842 0.6736842
+## 29      fb60_24 0.7473684 0.6947368 0.7263158 0.7473684 0.7052632
+## 30      fb60_25 0.6947368 0.6842105 0.6947368 0.7052632 0.7157895
+## 31      fb60_26 0.6947368 0.6421053 0.6421053 0.6526316 0.6736842
+## 32      fb60_27 0.8315789 0.8421053 0.8526316 0.8736842 0.8421053
+## 33      fb60_28 0.8947368 0.8631579 0.8842105 0.8842105 0.9052632
+## 34      fb60_29 0.8736842 0.8631579 0.8631579 0.8842105 0.8631579
+## 35      fb60_30 0.8315789 0.8210526 0.8105263 0.8315789 0.8210526
+## 36      fb60_31 0.8631579 0.8526316 0.8842105 0.8526316 0.8842105
+## 37      fb60_32 0.8105263 0.8421053 0.8421053 0.8105263 0.8526316
+## 38      fb60_33 0.8000000 0.8000000 0.8421053 0.8000000 0.8000000
+## 39      fb60_34 0.8421053 0.8421053 0.8526316 0.8210526 0.8421053
+## 40      fb60_35 0.8210526 0.8105263 0.7684211 0.8105263 0.8210526
+## 41      fb60_36 0.8631579 0.8421053 0.8631579 0.8315789 0.8526316
+## 42      fb60_37 0.9052632 0.9052632 0.9263158 0.8842105 0.9368421
+## 43      fb60_38 0.8315789 0.8526316 0.8315789 0.8421053 0.8315789
+## 44      fb60_39 0.8736842 0.8842105 0.8736842 0.8947368 0.8842105
+## 45      fb60_40 0.8105263 0.8210526 0.8000000 0.8210526 0.8210526
+## 46      fb60_41 0.7578947 0.7368421 0.7684211 0.7368421 0.7684211
+## 47      fb60_42 0.7368421 0.7368421 0.7263158 0.7157895 0.7368421
+## 48      fb60_43 0.7473684 0.7789474 0.7684211 0.7473684 0.7684211
+## 49      fb60_44 0.8315789 0.7789474 0.8000000 0.7894737 0.7684211
+## 50      fb60_45 0.7368421 0.7684211 0.7578947 0.7578947 0.7789474
+## 51      fb60_46 0.8105263 0.7894737 0.8000000 0.8210526 0.8105263
+## 52      fb60_47 0.7263158 0.7894737 0.7263158 0.7684211 0.7368421
+## 53      fb60_48 0.8315789 0.8526316 0.7789474 0.8315789 0.8315789
+## 54      fb60_49 0.8105263 0.8105263 0.8315789 0.8210526 0.8105263
+## 55      fb60_50 0.7578947 0.6947368 0.7157895 0.7368421 0.7263158
+## 56      fb60_51 0.8105263 0.8105263 0.8315789 0.8210526 0.8210526
+## 57      fb60_52 0.7789474 0.7578947 0.7473684 0.7473684 0.7368421
+## 58      fb60_53 0.8526316 0.8210526 0.8526316 0.8526316 0.8526316
+## 59      fb60_54 0.8210526 0.8000000 0.7894737 0.8210526 0.8105263
+## 60      fb60_55 0.7368421 0.7789474 0.7368421 0.7789474 0.7789474
+## 61      fb60_56 0.8210526 0.8421053 0.8210526 0.8210526 0.8315789
+## 62      fb60_57 0.8421053 0.8105263 0.8315789 0.7894737 0.7578947
+## 63      fb60_58 0.7894737 0.8105263 0.8105263 0.8000000 0.8210526
+## 64      fb60_59 0.8736842 0.8631579 0.8631579 0.8842105 0.8736842
+## 65      fb60_60 0.9052632 0.8842105 0.8947368 0.9052632 0.8736842
+## 66      fb60_61 0.8526316 0.8315789 0.8421053 0.8315789 0.8315789
+## 67      fb60_62 0.8000000 0.8105263 0.8000000 0.7789474 0.8421053
+## 68      fb60_63 0.8315789 0.8526316 0.8631579 0.8315789 0.8631579
+## 69      fb60_64 0.7578947 0.7368421 0.7473684 0.7157895 0.7578947
+## 70      fb60_65 0.6947368 0.7473684 0.7157895 0.7157895 0.7052632
+## 71      fb60_66 0.6842105 0.6842105 0.6947368 0.7052632 0.7052632
+## 72      fb60_67 0.6842105 0.6842105 0.6842105 0.6947368 0.6842105
+## 73      fb60_68 0.8105263 0.8210526 0.8000000 0.8421053 0.8526316
+## 74      fb60_69 0.8315789 0.8526316 0.8421053 0.8421053 0.8526316
+## 75      fb60_70 0.8631579 0.8631579 0.8526316 0.8947368 0.8421053
+## 76      fb60_71 0.8105263 0.8105263 0.7894737 0.8000000 0.8000000
+## 77      fb60_72 0.6736842 0.6842105 0.7157895 0.6736842 0.6947368
+## 78      fb60_73 0.6842105 0.6947368 0.7052632 0.6947368 0.6631579
+## 79      fb60_74 0.6631579 0.7052632 0.7052632 0.7263158 0.7473684
+## 80      fb60_75 0.7473684 0.7578947 0.7473684 0.7789474 0.7368421
+## 81      fb60_76 0.8947368 0.8947368 0.9052632 0.8842105 0.8947368
+## 82      fb60_77 0.7894737 0.7578947 0.7894737 0.7473684 0.8000000
+## 83      fb60_78 0.7368421 0.7578947 0.7368421 0.7578947 0.7473684
+## 84      fb60_79 0.8105263 0.8736842 0.8842105 0.8526316 0.8526316
+## 85      fb60_80 0.7684211 0.7263158 0.7263158 0.7684211 0.7578947
+## 86      fb60_81 0.6631579 0.6210526 0.6736842 0.6842105 0.6526316
+## 87      fb60_82 0.6947368 0.6631579 0.7052632 0.7052632 0.7157895
+## 88      fb60_83 0.7368421 0.7578947 0.7263158 0.7368421 0.7789474
+## 89      fb60_84 0.7473684 0.7789474 0.7368421 0.7578947 0.7368421
+## 90      fb60_85 0.7894737 0.8000000 0.7789474 0.8000000 0.7894737
+## 91      fb60_86 0.8631579 0.8631579 0.8526316 0.8526316 0.8631579
+## 92      fb60_87 0.8000000 0.7789474 0.7894737 0.8000000 0.8210526
+## 93      fb60_88 0.8210526 0.8210526 0.8210526 0.8105263 0.8210526
+## 94      fb60_89 0.7263158 0.7684211 0.7578947 0.7473684 0.7789474
+## 95      fb60_90 0.8421053 0.8105263 0.8421053 0.8105263 0.8526316
+## 96      fb60_91 0.8842105 0.8842105 0.8947368 0.8421053 0.8631579
+## 97      fb60_92 0.8210526 0.7894737 0.8210526 0.8210526 0.8000000
+## 98      fb60_93 0.8526316 0.8421053 0.8105263 0.8315789 0.8421053
+## 99      fb60_94 0.8947368 0.8526316 0.8947368 0.8842105 0.8736842
+## 100     fb60_95 0.8947368 0.9052632 0.9052632 0.9052632 0.9052632
+## 101     fb60_96 0.8315789 0.7789474 0.8000000 0.7894737 0.8105263
+## 102     fb60_97 0.8421053 0.8315789 0.8315789 0.8315789 0.8315789
+## 103     fb60_98 0.8736842 0.9052632 0.8842105 0.8947368 0.8842105
+## 104     fb60_99 0.7894737 0.7894737 0.8000000 0.8210526 0.7894737
+## 105    fb60_100 0.9157895 0.8842105 0.9052632 0.8736842 0.8526316
+## 106    fb60_101 0.9263158 0.9157895 0.9263158 0.9263158 0.9157895
+##         loop6     loop7     loop8     loop9    loop10    loop11    loop12
+## 1   0.9263158 0.9052632 0.9473684 0.9578947 0.9473684 0.9578947 0.9578947
+## 2   0.9473684 0.9684211 0.9578947 0.9368421 0.9578947 0.9578947 0.9368421
+## 3   0.9578947 0.9578947 0.9578947 0.9684211 0.9684211 0.9578947 0.9684211
+## 4   0.9684211 0.9684211 0.9684211 0.9578947 0.9684211 0.9578947 0.9684211
+## 5   0.9368421 0.9578947 0.9473684 0.9684211 0.9368421 0.9578947 0.9578947
+## 6   0.8000000 0.8000000 0.7894737 0.7789474 0.7789474 0.8421053 0.8315789
+## 7   0.8210526 0.8421053 0.7894737 0.8526316 0.8105263 0.7894737 0.8000000
+## 8   0.7157895 0.6947368 0.6842105 0.6842105 0.6947368 0.7157895 0.6631579
+## 9   0.8210526 0.8000000 0.8000000 0.7789474 0.7789474 0.8000000 0.8000000
+## 10  0.8631579 0.8105263 0.8421053 0.8421053 0.8526316 0.8315789 0.8421053
+## 11  0.7578947 0.7684211 0.8000000 0.7578947 0.7684211 0.8000000 0.7789474
+## 12  0.8421053 0.8526316 0.8631579 0.8631579 0.8315789 0.8526316 0.8421053
+## 13  0.7684211 0.7684211 0.8000000 0.7684211 0.7789474 0.8000000 0.7789474
+## 14  0.8526316 0.8421053 0.8210526 0.8315789 0.8421053 0.8421053 0.8421053
+## 15  0.8000000 0.7789474 0.7894737 0.8210526 0.8105263 0.8000000 0.8000000
+## 16  0.8000000 0.8000000 0.7684211 0.7894737 0.8000000 0.8000000 0.7684211
+## 17  0.8421053 0.8526316 0.8210526 0.8736842 0.8210526 0.8526316 0.8421053
+## 18  0.7789474 0.8105263 0.8210526 0.8000000 0.7894737 0.7684211 0.8315789
+## 19  0.6842105 0.6842105 0.6947368 0.6842105 0.6736842 0.7157895 0.6842105
+## 20  0.8631579 0.8105263 0.8105263 0.8421053 0.8210526 0.8421053 0.8526316
+## 21  0.6842105 0.6736842 0.6947368 0.6947368 0.6631579 0.6842105 0.6842105
+## 22  0.6315789 0.6105263 0.6000000 0.5894737 0.6000000 0.5789474 0.6210526
+## 23  0.8526316 0.8526316 0.8210526 0.8421053 0.7894737 0.8210526 0.8315789
+## 24  0.8526316 0.8315789 0.8526316 0.8315789 0.8526316 0.8421053 0.8736842
+## 25  0.9157895 0.8842105 0.8736842 0.8842105 0.8842105 0.9157895 0.8947368
+## 26  0.8105263 0.8421053 0.8210526 0.7684211 0.8210526 0.8000000 0.8105263
+## 27  0.7578947 0.7473684 0.7368421 0.7368421 0.7263158 0.7473684 0.7473684
+## 28  0.6736842 0.6526316 0.6526316 0.6315789 0.6526316 0.6315789 0.6947368
+## 29  0.7157895 0.7052632 0.7368421 0.7368421 0.7263158 0.7157895 0.7157895
+## 30  0.6842105 0.7157895 0.7157895 0.6947368 0.7157895 0.6947368 0.7052632
+## 31  0.6526316 0.6315789 0.7157895 0.6736842 0.6526316 0.6631579 0.7263158
+## 32  0.8736842 0.8526316 0.8421053 0.8631579 0.8315789 0.8526316 0.8421053
+## 33  0.8842105 0.8842105 0.8842105 0.8736842 0.8842105 0.8842105 0.8631579
+## 34  0.8631579 0.8526316 0.8842105 0.8736842 0.8526316 0.8526316 0.8736842
+## 35  0.7894737 0.8210526 0.8000000 0.8105263 0.8421053 0.8421053 0.8421053
+## 36  0.8526316 0.8631579 0.8421053 0.8315789 0.8736842 0.8736842 0.8526316
+## 37  0.8000000 0.8210526 0.8000000 0.8105263 0.8210526 0.8210526 0.8000000
+## 38  0.8000000 0.8210526 0.8000000 0.7894737 0.8105263 0.8105263 0.8421053
+## 39  0.8421053 0.8421053 0.8526316 0.8421053 0.8526316 0.8000000 0.8421053
+## 40  0.7894737 0.8105263 0.8000000 0.8000000 0.8105263 0.8000000 0.7789474
+## 41  0.8421053 0.8631579 0.8315789 0.8421053 0.8421053 0.8105263 0.8526316
+## 42  0.9263158 0.9052632 0.9263158 0.9052632 0.9052632 0.9052632 0.9263158
+## 43  0.8526316 0.8526316 0.8526316 0.8526316 0.8315789 0.8526316 0.8526316
+## 44  0.8947368 0.8842105 0.8947368 0.8736842 0.8842105 0.8947368 0.8736842
+## 45  0.8315789 0.8000000 0.8210526 0.8105263 0.8105263 0.8000000 0.8000000
+## 46  0.7578947 0.7368421 0.7473684 0.7368421 0.7684211 0.7473684 0.7578947
+## 47  0.7473684 0.7263158 0.6842105 0.7263158 0.6947368 0.7263158 0.7263158
+## 48  0.7473684 0.7578947 0.7368421 0.7894737 0.7578947 0.7684211 0.7894737
+## 49  0.8315789 0.7789474 0.7789474 0.7578947 0.8105263 0.8000000 0.8105263
+## 50  0.7368421 0.7263158 0.7578947 0.7578947 0.7157895 0.7789474 0.7578947
+## 51  0.8000000 0.7789474 0.8000000 0.8210526 0.8000000 0.8315789 0.8526316
+## 52  0.7578947 0.7368421 0.7473684 0.7789474 0.7789474 0.7263158 0.7263158
+## 53  0.8315789 0.8105263 0.8315789 0.8315789 0.8105263 0.8526316 0.8526316
+## 54  0.8210526 0.8315789 0.8000000 0.8000000 0.8315789 0.8000000 0.8000000
+## 55  0.7368421 0.7052632 0.6947368 0.7052632 0.7052632 0.6842105 0.6947368
+## 56  0.8000000 0.8105263 0.8315789 0.8210526 0.8210526 0.8105263 0.8210526
+## 57  0.7684211 0.7578947 0.7578947 0.7368421 0.7473684 0.7684211 0.7473684
+## 58  0.8526316 0.8736842 0.8526316 0.8315789 0.8736842 0.8421053 0.8526316
+## 59  0.8210526 0.7894737 0.8210526 0.8315789 0.7894737 0.7894737 0.8105263
+## 60  0.7578947 0.7578947 0.7368421 0.7578947 0.7894737 0.7894737 0.7684211
+## 61  0.8105263 0.8000000 0.8105263 0.8315789 0.8105263 0.8210526 0.8000000
+## 62  0.8315789 0.8105263 0.8105263 0.7578947 0.8000000 0.8000000 0.7789474
+## 63  0.8000000 0.8105263 0.7789474 0.8210526 0.8210526 0.8315789 0.8105263
+## 64  0.8631579 0.8631579 0.8526316 0.8736842 0.8631579 0.8526316 0.8736842
+## 65  0.9052632 0.9263158 0.8947368 0.8842105 0.8947368 0.9157895 0.9157895
+## 66  0.8000000 0.8526316 0.8000000 0.8210526 0.8105263 0.8315789 0.8210526
+## 67  0.8421053 0.8315789 0.8210526 0.8105263 0.8421053 0.8421053 0.8210526
+## 68  0.8421053 0.8631579 0.8421053 0.8421053 0.8421053 0.8736842 0.8421053
+## 69  0.7473684 0.7368421 0.7263158 0.7578947 0.7368421 0.7473684 0.7157895
+## 70  0.7052632 0.7157895 0.7368421 0.6947368 0.6736842 0.7473684 0.7368421
+## 71  0.7052632 0.7157895 0.7052632 0.7052632 0.6947368 0.7052632 0.7368421
+## 72  0.6842105 0.6947368 0.6947368 0.6947368 0.6736842 0.6736842 0.6947368
+## 73  0.8315789 0.8421053 0.8421053 0.8105263 0.8421053 0.8105263 0.8315789
+## 74  0.8526316 0.8421053 0.8421053 0.8631579 0.8421053 0.8631579 0.8526316
+## 75  0.8210526 0.8947368 0.8526316 0.8736842 0.8210526 0.8421053 0.8736842
+## 76  0.8000000 0.7684211 0.7684211 0.7894737 0.7789474 0.7789474 0.7684211
+## 77  0.7157895 0.7263158 0.6947368 0.7052632 0.7052632 0.6947368 0.6947368
+## 78  0.6842105 0.6736842 0.6736842 0.6736842 0.6947368 0.7157895 0.6736842
+## 79  0.6631579 0.7052632 0.6947368 0.6947368 0.7052632 0.6842105 0.6736842
+## 80  0.7578947 0.7578947 0.7157895 0.7789474 0.7578947 0.7473684 0.7684211
+## 81  0.8736842 0.8947368 0.8842105 0.8947368 0.8842105 0.9157895 0.8947368
+## 82  0.7473684 0.7894737 0.8000000 0.8000000 0.8210526 0.7684211 0.8315789
+## 83  0.7263158 0.7473684 0.7368421 0.7684211 0.7368421 0.7578947 0.7473684
+## 84  0.8526316 0.8736842 0.8315789 0.8421053 0.8421053 0.8526316 0.8315789
+## 85  0.7789474 0.7789474 0.7263158 0.7263158 0.7052632 0.7157895 0.7263158
+## 86  0.6631579 0.6526316 0.6210526 0.6631579 0.6526316 0.6736842 0.6526316
+## 87  0.6842105 0.7368421 0.7263158 0.7157895 0.7052632 0.7157895 0.6736842
+## 88  0.7263158 0.7578947 0.7578947 0.7473684 0.7368421 0.7578947 0.7578947
+## 89  0.7473684 0.7578947 0.7263158 0.7684211 0.7473684 0.7052632 0.7263158
+## 90  0.8000000 0.7789474 0.7789474 0.7578947 0.7684211 0.7684211 0.8105263
+## 91  0.8210526 0.8421053 0.8526316 0.8421053 0.8210526 0.8315789 0.8526316
+## 92  0.8105263 0.8315789 0.8105263 0.8000000 0.8105263 0.7789474 0.8000000
+## 93  0.8105263 0.8210526 0.8105263 0.8105263 0.8210526 0.8315789 0.8105263
+## 94  0.7263158 0.7368421 0.7578947 0.7473684 0.7473684 0.7894737 0.7368421
+## 95  0.8315789 0.8315789 0.8315789 0.8315789 0.8315789 0.8421053 0.8210526
+## 96  0.8842105 0.8947368 0.8842105 0.9052632 0.8947368 0.8736842 0.8947368
+## 97  0.8000000 0.8210526 0.8000000 0.8000000 0.8315789 0.8210526 0.8210526
+## 98  0.8631579 0.8631579 0.8631579 0.8631579 0.8315789 0.8526316 0.8421053
+## 99  0.9052632 0.8842105 0.8631579 0.8842105 0.8736842 0.8842105 0.8631579
+## 100 0.9052632 0.8947368 0.8842105 0.8947368 0.9157895 0.8947368 0.9157895
+## 101 0.8000000 0.8000000 0.7894737 0.7894737 0.8210526 0.7789474 0.7894737
+## 102 0.8631579 0.8421053 0.8526316 0.8105263 0.8526316 0.8631579 0.8315789
+## 103 0.8947368 0.8947368 0.9052632 0.8842105 0.9052632 0.8842105 0.8842105
+## 104 0.8000000 0.7684211 0.8315789 0.8210526 0.8315789 0.7894737 0.7894737
+## 105 0.8947368 0.8947368 0.8947368 0.9052632 0.8736842 0.8947368 0.8947368
+## 106 0.9157895 0.9263158 0.8842105 0.9052632 0.9368421 0.8842105 0.9263158
+##        loop13    loop14    loop15    loop16    loop17    loop18    loop19
+## 1   0.9473684 0.9578947 0.9368421 0.9473684 0.9263158 0.9473684 0.9473684
+## 2   0.9578947 0.9473684 0.9789474 0.9578947 0.9578947 0.9368421 0.9578947
+## 3   0.9578947 0.9578947 0.9578947 0.9684211 0.9473684 0.9578947 0.9684211
+## 4   0.9473684 0.9578947 0.9578947 0.9578947 0.9578947 0.9473684 0.9473684
+## 5   0.9578947 0.9473684 0.9473684 0.9473684 0.9578947 0.9684211 0.9473684
+## 6   0.7894737 0.7894737 0.7894737 0.7894737 0.8210526 0.7789474 0.8315789
+## 7   0.7894737 0.8210526 0.8000000 0.8105263 0.8210526 0.8105263 0.8210526
+## 8   0.6947368 0.6842105 0.6947368 0.6842105 0.6947368 0.6947368 0.7052632
+## 9   0.7894737 0.8105263 0.8105263 0.7894737 0.8000000 0.8315789 0.8000000
+## 10  0.8526316 0.8421053 0.8421053 0.8526316 0.8315789 0.8421053 0.8631579
+## 11  0.7684211 0.7894737 0.7684211 0.7684211 0.7684211 0.7789474 0.7894737
+## 12  0.8315789 0.9157895 0.8631579 0.8526316 0.8842105 0.8526316 0.8526316
+## 13  0.7578947 0.7789474 0.7684211 0.7894737 0.8105263 0.7263158 0.7684211
+## 14  0.8421053 0.8421053 0.8210526 0.8421053 0.8105263 0.8526316 0.8210526
+## 15  0.7789474 0.8210526 0.8000000 0.8000000 0.8000000 0.8000000 0.7684211
+## 16  0.7684211 0.8210526 0.7578947 0.7684211 0.8105263 0.8000000 0.8000000
+## 17  0.8315789 0.8631579 0.8105263 0.8631579 0.8421053 0.8421053 0.8421053
+## 18  0.8210526 0.8000000 0.8105263 0.7894737 0.8105263 0.8000000 0.8000000
+## 19  0.7052632 0.7052632 0.6842105 0.7157895 0.7263158 0.7157895 0.6947368
+## 20  0.8315789 0.8631579 0.8421053 0.8421053 0.8421053 0.8421053 0.8526316
+## 21  0.6842105 0.6842105 0.6526316 0.6842105 0.6526316 0.6842105 0.6842105
+## 22  0.6210526 0.5789474 0.6210526 0.6210526 0.6105263 0.6105263 0.6315789
+## 23  0.8210526 0.8105263 0.8315789 0.8210526 0.8315789 0.8421053 0.8315789
+## 24  0.8210526 0.8631579 0.8315789 0.8315789 0.8315789 0.8526316 0.8315789
+## 25  0.8842105 0.9157895 0.8947368 0.8842105 0.8736842 0.9263158 0.8947368
+## 26  0.7894737 0.8000000 0.8210526 0.7789474 0.8210526 0.7894737 0.8000000
+## 27  0.7684211 0.7578947 0.7263158 0.7263158 0.7473684 0.7578947 0.7263158
+## 28  0.6736842 0.6631579 0.6736842 0.6947368 0.6210526 0.6631579 0.6842105
+## 29  0.7263158 0.7157895 0.7052632 0.7052632 0.7263158 0.7368421 0.7263158
+## 30  0.6631579 0.7157895 0.7052632 0.6947368 0.7052632 0.7052632 0.7157895
+## 31  0.6947368 0.6631579 0.6736842 0.6421053 0.6631579 0.6526316 0.6526316
+## 32  0.8315789 0.8315789 0.8105263 0.7894737 0.8315789 0.8526316 0.8421053
+## 33  0.8736842 0.8842105 0.8842105 0.8842105 0.9052632 0.9052632 0.8947368
+## 34  0.8526316 0.8631579 0.8842105 0.8842105 0.8631579 0.8842105 0.8631579
+## 35  0.8315789 0.8315789 0.8315789 0.8105263 0.8421053 0.8315789 0.8315789
+## 36  0.8526316 0.8736842 0.8526316 0.8315789 0.8421053 0.8421053 0.8315789
+## 37  0.8421053 0.8000000 0.8315789 0.8210526 0.8421053 0.8421053 0.8526316
+## 38  0.8000000 0.8210526 0.8210526 0.8000000 0.8421053 0.8421053 0.8105263
+## 39  0.8315789 0.8210526 0.8421053 0.8421053 0.8421053 0.8421053 0.8421053
+## 40  0.7894737 0.8105263 0.8000000 0.8000000 0.7789474 0.7894737 0.7894737
+## 41  0.8631579 0.8631579 0.8526316 0.8631579 0.8631579 0.8526316 0.8526316
+## 42  0.8947368 0.8947368 0.9157895 0.8947368 0.9157895 0.9157895 0.9263158
+## 43  0.8421053 0.8421053 0.8421053 0.8526316 0.8526316 0.8736842 0.8631579
+## 44  0.8736842 0.8947368 0.8842105 0.8526316 0.8947368 0.8736842 0.8842105
+## 45  0.8421053 0.7789474 0.8000000 0.8105263 0.8105263 0.8105263 0.7894737
+## 46  0.7684211 0.7473684 0.7578947 0.7263158 0.7473684 0.7684211 0.7473684
+## 47  0.7263158 0.7157895 0.7263158 0.7368421 0.7368421 0.7473684 0.7473684
+## 48  0.7473684 0.7578947 0.7789474 0.7894737 0.7684211 0.7684211 0.8000000
+## 49  0.8000000 0.7789474 0.7578947 0.8105263 0.8105263 0.8315789 0.8105263
+## 50  0.7578947 0.7368421 0.7263158 0.7368421 0.7578947 0.7473684 0.7684211
+## 51  0.8000000 0.8105263 0.8105263 0.7894737 0.7894737 0.7894737 0.7894737
+## 52  0.7473684 0.7684211 0.7684211 0.7473684 0.7789474 0.7684211 0.7473684
+## 53  0.8421053 0.8210526 0.8421053 0.8210526 0.8210526 0.8105263 0.8315789
+## 54  0.8210526 0.8105263 0.8105263 0.8315789 0.8105263 0.8315789 0.7894737
+## 55  0.6736842 0.7263158 0.6842105 0.7157895 0.6947368 0.7263158 0.7263158
+## 56  0.8315789 0.8105263 0.8105263 0.8105263 0.8210526 0.8210526 0.8105263
+## 57  0.7368421 0.7684211 0.7473684 0.7578947 0.7473684 0.7578947 0.7789474
+## 58  0.8526316 0.8315789 0.8421053 0.8631579 0.8421053 0.8631579 0.8526316
+## 59  0.8210526 0.8105263 0.8000000 0.8210526 0.7789474 0.8315789 0.8105263
+## 60  0.7473684 0.7578947 0.7894737 0.7684211 0.7578947 0.7473684 0.7894737
+## 61  0.8315789 0.8421053 0.7789474 0.8105263 0.8105263 0.8105263 0.8105263
+## 62  0.7789474 0.7894737 0.8105263 0.7789474 0.8000000 0.8000000 0.8000000
+## 63  0.8105263 0.8000000 0.8105263 0.8000000 0.8105263 0.8210526 0.8105263
+## 64  0.8631579 0.8631579 0.8631579 0.8631579 0.8631579 0.8947368 0.8736842
+## 65  0.8842105 0.8736842 0.9157895 0.9052632 0.8947368 0.8842105 0.8947368
+## 66  0.8210526 0.8315789 0.8315789 0.8421053 0.8000000 0.8421053 0.8315789
+## 67  0.8526316 0.8105263 0.8210526 0.8000000 0.8315789 0.8105263 0.8210526
+## 68  0.8315789 0.8315789 0.8631579 0.8210526 0.8315789 0.8631579 0.8315789
+## 69  0.7473684 0.7263158 0.7473684 0.7263158 0.7263158 0.7368421 0.7263158
+## 70  0.7263158 0.7052632 0.6842105 0.7052632 0.7263158 0.7157895 0.7473684
+## 71  0.7157895 0.6842105 0.7263158 0.7052632 0.7052632 0.6736842 0.6947368
+## 72  0.7157895 0.6947368 0.6631579 0.6947368 0.6947368 0.7157895 0.7052632
+## 73  0.8421053 0.8315789 0.8210526 0.8210526 0.8315789 0.8631579 0.8315789
+## 74  0.8631579 0.8315789 0.8631579 0.8526316 0.8315789 0.8526316 0.8421053
+## 75  0.8736842 0.8736842 0.8421053 0.8000000 0.8736842 0.8736842 0.8631579
+## 76  0.7578947 0.7684211 0.7789474 0.7789474 0.7789474 0.7684211 0.8000000
+## 77  0.6842105 0.6947368 0.6947368 0.7052632 0.7052632 0.7157895 0.6842105
+## 78  0.6631579 0.7052632 0.7157895 0.7052632 0.6736842 0.6631579 0.7157895
+## 79  0.6842105 0.7052632 0.6842105 0.6736842 0.7263158 0.7157895 0.7263158
+## 80  0.7789474 0.7894737 0.7578947 0.7368421 0.7368421 0.7263158 0.7368421
+## 81  0.9157895 0.8947368 0.8842105 0.8947368 0.9052632 0.8842105 0.9052632
+## 82  0.7578947 0.7789474 0.7684211 0.7684211 0.7684211 0.7578947 0.7894737
+## 83  0.7789474 0.7473684 0.7368421 0.7473684 0.7578947 0.7263158 0.7368421
+## 84  0.8631579 0.8421053 0.8842105 0.8631579 0.8210526 0.8736842 0.8631579
+## 85  0.7368421 0.7368421 0.7578947 0.7368421 0.7368421 0.7684211 0.7052632
+## 86  0.6631579 0.6421053 0.6526316 0.6421053 0.6631579 0.6631579 0.6315789
+## 87  0.6842105 0.7052632 0.7052632 0.7052632 0.7263158 0.7157895 0.6947368
+## 88  0.7368421 0.7157895 0.7368421 0.7578947 0.7263158 0.7473684 0.7473684
+## 89  0.7578947 0.7368421 0.7789474 0.7368421 0.7473684 0.7052632 0.7263158
+## 90  0.7789474 0.7789474 0.7894737 0.7789474 0.7894737 0.8105263 0.7894737
+## 91  0.8736842 0.8210526 0.8631579 0.8526316 0.8631579 0.8210526 0.8631579
+## 92  0.8105263 0.8105263 0.7894737 0.8000000 0.8105263 0.8000000 0.8315789
+## 93  0.8000000 0.8421053 0.8210526 0.8210526 0.8105263 0.8210526 0.8315789
+## 94  0.7473684 0.7789474 0.7789474 0.7578947 0.7684211 0.7473684 0.7473684
+## 95  0.8421053 0.7894737 0.8526316 0.8210526 0.8210526 0.8105263 0.8526316
+## 96  0.8842105 0.8631579 0.8736842 0.8631579 0.8842105 0.8842105 0.8842105
+## 97  0.8210526 0.8105263 0.8315789 0.8210526 0.7789474 0.8000000 0.8421053
+## 98  0.8736842 0.8842105 0.8842105 0.8526316 0.8421053 0.8842105 0.8736842
+## 99  0.8842105 0.8947368 0.8947368 0.8947368 0.8736842 0.8947368 0.8421053
+## 100 0.8842105 0.8947368 0.9052632 0.8842105 0.9052632 0.8736842 0.9157895
+## 101 0.8000000 0.8105263 0.8105263 0.8105263 0.7789474 0.8210526 0.8000000
+## 102 0.8421053 0.8315789 0.8210526 0.8526316 0.8631579 0.8315789 0.8526316
+## 103 0.8842105 0.8947368 0.8842105 0.8947368 0.9052632 0.8842105 0.8947368
+## 104 0.8421053 0.7789474 0.8105263 0.8000000 0.7578947 0.8210526 0.8000000
+## 105 0.8842105 0.8947368 0.8842105 0.8947368 0.8947368 0.8947368 0.8842105
+## 106 0.9052632 0.9052632 0.9263158 0.9157895 0.9052632 0.9052632 0.9052632
+##        loop20      mean
+## 1   0.9473684 0.9415789
+## 2   0.9473684 0.9536842
+## 3   0.9789474 0.9610526
+## 4   0.9684211 0.9610526
+## 5   0.9473684 0.9542105
+## 6   0.8315789 0.7989474
+## 7   0.8105263 0.8131579
+## 8   0.6947368 0.6947368
+## 9   0.8105263 0.8031579
+## 10  0.8526316 0.8457895
+## 11  0.7684211 0.7773684
+## 12  0.8736842 0.8578947
+## 13  0.7684211 0.7752632
+## 14  0.8000000 0.8352632
+## 15  0.8315789 0.8000000
+## 16  0.7894737 0.7894737
+## 17  0.8421053 0.8442105
+## 18  0.7578947 0.7984211
+## 19  0.6947368 0.6978947
+## 20  0.8421053 0.8378947
+## 21  0.6736842 0.6789474
+## 22  0.6105263 0.6094737
+## 23  0.8210526 0.8289474
+## 24  0.8421053 0.8405263
+## 25  0.9157895 0.8952632
+## 26  0.8105263 0.8047368
+## 27  0.7473684 0.7421053
+## 28  0.6421053 0.6610526
+## 29  0.7263158 0.7221053
+## 30  0.6947368 0.7010526
+## 31  0.6736842 0.6668421
+## 32  0.8210526 0.8405263
+## 33  0.8947368 0.8857895
+## 34  0.8526316 0.8673684
+## 35  0.8105263 0.8242105
+## 36  0.8631579 0.8557895
+## 37  0.8421053 0.8252632
+## 38  0.8421053 0.8147368
+## 39  0.8421053 0.8389474
+## 40  0.7894737 0.7984211
+## 41  0.8631579 0.8505263
+## 42  0.9052632 0.9110526
+## 43  0.8631579 0.8484211
+## 44  0.8842105 0.8826316
+## 45  0.7894737 0.8089474
+## 46  0.7684211 0.7526316
+## 47  0.7368421 0.7278947
+## 48  0.7789474 0.7673684
+## 49  0.8210526 0.7978947
+## 50  0.7473684 0.7505263
+## 51  0.8000000 0.8047368
+## 52  0.7684211 0.7547368
+## 53  0.8210526 0.8278947
+## 54  0.8105263 0.8142105
+## 55  0.7263158 0.7115789
+## 56  0.8210526 0.8173684
+## 57  0.7684211 0.7557895
+## 58  0.8736842 0.8515789
+## 59  0.8421053 0.8105263
+## 60  0.7157895 0.7621053
+## 61  0.8105263 0.8163158
+## 62  0.7789474 0.7978947
+## 63  0.8000000 0.8084211
+## 64  0.8631579 0.8673684
+## 65  0.8842105 0.8968421
+## 66  0.8210526 0.8273684
+## 67  0.8000000 0.8194737
+## 68  0.8631579 0.8463158
+## 69  0.7263158 0.7373684
+## 70  0.6947368 0.7147368
+## 71  0.7368421 0.7042105
+## 72  0.6947368 0.6910526
+## 73  0.8421053 0.8310526
+## 74  0.8421053 0.8478947
+## 75  0.8105263 0.8552632
+## 76  0.7789474 0.7836842
+## 77  0.7368421 0.7000000
+## 78  0.6842105 0.6878947
+## 79  0.7157895 0.7000000
+## 80  0.7894737 0.7552632
+## 81  0.8842105 0.8942105
+## 82  0.7789474 0.7805263
+## 83  0.7473684 0.7468421
+## 84  0.8315789 0.8521053
+## 85  0.7684211 0.7426316
+## 86  0.6526316 0.6542105
+## 87  0.7157895 0.7047368
+## 88  0.7473684 0.7447368
+## 89  0.7263158 0.7426316
+## 90  0.8000000 0.7868421
+## 91  0.8842105 0.8500000
+## 92  0.8000000 0.8042105
+## 93  0.8315789 0.8194737
+## 94  0.7684211 0.7557895
+## 95  0.8315789 0.8300000
+## 96  0.8736842 0.8805263
+## 97  0.8421053 0.8147368
+## 98  0.8526316 0.8552632
+## 99  0.8842105 0.8810526
+## 100 0.8947368 0.8989474
+## 101 0.8000000 0.8005263
+## 102 0.8421053 0.8410526
+## 103 0.8842105 0.8910526
+## 104 0.8315789 0.8031579
+## 105 0.8736842 0.8894737
+## 106 0.8947368 0.9126316</code></pre>
+<p>The link of the label.csv:<a href="https://studentnsysuedutw-my.sharepoint.com/:x:/g/personal/m072040030_student_nsysu_edu_tw/EYwoKAr8XOlFm1I8k0VirVgBqPQ13h-RlyFu9oycsf6lwA?e=Ghlwsf" class="uri">https://studentnsysuedutw-my.sharepoint.com/:x:/g/personal/m072040030_student_nsysu_edu_tw/EYwoKAr8XOlFm1I8k0VirVgBqPQ13h-RlyFu9oycsf6lwA?e=Ghlwsf</a></p>
+</div>
