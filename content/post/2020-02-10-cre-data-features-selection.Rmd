@@ -2010,6 +2010,6 @@ label <- read.csv("C:\\Users\\User\\OneDrive - student.nsysu.edu.tw\\Educations\
 label
 ```
 
-The link of the label.csv:https://studentnsysuedutw-my.sharepoint.com/:x:/g/personal/m072040030_student_nsysu_edu_tw/EYwoKAr8XOlFm1I8k0VirVgBqPQ13h-RlyFu9oycsf6lwA?e=Ghlwsf
+The link of the label.csv:https://reurl.cc/e5ejOQ
 
 
