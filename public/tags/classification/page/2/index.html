@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>classification</span>
-        <span>2020-02-11</span>
+        <span>2020-02-14</span>
         
         <span>2 / 3</span>
       
@@ -33,6 +33,40 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/12/fix-the-r-function/">Fix The R Function </a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-12</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/12/fix-the-r-function/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-12-fix-the-r-function_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜我做的那個function執行順序上跟老師所要求的有所不同，因此這次將結果修改為老師所要的執行方式。
+原先我以為是要先將所有資料的變數進行pca轉換後再進行分類器leave one out的訓練，因此是將訓練以及測試的資料同時PCA轉換，大致流程為下圖：
+因此訓練資料的正交化與測試資料的正交是同時進行的，因此與老師所要求的流程上不同。
+老師是希望先將資料切分為1:ALL-1，並以ALL-1的Training Set 來進行PCA轉換、訓練分類器，最後將測試資料乘上訓練用的PCA轉換矩陣，並將其結果帶入分類器上來驗證分類預測結果，以此循環進行LOOCV，流程大致如下圖：
+因此最大的差別&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -185,38 +219,6 @@ There is the paper resource link:&hellip;
       
     
     這次我將修改前次的生成對抗網路，希望能夠調整為一個自動生成樣本的神經網路。我這次將使用以前曾經使用過的CRE Bacteria data(https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/ )。我先建立一個簡單的分類模型，一將使用p_value前五個維度當作解釋變數，先建立一個簡單的分類模型，並將第一類的46個當作樣本輸入至生成對抗網路，調整訓練參數，且試圖讓神經網路能夠產生第一類別的資料。最後，經由生成器生成的資料我將匯入原先的分類模型，觀察是否能產生類似於第一類別的資料，並最終計算其生成準確&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/machine-learning">machine-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/10/02/one-class-learning/">One Class Learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-10-02</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/10/02/one-class-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-10-02-one-class-learning_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    在資料探勘中，異常檢測:anomaly detection對不符合預期模式或資料集中其他專案的專案、事件或觀測值的辨識。 通常異常專案會轉變成銀行欺詐、結構缺陷、醫療問題、文字錯誤等類型的問題。異常也被稱為離群值、新奇、噪聲、偏差和例外。
-特別是在檢測濫用與網路入侵時，有趣性物件往往不是罕見物件，但卻是超出預料的突發活動。這種模式不遵循通常統計定義中把異常點看作是罕見物件，於是許多異常檢測方法（特別是無監督的方法）將對此類資料失效，除非進行了合適的聚集。相反，群集分析演算法可能可以檢測出這些模式形成的微群集。
-有三大類異常檢測方法。在假設資料集中大多數實體都是正常的前提下，無監督異常檢測方法能&hellip;
     </a>
   </div>
 </section>

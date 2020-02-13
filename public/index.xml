@@ -6,10 +6,19 @@
     <description>Recent content on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 10 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 14 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>CRE features selection</title>
+      <link>/post/2020/02/14/cre-features-selection/</link>
+      <pubDate>Fri, 14 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/14/cre-features-selection/</guid>
+      <description>This time I will use the scikit-learn module to bulid the classifiers,and I will use the randomforest&amp;rsquo;s importance to choose the explanatory variables. Part1. Import the data and R&amp;rsquo;S randomforest importance import pandas as pd import numpy as np df = pd.read_csv(&#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv&#39;) impor = pd.read_csv(&#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial - PCA/A.csv&#39;) impo = np.array(impor[&#39;names&#39;]) impo array([&#39;V994&#39;, &#39;V1428&#39;, &#39;V1426&#39;, ..., &#39;V1469&#39;, &#39;V1470&#39;, &#39;V1471&#39;], dtype=object) Part2. Classifiers Building Contain methods: svm,randomforest,navie bayes,knn,lda,qda,adaboost,logistic</description>
+    </item>
     
     <item>
       <title>CRE data features selection</title>

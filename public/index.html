@@ -23,7 +23,7 @@
       <div class="head-meta">
       
         <span>Lin&#39;s Blog</span>
-        <span>2020-02-11</span>
+        <span>2020-02-14</span>
         
         <span>1 / 6</span>
       
@@ -34,6 +34,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/14/cre-features-selection/">CRE features selection</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-14</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/14/cre-features-selection/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-14-cre-features-selection_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    This time I will use the scikit-learn module to bulid the classifiers,and I will use the randomforest&rsquo;s importance to choose the explanatory variables.
+[&hellip;] import pandas as pd import numpy as np df = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -191,37 +222,6 @@ Validation Set(CRE:Non): 10:30
     因為修統計書報的關係，這次也被分配要報告一個章節，雖然那本書是工具書取向，但是發現該作者有在2004年寫了一篇有關logistic regression的演算法，他稱之為LOTUS，主要是希望可以解決當時logistic regression的一些問題。
 Logistic Regression主要優勢是在他算法快、存處資源低；缺點是如果模型存在共線性、非線性、或交互作用存在，則模型並不好解釋。
 為了克服以上問題，作者提出了一種模型：LOTUS(Logistic Regression with Unbiasd Selection)通過樹狀分割數據並且fit不同的Logistic&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/">Paper Review [OCGAN: One-class Novelty Detection Using GANs with Constrained Latent Representations]</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-12-23</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-12-23-paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations_files/1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這禮拜看完一篇有關生成對抗網路與One Class Learning 結合的論文(Source Link:https://arxiv.org/abs/1903.08550) ，其名稱為&lt;&gt;，因此主要方法與我目前在用的內容有關。
-作者提出了一種稱為OCGAN的檢測模型，其目的是確定是否樣本來自同一個種類。作者的方案是基於使用auto-encoder network來學習神經網路單類樣本的潛在表示。而本篇文章的模型可明確限制潛在空間。為了實現這一目標，首先迫使潛在空間通過以tanh的激活函數引入編碼器的輸出。其次，利用adversariallyr鑑別潛在空間，確保同類的編碼表示類似於從&hellip;
     </a>
   </div>
 </section>
