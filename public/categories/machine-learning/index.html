@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>machine-learning</span>
-        <span>2020-02-14</span>
+        <span>2020-02-18</span>
         
         <span>1 / 3</span>
       
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/"> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-18</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-18-compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation_files/output_4_1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次我使用sklearn內建的資料集breast-cancer(原始資料來源：https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)) ，先將原資料以7:3比例建立一個的資料分類器出來，之後把其中一個類別挑出，並使用各種oversampling的方法來模擬樣本，並最終將模擬後的資料套回最初的模型當中，比較各方法產生的樣本能否在分類器當中回到原本的類別當中。
+[&hellip;] 讀取sklearn的資料並轉為dataframe：
+import pandas as pdimport numpy&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -190,37 +222,6 @@ Logistic Regression主要優勢是在他算法快、存處資源低；缺點是�
     這次是跟上次使用相同的資料，只是變成要定義一個規定格式的function，剛好上次的code裡面logistic regression的分類器有寫錯的部分，因此可以順便趁這次的機會修改之前錯誤的地方，部分內容可參考以前那篇blog(CRE Bacteria Data Analysis: https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/)
 一樣我會將資料先進行倒轉，並且為前46個樣本上cre的標籤，後49則上非cre的標籤。
 主要差異為，這次要進行pca，因此再倒轉資料時，並未挑選重要的前50個變&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/">GAN Sampling Versus Other Sampling Method On Credit Card Fraud Detection Data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-19</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/19/gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-19-gan-sampling-versus-other-sampling-method-on-credit-card-fraud-detection-data_files/1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次，我將使用一個來自kaggle的不平衡數據資料(link:https://www.kaggle.com/mlg-ulb/creditcardfraud/version/1).
-該數據集包含了歐洲持卡人2013年9月通過信用卡進行的交易。這些交易發生在兩天之內，在這裡我們有492筆詐騙資料以及284807正常交易資料。該數據集是非常不平衡的，其中陰性樣本（詐欺）佔所有交易的0.172％。它的變量包含數值輸入變量後PCA變換的結果。不幸的是，由於保密問題我們不能得到原始數據的更多背景信息。特徵V1，V2，…… V28與PCA獲得的主成分，還沒有被轉化與PCA的變量是“交易時間”和“交易金額”。&hellip;
     </a>
   </div>
 </section>

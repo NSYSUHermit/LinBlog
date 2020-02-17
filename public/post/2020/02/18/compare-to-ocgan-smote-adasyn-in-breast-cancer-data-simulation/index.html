@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2020-02-18</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2020-02-18-compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/gan">gan</a>
+  
+     &hercon; <a href="/categories/machine-learning">machine-learning</a>
+  
+     &hercon; <a href="/categories/deep-learning">deep-learning</a>
+  
+     &hercon; <a href="/categories/python">Python</a>
+  
+  </div>
+
+  <h1><span class="title"> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/classification">classification</a>; <a href="/tags/neural-network">neural network</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<p>這次我使用sklearn內建的資料集breast-cancer(原始資料來源：<a href="https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)" class="uri">https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)</a>) ，先將原資料以7:3比例建立一個的資料分類器出來，之後把其中一個類別挑出，並使用各種oversampling的方法來模擬樣本，並最終將模擬後的資料套回最初的模型當中，比較各方法產生的樣本能否在分類器當中回到原本的類別當中。</p>
+<div id="section" class="section level1">
+<h1>1. 讀入資料</h1>
+<p>讀取sklearn的資料並轉為dataframe：</p>
+<pre class="python"><code>import pandas as pd
+import numpy as np
+from sklearn import datasets
+
+# import some data to play with
+df = datasets.load_breast_cancer()
+x = pd.DataFrame(df[&#39;data&#39;],columns = df[&#39;feature_names&#39;])
+y = pd.DataFrame(df[&#39;target&#39;],columns = [&#39;targets_names&#39;])</code></pre>
+<p>稍微檢查一下資料的型態與內容：</p>
+<pre class="python"><code>print(x.shape)
+x.head()</code></pre>
+<pre><code>(569, 30)</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th>
+</th>
+<th>
+mean radius
+</th>
+<th>
+mean texture
+</th>
+<th>
+mean perimeter
+</th>
+<th>
+mean area
+</th>
+<th>
+mean smoothness
+</th>
+<th>
+mean compactness
+</th>
+<th>
+mean concavity
+</th>
+<th>
+mean concave points
+</th>
+<th>
+mean symmetry
+</th>
+<th>
+mean fractal dimension
+</th>
+<th>
+…
+</th>
+<th>
+worst radius
+</th>
+<th>
+worst texture
+</th>
+<th>
+worst perimeter
+</th>
+<th>
+worst area
+</th>
+<th>
+worst smoothness
+</th>
+<th>
+worst compactness
+</th>
+<th>
+worst concavity
+</th>
+<th>
+worst concave points
+</th>
+<th>
+worst symmetry
+</th>
+<th>
+worst fractal dimension
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+17.99
+</td>
+<td>
+10.38
+</td>
+<td>
+122.80
+</td>
+<td>
+1001.0
+</td>
+<td>
+0.11840
+</td>
+<td>
+0.27760
+</td>
+<td>
+0.3001
+</td>
+<td>
+0.14710
+</td>
+<td>
+0.2419
+</td>
+<td>
+0.07871
+</td>
+<td>
+…
+</td>
+<td>
+25.38
+</td>
+<td>
+17.33
+</td>
+<td>
+184.60
+</td>
+<td>
+2019.0
+</td>
+<td>
+0.1622
+</td>
+<td>
+0.6656
+</td>
+<td>
+0.7119
+</td>
+<td>
+0.2654
+</td>
+<td>
+0.4601
+</td>
+<td>
+0.11890
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+20.57
+</td>
+<td>
+17.77
+</td>
+<td>
+132.90
+</td>
+<td>
+1326.0
+</td>
+<td>
+0.08474
+</td>
+<td>
+0.07864
+</td>
+<td>
+0.0869
+</td>
+<td>
+0.07017
+</td>
+<td>
+0.1812
+</td>
+<td>
+0.05667
+</td>
+<td>
+…
+</td>
+<td>
+24.99
+</td>
+<td>
+23.41
+</td>
+<td>
+158.80
+</td>
+<td>
+1956.0
+</td>
+<td>
+0.1238
+</td>
+<td>
+0.1866
+</td>
+<td>
+0.2416
+</td>
+<td>
+0.1860
+</td>
+<td>
+0.2750
+</td>
+<td>
+0.08902
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+19.69
+</td>
+<td>
+21.25
+</td>
+<td>
+130.00
+</td>
+<td>
+1203.0
+</td>
+<td>
+0.10960
+</td>
+<td>
+0.15990
+</td>
+<td>
+0.1974
+</td>
+<td>
+0.12790
+</td>
+<td>
+0.2069
+</td>
+<td>
+0.05999
+</td>
+<td>
+…
+</td>
+<td>
+23.57
+</td>
+<td>
+25.53
+</td>
+<td>
+152.50
+</td>
+<td>
+1709.0
+</td>
+<td>
+0.1444
+</td>
+<td>
+0.4245
+</td>
+<td>
+0.4504
+</td>
+<td>
+0.2430
+</td>
+<td>
+0.3613
+</td>
+<td>
+0.08758
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+11.42
+</td>
+<td>
+20.38
+</td>
+<td>
+77.58
+</td>
+<td>
+386.1
+</td>
+<td>
+0.14250
+</td>
+<td>
+0.28390
+</td>
+<td>
+0.2414
+</td>
+<td>
+0.10520
+</td>
+<td>
+0.2597
+</td>
+<td>
+0.09744
+</td>
+<td>
+…
+</td>
+<td>
+14.91
+</td>
+<td>
+26.50
+</td>
+<td>
+98.87
+</td>
+<td>
+567.7
+</td>
+<td>
+0.2098
+</td>
+<td>
+0.8663
+</td>
+<td>
+0.6869
+</td>
+<td>
+0.2575
+</td>
+<td>
+0.6638
+</td>
+<td>
+0.17300
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+20.29
+</td>
+<td>
+14.34
+</td>
+<td>
+135.10
+</td>
+<td>
+1297.0
+</td>
+<td>
+0.10030
+</td>
+<td>
+0.13280
+</td>
+<td>
+0.1980
+</td>
+<td>
+0.10430
+</td>
+<td>
+0.1809
+</td>
+<td>
+0.05883
+</td>
+<td>
+…
+</td>
+<td>
+22.54
+</td>
+<td>
+16.67
+</td>
+<td>
+152.20
+</td>
+<td>
+1575.0
+</td>
+<td>
+0.1374
+</td>
+<td>
+0.2050
+</td>
+<td>
+0.4000
+</td>
+<td>
+0.1625
+</td>
+<td>
+0.2364
+</td>
+<td>
+0.07678
+</td>
+</tr>
+</tbody>
+</table>
+<p>
+5 rows × 30 columns
+</p>
+</div>
+<pre class="python"><code>y.head()</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th>
+</th>
+<th>
+targets_names
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+0
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="python"><code>%matplotlib inline
+by_fraud = y.groupby(&#39;targets_names&#39;)
+by_fraud.size().plot(kind = &#39;bar&#39;)</code></pre>
+<p><img src="/post/2020-02-18-compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation_files/output_4_1.jpg" /></p>
+</div>
+<div id="section-1" class="section level1">
+<h1>2. 建構分類器</h1>
+<p>這次使用adaboost來建立分類器，其準確率大約為0.99-0.95之間。</p>
+<pre class="python"><code>from sklearn.model_selection import train_test_split
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn import ensemble
+from sklearn import metrics
+import random
+
+random.seed(1)
+arr = np.arange(569)
+np.random.shuffle(arr)
+
+
+train_X = x.iloc[arr[0:398],:]
+test_X = x.iloc[arr[398:569],:]
+train_y = y.iloc[arr[0:398],:]
+test_y = y.iloc[arr[398:569],:]
+
+clf = AdaBoostClassifier(n_estimators=100)
+#forest = ensemble.RandomForestClassifier(n_estimators = 100)
+fit = clf.fit(train_X, train_y)
+
+test_y_predicted = clf.predict(test_X)
+accuracy_rf = metrics.accuracy_score(test_y, test_y_predicted)
+print(accuracy_rf)</code></pre>
+<p>C:3-gpu-packages.py:724: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+y = column_or_1d(y, warn=True)</p>
+<p>0.9941520467836257</p>
+</div>
+<div id="section-2" class="section level1">
+<h1>3. 生成資料</h1>
+<p>將0類(較少類)資料切出，並使用ocwgan,ocgan,smote與adasyn等方法，在此先設定這些方法：</p>
+<pre class="python"><code>f_x = x[y[&#39;targets_names&#39;].isin([0])]
+f_y = y[y[&#39;targets_names&#39;].isin([0])]
+print(f_x.shape)
+print(f_y.shape)</code></pre>
+<p>(212, 30)
+(212, 1)</p>
+<pre class="python"><code>f_x.head()</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th>
+</th>
+<th>
+mean radius
+</th>
+<th>
+mean texture
+</th>
+<th>
+mean perimeter
+</th>
+<th>
+mean area
+</th>
+<th>
+mean smoothness
+</th>
+<th>
+mean compactness
+</th>
+<th>
+mean concavity
+</th>
+<th>
+mean concave points
+</th>
+<th>
+mean symmetry
+</th>
+<th>
+mean fractal dimension
+</th>
+<th>
+…
+</th>
+<th>
+worst radius
+</th>
+<th>
+worst texture
+</th>
+<th>
+worst perimeter
+</th>
+<th>
+worst area
+</th>
+<th>
+worst smoothness
+</th>
+<th>
+worst compactness
+</th>
+<th>
+worst concavity
+</th>
+<th>
+worst concave points
+</th>
+<th>
+worst symmetry
+</th>
+<th>
+worst fractal dimension
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>
+0
+</th>
+<td>
+17.99
+</td>
+<td>
+10.38
+</td>
+<td>
+122.80
+</td>
+<td>
+1001.0
+</td>
+<td>
+0.11840
+</td>
+<td>
+0.27760
+</td>
+<td>
+0.3001
+</td>
+<td>
+0.14710
+</td>
+<td>
+0.2419
+</td>
+<td>
+0.07871
+</td>
+<td>
+…
+</td>
+<td>
+25.38
+</td>
+<td>
+17.33
+</td>
+<td>
+184.60
+</td>
+<td>
+2019.0
+</td>
+<td>
+0.1622
+</td>
+<td>
+0.6656
+</td>
+<td>
+0.7119
+</td>
+<td>
+0.2654
+</td>
+<td>
+0.4601
+</td>
+<td>
+0.11890
+</td>
+</tr>
+<tr>
+<th>
+1
+</th>
+<td>
+20.57
+</td>
+<td>
+17.77
+</td>
+<td>
+132.90
+</td>
+<td>
+1326.0
+</td>
+<td>
+0.08474
+</td>
+<td>
+0.07864
+</td>
+<td>
+0.0869
+</td>
+<td>
+0.07017
+</td>
+<td>
+0.1812
+</td>
+<td>
+0.05667
+</td>
+<td>
+…
+</td>
+<td>
+24.99
+</td>
+<td>
+23.41
+</td>
+<td>
+158.80
+</td>
+<td>
+1956.0
+</td>
+<td>
+0.1238
+</td>
+<td>
+0.1866
+</td>
+<td>
+0.2416
+</td>
+<td>
+0.1860
+</td>
+<td>
+0.2750
+</td>
+<td>
+0.08902
+</td>
+</tr>
+<tr>
+<th>
+2
+</th>
+<td>
+19.69
+</td>
+<td>
+21.25
+</td>
+<td>
+130.00
+</td>
+<td>
+1203.0
+</td>
+<td>
+0.10960
+</td>
+<td>
+0.15990
+</td>
+<td>
+0.1974
+</td>
+<td>
+0.12790
+</td>
+<td>
+0.2069
+</td>
+<td>
+0.05999
+</td>
+<td>
+…
+</td>
+<td>
+23.57
+</td>
+<td>
+25.53
+</td>
+<td>
+152.50
+</td>
+<td>
+1709.0
+</td>
+<td>
+0.1444
+</td>
+<td>
+0.4245
+</td>
+<td>
+0.4504
+</td>
+<td>
+0.2430
+</td>
+<td>
+0.3613
+</td>
+<td>
+0.08758
+</td>
+</tr>
+<tr>
+<th>
+3
+</th>
+<td>
+11.42
+</td>
+<td>
+20.38
+</td>
+<td>
+77.58
+</td>
+<td>
+386.1
+</td>
+<td>
+0.14250
+</td>
+<td>
+0.28390
+</td>
+<td>
+0.2414
+</td>
+<td>
+0.10520
+</td>
+<td>
+0.2597
+</td>
+<td>
+0.09744
+</td>
+<td>
+…
+</td>
+<td>
+14.91
+</td>
+<td>
+26.50
+</td>
+<td>
+98.87
+</td>
+<td>
+567.7
+</td>
+<td>
+0.2098
+</td>
+<td>
+0.8663
+</td>
+<td>
+0.6869
+</td>
+<td>
+0.2575
+</td>
+<td>
+0.6638
+</td>
+<td>
+0.17300
+</td>
+</tr>
+<tr>
+<th>
+4
+</th>
+<td>
+20.29
+</td>
+<td>
+14.34
+</td>
+<td>
+135.10
+</td>
+<td>
+1297.0
+</td>
+<td>
+0.10030
+</td>
+<td>
+0.13280
+</td>
+<td>
+0.1980
+</td>
+<td>
+0.10430
+</td>
+<td>
+0.1809
+</td>
+<td>
+0.05883
+</td>
+<td>
+…
+</td>
+<td>
+22.54
+</td>
+<td>
+16.67
+</td>
+<td>
+152.20
+</td>
+<td>
+1575.0
+</td>
+<td>
+0.1374
+</td>
+<td>
+0.2050
+</td>
+<td>
+0.4000
+</td>
+<td>
+0.1625
+</td>
+<td>
+0.2364
+</td>
+<td>
+0.07678
+</td>
+</tr>
+</tbody>
+</table>
+<p>
+5 rows × 30 columns
+</p>
+</div>
+<div id="ocwgan-setting" class="section level2">
+<h2>3.1 OCWGAN setting</h2>
+<pre class="python"><code># import modules
+%matplotlib inline
+import os
+import random
+import keras
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tqdm import tqdm_notebook as tqdm
+from keras.models import Model
+from keras.layers import Input, Reshape
+from keras.layers.core import Dense, Activation, Dropout, Flatten
+from keras.layers.normalization import BatchNormalization
+from keras.layers.convolutional import UpSampling1D, Conv1D
+from keras.layers.advanced_activations import LeakyReLU
+from keras.optimizers import Adam, SGD,RMSprop
+from keras.callbacks import TensorBoard
+from sklearn.preprocessing import StandardScaler
+
+# set parameters
+dim = f_x.shape[1]
+num = f_x.shape[0]
+g_data = f_x
+
+# Standard Scaler
+ss = StandardScaler()
+g_data = pd.DataFrame(ss.fit_transform(g_data))
+
+# wasserstein_loss
+from keras import backend 
+# implementation of wasserstein loss
+def wasserstein_loss(y_true, y_pred):
+    return backend.mean(y_true * y_pred)
+
+# generator
+def get_generative(G_in, dense_dim=200, out_dim= dim, lr=1e-3):
+    x = Dense(dense_dim)(G_in)
+    x = Activation(&#39;tanh&#39;)(x)
+    G_out = Dense(out_dim, activation=&#39;tanh&#39;)(x)
+    G = Model(G_in, G_out)
+    opt = keras.optimizers.RMSprop(lr=lr)#原先為SGD
+    G.compile(loss=wasserstein_loss, optimizer=opt)#原loss為binary_crossentropy
+    return G, G_out
+
+G_in = Input(shape=[10])
+G, G_out = get_generative(G_in)
+G.summary()
+
+# discriminator
+def get_discriminative(D_in, lr=1e-3, drate=.25, n_channels= dim, conv_sz=5, leak=.2):#lr=1e-3, drate=.25, n_channels= dim, conv_sz=5, leak=.2
+    x = Reshape((-1, 1))(D_in)
+    x = Conv1D(n_channels, conv_sz, activation=&#39;relu&#39;)(x)
+    x = Dropout(drate)(x)
+    x = Flatten()(x)
+    x = Dense(n_channels)(x)
+    D_out = Dense(2, activation=&#39;linear&#39;)(x)#sigmoid
+    D = Model(D_in, D_out)
+    dopt = keras.optimizers.RMSprop(lr=lr)#原先為Adam
+    D.compile(loss=wasserstein_loss, optimizer=dopt)
+    return D, D_out
+
+D_in = Input(shape=[dim])
+D, D_out = get_discriminative(D_in)
+D.summary()
+
+# set up gan
+def set_trainability(model, trainable=False):
+    model.trainable = trainable
+    for layer in model.layers:
+        layer.trainable = trainable
+        
+def make_gan(GAN_in, G, D):
+    set_trainability(D, False)
+    x = G(GAN_in)
+    GAN_out = D(x)
+    GAN = Model(GAN_in, GAN_out)
+    GAN.compile(loss=wasserstein_loss, optimizer=G.optimizer)#元loss為binary_crossentropy
+    return GAN, GAN_out
+
+GAN_in = Input([10])
+GAN, GAN_out = make_gan(GAN_in, G, D)
+GAN.summary()
+
+# pre train
+def sample_data_and_gen(G, noise_dim=10, n_samples= num):
+    XT = np.array(g_data)
+    XN_noise = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    XN = G.predict(XN_noise)
+    X = np.concatenate((XT, XN))
+    y = np.zeros((2*n_samples, 2))
+    y[:n_samples, 1] = 1
+    y[n_samples:, 0] = 1
+    return X, y
+
+def pretrain(G, D, noise_dim=10, n_samples = num, batch_size=32):
+    X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+    set_trainability(D, True)
+    D.fit(X, y, epochs=1, batch_size=batch_size)
+    
+pretrain(G, D)
+
+def sample_noise(G, noise_dim=10, n_samples=num):
+    X = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    y = np.zeros((n_samples, 2))
+    y[:, 1] = 1
+    return X, y
+
+# one class detector
+def oneclass(data,kernel = &#39;rbf&#39;,gamma = &#39;auto&#39;):
+    num1 = int(len(data)/2)
+    num2 = int(len(data)+1)
+    from sklearn import svm
+    clf = svm.OneClassSVM(kernel=kernel, gamma=gamma).fit(data[0:num1])
+    origin = pd.DataFrame(clf.score_samples(data[0:num1]))
+    new = pd.DataFrame(clf.score_samples(data[num1:num2]))
+
+    occ = pd.concat([pd.DataFrame(new[0] &lt; origin[0].min()),pd.DataFrame(new[0] &gt; origin[0].max())], axis=1)
+    occ[&#39;ava&#39;] = pd.DataFrame(occ.iloc[:,1:2] == occ.iloc[:,0:1])
+    err = sum(occ[&#39;ava&#39;] == False)/len(occ[&#39;ava&#39;])
+    return err
+
+# productor
+def gen(GAN, G, D, times=50, n_samples= num, noise_dim=10, batch_size=32, verbose=False, v_freq=dim,):
+    data = pd.DataFrame()
+    for epoch in range(times):
+        X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, True)   
+        xx,yy = X,y
+        err = oneclass(xx)        
+        num1 = int(len(xx)/2)
+        num2 = int(len(xx)+1)
+        xx = ss.inverse_transform(xx)
+        data = pd.concat([data,pd.DataFrame(xx[num1:num2])],axis = 0)              
+        print(&quot;The %d times generator one class svm Error Rate=%f&quot; %(epoch, err))           
+            
+    return data
+
+# training
+def train(GAN, G, D, epochs=1, n_samples= num, noise_dim=10, batch_size=32, verbose=False, v_freq=dim,):
+    d_loss = []
+    g_loss = []
+    e_range = range(epochs)
+    if verbose:
+        e_range = tqdm(e_range)
+    for epoch in e_range:
+        X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, True)
+        d_loss.append(D.train_on_batch(X, y))
+        xx,yy = X,y
+        err = oneclass(xx) 
+        print(&quot;The %d times epoch one class svm Error Rate=%f&quot; %(epoch, err))
+        
+        X, y = sample_noise(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, False)
+        g_loss.append(GAN.train_on_batch(X, y))
+        if verbose and (epoch + 1) % v_freq == 0:
+            print(&quot;Epoch #{}: Generative Loss: {}, Discriminative Loss: {}&quot;.format(epoch + 1, g_loss[-1], d_loss[-1]))       
+            
+    return d_loss, g_loss, xx, yy</code></pre>
+<hr />
+<p>Layer (type) Output Shape Param #<br />
+=================================================================
+input_25 (InputLayer) (None, 10) 0<br />
+_________________________________________________________________
+dense_27 (Dense) (None, 200) 2200<br />
+_________________________________________________________________
+activation_12 (Activation) (None, 200) 0<br />
+_________________________________________________________________
+dense_28 (Dense) (None, 30) 6030<br />
+=================================================================
+Total params: 8,230
+Trainable params: 8,230
+Non-trainable params: 0
+_________________________________________________________________
+_________________________________________________________________
+Layer (type) Output Shape Param #<br />
+=================================================================
+input_26 (InputLayer) (None, 30) 0<br />
+_________________________________________________________________
+reshape_12 (Reshape) (None, 30, 1) 0<br />
+_________________________________________________________________
+conv1d_12 (Conv1D) (None, 26, 30) 180<br />
+_________________________________________________________________
+dropout_12 (Dropout) (None, 26, 30) 0<br />
+_________________________________________________________________
+flatten_12 (Flatten) (None, 780) 0<br />
+_________________________________________________________________
+dense_29 (Dense) (None, 30) 23430<br />
+_________________________________________________________________
+dense_30 (Dense) (None, 2) 62<br />
+=================================================================
+Total params: 23,672
+Trainable params: 23,672
+Non-trainable params: 0
+_________________________________________________________________
+_________________________________________________________________
+Layer (type) Output Shape Param #<br />
+=================================================================
+input_27 (InputLayer) (None, 10) 0<br />
+_________________________________________________________________
+model_16 (Model) (None, 30) 8230<br />
+_________________________________________________________________
+model_17 (Model) (None, 2) 23672<br />
+=================================================================
+Total params: 31,902
+Trainable params: 8,230
+Non-trainable params: 23,672
+_________________________________________________________________
+Epoch 1/1
+424/424 [==============================] - ETA: 5s - loss: 0.005 - 1s 1ms/step - loss: -1.6706</p>
+<div id="ocgan-setting" class="section level3">
+<h3>3.2 OCGAN setting</h3>
+<pre class="python"><code># import modules
+%matplotlib inline
+import os
+import random
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from tqdm import tqdm_notebook as tqdm
+from keras.models import Model
+from keras.layers import Input, Reshape
+from keras.layers.core import Dense, Activation, Dropout, Flatten
+from keras.layers.normalization import BatchNormalization
+from keras.layers.convolutional import UpSampling1D, Conv1D
+from keras.layers.advanced_activations import LeakyReLU
+from keras.optimizers import Adam, SGD
+from keras.callbacks import TensorBoard
+from sklearn.preprocessing import StandardScaler
+
+# set parameters
+dim = f_x.shape[1]
+num = f_x.shape[0]
+g_data = f_x
+
+# Standard Scaler
+ss = StandardScaler()
+g_data = pd.DataFrame(ss.fit_transform(g_data))
+
+# generator
+def get_generative(G_in, dense_dim=200, out_dim= dim, lr=1e-3):
+    x = Dense(dense_dim)(G_in)
+    x = Activation(&#39;tanh&#39;)(x)
+    G_out = Dense(out_dim, activation=&#39;tanh&#39;)(x)
+    G = Model(G_in, G_out)
+    opt = SGD(lr=lr)
+    G.compile(loss=&#39;binary_crossentropy&#39;, optimizer=opt)
+    return G, G_out
+
+G_in = Input(shape=[10])
+G, G_out = get_generative(G_in)
+G.summary()
+
+# discriminator
+def get_discriminative(D_in, lr=1e-3, drate=.25, n_channels= dim, conv_sz=5, leak=.2):
+    x = Reshape((-1, 1))(D_in)
+    x = Conv1D(n_channels, conv_sz, activation=&#39;relu&#39;)(x)
+    x = Dropout(drate)(x)
+    x = Flatten()(x)
+    x = Dense(n_channels)(x)
+    D_out = Dense(2, activation=&#39;sigmoid&#39;)(x)
+    D = Model(D_in, D_out)
+    dopt = Adam(lr=lr)
+    D.compile(loss=&#39;binary_crossentropy&#39;, optimizer=dopt)
+    return D, D_out
+
+D_in = Input(shape=[dim])
+D, D_out = get_discriminative(D_in)
+D.summary()
+
+# set up gan
+def set_trainability(model, trainable=False):
+    model.trainable = trainable
+    for layer in model.layers:
+        layer.trainable = trainable
+        
+def make_gan(GAN_in, G, D):
+    set_trainability(D, False)
+    x = G(GAN_in)
+    GAN_out = D(x)
+    GAN = Model(GAN_in, GAN_out)
+    GAN.compile(loss=&#39;binary_crossentropy&#39;, optimizer=G.optimizer)
+    return GAN, GAN_out
+
+GAN_in = Input([10])
+GAN, GAN_out = make_gan(GAN_in, G, D)
+GAN.summary()
+
+# pre train
+def sample_data_and_gen(G, noise_dim=10, n_samples= num):
+    XT = np.array(g_data)
+    XN_noise = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    XN = G.predict(XN_noise)
+    X = np.concatenate((XT, XN))
+    y = np.zeros((2*n_samples, 2))
+    y[:n_samples, 1] = 1
+    y[n_samples:, 0] = 1
+    return X, y
+
+def pretrain(G, D, noise_dim=10, n_samples = num, batch_size=32):
+    X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+    set_trainability(D, True)
+    D.fit(X, y, epochs=1, batch_size=batch_size)
+    
+pretrain(G, D)
+
+def sample_noise(G, noise_dim=10, n_samples=num):
+    X = np.random.uniform(0, 1, size=[n_samples, noise_dim])
+    y = np.zeros((n_samples, 2))
+    y[:, 1] = 1
+    return X, y
+
+# one class detector
+def oneclass(data,kernel = &#39;rbf&#39;,gamma = &#39;auto&#39;):
+    num1 = int(len(data)/2)
+    num2 = int(len(data)+1)
+    from sklearn import svm
+    clf = svm.OneClassSVM(kernel=kernel, gamma=gamma).fit(data[0:num1])
+    origin = pd.DataFrame(clf.score_samples(data[0:num1]))
+    new = pd.DataFrame(clf.score_samples(data[num1:num2]))
+
+    occ = pd.concat([pd.DataFrame(new[0] &lt; origin[0].min()),pd.DataFrame(new[0] &gt; origin[0].max())], axis=1)
+    occ[&#39;ava&#39;] = pd.DataFrame(occ.iloc[:,1:2] == occ.iloc[:,0:1])
+    err = sum(occ[&#39;ava&#39;] == False)/len(occ[&#39;ava&#39;])
+    return err
+
+# training
+def train1(GAN, G, D, epochs=1, n_samples= num, noise_dim=10, batch_size=32, verbose=False, v_freq=dim,):
+    d_loss = []
+    g_loss = []
+    e_range = range(epochs)
+    if verbose:
+        e_range = tqdm(e_range)
+    for epoch in e_range:
+        X, y = sample_data_and_gen(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, True)
+        d_loss.append(D.train_on_batch(X, y))
+        xx,yy = X,y
+        err = oneclass(xx) 
+        print(&quot;The %d times epoch one class svm Error Rate=%f&quot; %(epoch, err))
+        
+        X, y = sample_noise(G, n_samples=n_samples, noise_dim=noise_dim)
+        set_trainability(D, False)
+        g_loss.append(GAN.train_on_batch(X, y))
+        if verbose and (epoch + 1) % v_freq == 0:
+            print(&quot;Epoch #{}: Generative Loss: {}, Discriminative Loss: {}&quot;.format(epoch + 1, g_loss[-1], d_loss[-1]))
+    return d_loss, g_loss, xx, yy</code></pre>
+<hr />
+<p>Layer (type) Output Shape Param #<br />
+=================================================================
+input_28 (InputLayer) (None, 10) 0<br />
+_________________________________________________________________
+dense_31 (Dense) (None, 200) 2200<br />
+_________________________________________________________________
+activation_13 (Activation) (None, 200) 0<br />
+_________________________________________________________________
+dense_32 (Dense) (None, 30) 6030<br />
+=================================================================
+Total params: 8,230
+Trainable params: 8,230
+Non-trainable params: 0
+_________________________________________________________________
+_________________________________________________________________
+Layer (type) Output Shape Param #<br />
+=================================================================
+input_29 (InputLayer) (None, 30) 0<br />
+_________________________________________________________________
+reshape_13 (Reshape) (None, 30, 1) 0<br />
+_________________________________________________________________
+conv1d_13 (Conv1D) (None, 26, 30) 180<br />
+_________________________________________________________________
+dropout_13 (Dropout) (None, 26, 30) 0<br />
+_________________________________________________________________
+flatten_13 (Flatten) (None, 780) 0<br />
+_________________________________________________________________
+dense_33 (Dense) (None, 30) 23430<br />
+_________________________________________________________________
+dense_34 (Dense) (None, 2) 62<br />
+=================================================================
+Total params: 23,672
+Trainable params: 23,672
+Non-trainable params: 0
+_________________________________________________________________
+_________________________________________________________________
+Layer (type) Output Shape Param #<br />
+=================================================================
+input_30 (InputLayer) (None, 10) 0<br />
+_________________________________________________________________
+model_19 (Model) (None, 30) 8230<br />
+_________________________________________________________________
+model_20 (Model) (None, 2) 23672<br />
+=================================================================
+Total params: 31,902
+Trainable params: 8,230
+Non-trainable params: 23,672
+_________________________________________________________________
+Epoch 1/1
+424/424 [==============================] - ETA: 9s - loss: 0.726 - 1s 2ms/step - loss: 0.5255</p>
+</div>
+<div id="smote-setting" class="section level3">
+<h3>3.3 SMOTE setting</h3>
+<pre class="python"><code>from imblearn.over_sampling import SMOTE
+smo = SMOTE()
+X_smo, y_smo = smo.fit_sample(x, y)
+X_smo = pd.DataFrame(X_smo)
+y_smo = pd.DataFrame(y_smo)</code></pre>
+<p>C:3-gpu-packages.py:724: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+y = column_or_1d(y, warn=True)</p>
+<pre class="python"><code>%matplotlib inline
+by_fraud = y_smo.groupby(0)
+by_fraud.size().plot(kind = &#39;bar&#39;)</code></pre>
+<p>&lt;matplotlib.axes._subplots.AxesSubplot at 0x27f27709dd8&gt;</p>
+<p><img src="/post/2020-02-18-compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation_files/output_16_1.jpg" /></p>
+</div>
+<div id="adasyn-setting" class="section level3">
+<h3>3. 4 ADASYN setting</h3>
+<pre class="python"><code>from imblearn.over_sampling import ADASYN
+ada = ADASYN()
+X_ada, y_ada = ada.fit_sample(x, y)
+X_ada = pd.DataFrame(X_ada)
+y_ada = pd.DataFrame(y_ada)</code></pre>
+<p>C:3-gpu-packages.py:724: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+y = column_or_1d(y, warn=True)</p>
+</div>
+</div>
+</div>
+<div id="section-3" class="section level1">
+<h1>4. 比較效果</h1>
+<p>我們將生成後的資料丟入之前建立的分類器當中，並希望其落於’0’類別，我會計算出現1的比例，比例越低代表越好，以下是個方法結果：</p>
+<div id="ocwgan" class="section level2">
+<h2>4.1 OCWGAN</h2>
+<p>我將不同的one class svm Error Rate做分類，欲比較其差異的效果。
+### ocwgan epoch 1</p>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train(GAN, G, D, epochs=1, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>The 0 times epoch one class svm Error Rate=1.000000</p>
+<p>The 0 times generator one class svm Error Rate=0.896226
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+<div id="ocwgan-epoch-2" class="section level3">
+<h3>ocwgan epoch 2</h3>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train(GAN, G, D, epochs=1, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+test_y_predicted
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>The 0 times epoch one class svm Error Rate=0.853774</p>
+<p>The 0 times generator one class svm Error Rate=0.240566
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+</div>
+<div id="ocwgan-epoch-3" class="section level3">
+<h3>ocwgan epoch 3</h3>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train(GAN, G, D, epochs=1, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>HBox(children=(IntProgress(value=0, max=1), HTML(value=’’)))</p>
+<p>The 0 times epoch one class svm Error Rate=0.188679</p>
+<p>The 0 times generator one class svm Error Rate=0.070755
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+</div>
+<div id="ocwgan-epoch-4" class="section level3">
+<h3>ocwgan epoch 4</h3>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train(GAN, G, D, epochs=1, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>HBox(children=(IntProgress(value=0, max=1), HTML(value=’’)))</p>
+<p>The 0 times epoch one class svm Error Rate=0.042453</p>
+<p>The 0 times generator one class svm Error Rate=0.014151
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+</div>
+<div id="ocwgan-epoch-5" class="section level3">
+<h3>ocwgan epoch 5</h3>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train(GAN, G, D, epochs=1, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>HBox(children=(IntProgress(value=0, max=1), HTML(value=’’)))</p>
+<p>The 0 times epoch one class svm Error Rate=0.009434</p>
+<p>The 0 times generator one class svm Error Rate=0.000000
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+</div>
+<div id="ocwgan-epoch-6" class="section level3">
+<h3>ocwgan epoch 6</h3>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train(GAN, G, D, epochs=1, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>HBox(children=(IntProgress(value=0, max=1), HTML(value=’’)))</p>
+<p>The 0 times epoch one class svm Error Rate=0.000000</p>
+<p>The 0 times generator one class svm Error Rate=0.000000
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+</div>
+</div>
+<div id="ocgan" class="section level2">
+<h2>4.2 OCGAN</h2>
+<p>我將不同的one class svm Error Rate做分類，欲比較其差異的效果。
+### ocgan epoch 1</p>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train1(GAN, G, D, epochs=1, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>HBox(children=(IntProgress(value=0, max=1), HTML(value=’’)))</p>
+<p>The 0 times epoch one class svm Error Rate=1.000000</p>
+<p>The 0 times generator one class svm Error Rate=1.000000
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+<div id="ocgan-epoch-2" class="section level3">
+<h3>ocgan epoch 2</h3>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train1(GAN, G, D, epochs=100, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>The 0 times epoch one class svm Error Rate=1.000000<br />
+The 1 times epoch one class svm Error Rate=1.000000<br />
+The 2 times epoch one class svm Error Rate=1.000000<br />
+The 3 times epoch one class svm Error Rate=1.000000<br />
+…<br />
+The 30 times epoch one class svm Error Rate=1.000000<br />
+…<br />
+The 60 times epoch one class svm Error Rate=1.000000<br />
+…<br />
+The 90 times epoch one class svm Error Rate=0.905660
+….<br />
+The 99 times epoch one class svm Error Rate=0.603774</p>
+<p>The 0 times generator one class svm Error Rate=0.599057<br />
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+</div>
+<div id="ocgan-epoch-3" class="section level3">
+<h3>ocgan epoch 3</h3>
+<pre class="python"><code>d_loss, g_loss ,xx,yy= train1(GAN, G, D, epochs=100, verbose=True)
+new_data = gen(GAN, G, D, times = 1,verbose=True)
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted,&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>The 0 times epoch one class svm Error Rate=0.570755<br />
+The 1 times epoch one class svm Error Rate=0.603774<br />
+The 2 times epoch one class svm Error Rate=0.462264<br />
+The 3 times epoch one class svm Error Rate=0.457547<br />
+…
+The 30 times epoch one class svm Error Rate=0.009434
+…<br />
+The 60 times epoch one class svm Error Rate=0.004717<br />
+…<br />
+The 90 times epoch one class svm Error Rate=0.004717<br />
+The 99 times epoch one class svm Error Rate=0.000000</p>
+<p>The 0 times generator one class svm Error Rate=0.000000<br />
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.0</p>
+</div>
+</div>
+<div id="smote" class="section level2">
+<h2>4.3 SMOTE</h2>
+<pre class="python"><code>new_data = X_smo.iloc[569:741,:]
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted)
+print(&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]<br />
+error = 0.034482758620689655</p>
+</div>
+<div id="adasyn" class="section level2">
+<h2>4.4 ADASYN</h2>
+<pre class="python"><code>new_data = X_ada.iloc[569:741,:]
+test_y_predicted = clf.predict(new_data)
+print(test_y_predicted)
+print(&#39;error = &#39;,np.mean(test_y_predicted))</code></pre>
+<p>[0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 1 1 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 0 0
+0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0]<br />
+error = 0.1232876712328767</p>
+</div>
+</div>
+<div id="section-4" class="section level1">
+<h1>5. 結論</h1>
+<p>以結果來看，gan的效果都是基本沒問題的，而ADASYN可能因其加入隨機偏移的關係導致資料更不符合原型態。另外很明顯one class svm Error Rate在wgan的收斂速度更快。</p>
+</div>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2020/02/14/cre-features-selection/">CRE features selection &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+

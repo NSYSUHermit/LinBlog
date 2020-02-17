@@ -6,10 +6,19 @@
     <description>Recent content in gan on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 04 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 18 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/gan/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</title>
+      <link>/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/</link>
+      <pubDate>Tue, 18 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/</guid>
+      <description>這次我使用sklearn內建的資料集breast-cancer(原始資料來源：https://archive.ics.uci.edu/ml/</description>
+    </item>
     
     <item>
       <title>OCGAN Pratice: CRE Bateria data</title>

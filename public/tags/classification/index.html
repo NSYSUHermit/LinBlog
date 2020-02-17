@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>classification</span>
-        <span>2020-02-14</span>
+        <span>2020-02-18</span>
         
         <span>1 / 3</span>
       
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/"> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-18</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-18-compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation_files/output_4_1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次我使用sklearn內建的資料集breast-cancer(原始資料來源：https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)) ，先將原資料以7:3比例建立一個的資料分類器出來，之後把其中一個類別挑出，並使用各種oversampling的方法來模擬樣本，並最終將模擬後的資料套回最初的模型當中，比較各方法產生的樣本能否在分類器當中回到原本的類別當中。
+[&hellip;] 讀取sklearn的資料並轉為dataframe：
+import pandas as pdimport numpy&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -190,42 +222,6 @@ Validation Set(CRE:Non): 10:30
     因為修統計書報的關係，這次也被分配要報告一個章節，雖然那本書是工具書取向，但是發現該作者有在2004年寫了一篇有關logistic regression的演算法，他稱之為LOTUS，主要是希望可以解決當時logistic regression的一些問題。
 Logistic Regression主要優勢是在他算法快、存處資源低；缺點是如果模型存在共線性、非線性、或交互作用存在，則模型並不好解釋。
 為了克服以上問題，作者提出了一種模型：LOTUS(Logistic Regression with Unbiasd Selection)通過樹狀分割數據並且fit不同的Logistic&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">WGAN Practice On Credit Card Data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-12-17</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_2_1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    前幾篇我有提到WGAN在訓練過程中可以改善兩個神經網路loss很難調教的問題(很常判別器的loss下降，生成器的卻一直上升，或是情況相反)，因此我將在此篇裡使用WGAN的規則來修改神經網路的一些參數，條件如下：
-[&hellip;] The WGAN limits:
-1.判別器最後一層去掉sigmoid
-2.生成器和判別器的loss不取log
-3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
-4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
-[&hellip;] import pandas as pdimport numpy&hellip;
     </a>
   </div>
 </section>
