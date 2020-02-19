@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 18 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 19 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Find The Special Sample in CRE data</title>
+      <link>/post/2020/02/19/find-the-special-sample-in-cre-data/</link>
+      <pubDate>Wed, 19 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/19/find-the-special-sample-in-cre-data/</guid>
+      <description>上次在挑選變數並建立分類模型的loocv時(link :https://hermitlin.netlify.com/post/2020/02/14/cre-features-selection/) ，最高的準確率來自adaboost的結果，且落在使用60~70個randomfores</description>
+    </item>
     
     <item>
       <title> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</title>

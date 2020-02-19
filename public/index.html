@@ -23,9 +23,9 @@
       <div class="head-meta">
       
         <span>Lin&#39;s Blog</span>
-        <span>2020-02-18</span>
+        <span>2020-02-19</span>
         
-        <span>1 / 6</span>
+        <span>1 / 7</span>
       
       </div>
     </nav>
@@ -34,6 +34,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/19/find-the-special-sample-in-cre-data/">Find The Special Sample in CRE data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-19</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/19/find-the-special-sample-in-cre-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-19-find-the-special-sample-in-cre-data_files/output_16_0.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    上次在挑選變數並建立分類模型的loocv時(link :https://hermitlin.netlify.com/post/2020/02/14/cre-features-selection/) ，最高的準確率來自adaboost的結果，且落在使用60~70個randomforest importance的變數，但當時多個模型準確率為0.989473684，即存在一個樣本預測錯誤，因此想知道是否在這些模型中，預測錯誤的皆為同一筆樣本。本次將預測的結果先行挑出，並將錯誤的樣本index建立成表，以方便觀察多為那些樣本為容易預測失敗的樣本。
+[&hellip;] 先讀入資料與之前R&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -195,37 +226,6 @@ Validation Set(CRE:Non): 10:30
   </div>
 </section>
 
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/sql">SQL</a>
-  
-  
-  </div>
-  <h1><a href="/post/2020/01/06/sql-query-optimization/">SQL Query Optimization</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2020-01-06</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2020/01/06/sql-query-optimization/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2020-01-06-sql-query-optimization_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這學期修的資管系資料庫系統期末報告，主要是建立一個有著大資料表的資料庫系統，並且針對系統下三個查詢語句，並且進行查詢句的優化，老師有說可使用oracle或是Mongodb來完成這個project，但期中project時我們已經建立一個oracle資料庫系統，裡面的資料有六個table，其ERD如下：
-主要是一個台灣股價網頁查詢回測系統，(該網站連結：http://140.117.70.87:3838/dbproject/， 可使用訪客帳號test1,密碼test1)，這邊稍微介紹一下這次專案會用到的資料型態，我們主要使用兩個table，stock_price_data以&hellip;
-    </a>
-  </div>
-</section>
-
 </main>
 <nav>
 
@@ -302,7 +302,16 @@ Validation Set(CRE:Non): 10:30
         
     
     
-    <li class="page-item"><a class="page-link" href="/page/6/">6</a></li>
+    
+    
+    
+    
+    
+        
+        
+    
+    
+    <li class="page-item"><a class="page-link" href="/page/7/">7</a></li>
     
     
     <li class="page-item">
@@ -310,7 +319,7 @@ Validation Set(CRE:Non): 10:30
     </li>
     
     <li class="page-item">
-        <a href="/page/6/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
+        <a href="/page/7/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
     </li>
     
 </ul>

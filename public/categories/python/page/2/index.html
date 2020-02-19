@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Python</span>
-        <span>2020-02-18</span>
+        <span>2020-02-19</span>
         
         <span>2 / 3</span>
       
@@ -33,6 +33,42 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">WGAN Practice On Credit Card Data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-17</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_2_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    前幾篇我有提到WGAN在訓練過程中可以改善兩個神經網路loss很難調教的問題(很常判別器的loss下降，生成器的卻一直上升，或是情況相反)，因此我將在此篇裡使用WGAN的規則來修改神經網路的一些參數，條件如下：
+[&hellip;] The WGAN limits:
+1.判別器最後一層去掉sigmoid
+2.生成器和判別器的loss不取log
+3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
+4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
+[&hellip;] import pandas as pdimport numpy&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -185,38 +221,6 @@
     在資料探勘中，異常檢測:anomaly detection對不符合預期模式或資料集中其他專案的專案、事件或觀測值的辨識。 通常異常專案會轉變成銀行欺詐、結構缺陷、醫療問題、文字錯誤等類型的問題。異常也被稱為離群值、新奇、噪聲、偏差和例外。
 特別是在檢測濫用與網路入侵時，有趣性物件往往不是罕見物件，但卻是超出預料的突發活動。這種模式不遵循通常統計定義中把異常點看作是罕見物件，於是許多異常檢測方法（特別是無監督的方法）將對此類資料失效，除非進行了合適的聚集。相反，群集分析演算法可能可以檢測出這些模式形成的微群集。
 有三大類異常檢測方法。在假設資料集中大多數實體都是正常的前提下，無監督異常檢測方法能&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/python">Python</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/08/27/how-to-compose-a-python-or-r-script-on-linux-commander/">How to compose a python(or R) script on linux commander.</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-08-27</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/08/27/how-to-compose-a-python-or-r-script-on-linux-commander/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-08-27-how-to-compose-a-python-or-r-script-on-linux-commander_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    In this article I will show how to bulid a script file on your location. And how to compose the script on Python (or R). You should bulid the Python script on your virtual environment if you want to use the keras CUDA.
-You should enter your server at begining.
-[&hellip;] You can key “dir” to check&hellip;
     </a>
   </div>
 </section>
