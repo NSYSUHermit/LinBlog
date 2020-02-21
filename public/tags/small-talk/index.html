@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>small talk | Lin&#39;s Blog</title>
+    <title>small-talk | Lin&#39;s Blog</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
@@ -21,8 +21,8 @@
 
       <div class="head-meta">
       
-        <span>small talk</span>
-        <span>2020-02-19</span>
+        <span>small-talk</span>
+        <span>2020-02-21</span>
         
         <span>1 / 2</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/21/2019-ncov-data-simple-analysis/">2019 nCov Data Simple Analysis</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-21</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/21/2019-ncov-data-simple-analysis/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-21-2019-ncov-data-simple-analysis_files/china.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    今年2020剛開始便被這個來自2019年傳出的2019n-Cov(俗稱的武漢肺炎病毒)鬧的人心惶惶，而在我們偉大的中國共產黨領導下，疫情也是如雨後春筍般的在中國甚至鄰近國家散播，而前陣子有個同學在偉大中國共產黨疫情通報網(link: http://www.nhc.gov.cn/xcs/yqtb/list_gzbd.shtml) 上，將疫情人數的數量做成表，並用excel繪製了一個簡單的圖表以及用Benford’s law檢查了資料是否有造假的可能，但因疫情假期還很長，因此變跟他要了這個(基本上是造假的)data，想說跑一些簡單的資料探勘看看會不會有有趣的結果。
+[&hellip;]&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -186,38 +217,6 @@ There is the paper resource link:&hellip;
     
     先前幾次我嘗試使用生成對抗網路產生一系列資料，但我們知道GAN的訓練很難調整，除非將生成資料直接拿去訓練比照結果，否則很難知道這次生成樣本的品質(這裡的品質是指有時候樣本過少時，我們產生所需的假資料是否能完美的當作一般樣本進行後續分析)，因此我想透過一些外部機制來當作衡量生成器生成的品質驗證，後來思考其實這有點像是異常檢測，若是先將真實資料做一個一元的異常檢測分類器，我們便可將GAN產生的資料用此當作二次確認(第一次確認是在GAN當中的判別器)，構想圖如下：
 我們將想要生成的某類資料匯入後，先建構一個一元分類器，並將所有資料點都包含於正常資料。接著將原資料匯入GAN當中，經過幾次迭代後，我們&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/10/23/generative-adversarial-network-practice/">Generative Adversarial Network Practice</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-10-23</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/10/23/generative-adversarial-network-practice/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-10-23-generative-adversarial-network-practice_files/1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    由Goodfellow等人在2014年推出的生成對抗神經網路適用於學習圖像空間VAE的替代方法。藉由強制讓聲稱ˊ圖像與真實圖片在統計上幾乎無法分別的條件下，生成相當逼真的合成圖像。
-若要以直覺的方式來理解GAN，可以想像一個偽造者試圖創造衣服偽造的畢卡索畫作。起先，偽造者的偽造作品非常糟糕。然後他將依些假貨與真正的畫作混合在一起，並給鑑定師鑑定。鑑定師對每幅畫進行真實性評估，並給予位作者意見回饋。接著偽造者根據意見回饋再準備一些新的假貨，隨時間的推移偽造者跟鑑定師也越來越專業，到最後便能產出一個專業偽造者與鑑定師。
-這就是GAN的運作原理：為偽造神經網路以及專家神經網路。因此由兩部分組成：&hellip;
     </a>
   </div>
 </section>

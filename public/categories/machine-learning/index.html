@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>machine-learning</span>
-        <span>2020-02-19</span>
+        <span>2020-02-21</span>
         
         <span>1 / 3</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/21/2019-ncov-data-simple-analysis/">2019 nCov Data Simple Analysis</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-21</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/21/2019-ncov-data-simple-analysis/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-21-2019-ncov-data-simple-analysis_files/china.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    今年2020剛開始便被這個來自2019年傳出的2019n-Cov(俗稱的武漢肺炎病毒)鬧的人心惶惶，而在我們偉大的中國共產黨領導下，疫情也是如雨後春筍般的在中國甚至鄰近國家散播，而前陣子有個同學在偉大中國共產黨疫情通報網(link: http://www.nhc.gov.cn/xcs/yqtb/list_gzbd.shtml) 上，將疫情人數的數量做成表，並用excel繪製了一個簡單的圖表以及用Benford’s law檢查了資料是否有造假的可能，但因疫情假期還很長，因此變跟他要了這個(基本上是造假的)data，想說跑一些簡單的資料探勘看看會不會有有趣的結果。
+[&hellip;]&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -187,40 +218,6 @@ import pandas as pdimport numpy&hellip;
     因為修統計書報的關係，這次也被分配要報告一個章節，雖然那本書是工具書取向，但是發現該作者有在2004年寫了一篇有關logistic regression的演算法，他稱之為LOTUS，主要是希望可以解決當時logistic regression的一些問題。
 Logistic Regression主要優勢是在他算法快、存處資源低；缺點是如果模型存在共線性、非線性、或交互作用存在，則模型並不好解釋。
 為了克服以上問題，作者提出了一種模型：LOTUS(Logistic Regression with Unbiasd Selection)通過樹狀分割數據並且fit不同的Logistic&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/machine-learning">machine-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/12/12/fix-the-r-function/">Fix The R Function </a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-12-12</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/12/12/fix-the-r-function/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-12-12-fix-the-r-function_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這禮拜我做的那個function執行順序上跟老師所要求的有所不同，因此這次將結果修改為老師所要的執行方式。
-原先我以為是要先將所有資料的變數進行pca轉換後再進行分類器leave one out的訓練，因此是將訓練以及測試的資料同時PCA轉換，大致流程為下圖：
-因此訓練資料的正交化與測試資料的正交是同時進行的，因此與老師所要求的流程上不同。
-老師是希望先將資料切分為1:ALL-1，並以ALL-1的Training Set 來進行PCA轉換、訓練分類器，最後將測試資料乘上訓練用的PCA轉換矩陣，並將其結果帶入分類器上來驗證分類預測結果，以此循環進行LOOCV，流程大致如下圖：
-因此最大的差別&hellip;
     </a>
   </div>
 </section>

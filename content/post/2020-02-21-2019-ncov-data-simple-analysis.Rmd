@@ -1,0 +1,640 @@
+---
+title: 2019 nCov Data Simple Analysis
+author: Hermit
+date: '2020-02-21'
+slug: 2019-ncov-data-simple-analysis
+categories:
+  - machine-learning
+  - Python
+tags:
+  - small-talk
+---
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/china.jpg)
+今年2020剛開始便被這個來自2019年傳出的2019n-Cov(俗稱的武漢肺炎病毒)鬧的人心惶惶，而在我們偉大的中國共產黨領導下，疫情也是如雨後春筍般的在中國甚至鄰近國家散播，而前陣子有個同學在偉大中國共產黨疫情通報網(link: http://www.nhc.gov.cn/xcs/yqtb/list_gzbd.shtml) 上，將疫情人數的數量做成表，並用excel繪製了一個簡單的圖表以及用Benford's law檢查了資料是否有造假的可能，但因疫情假期還很長，因此變跟他要了這個(基本上是造假的)data，想說跑一些簡單的資料探勘看看會不會有有趣的結果。
+
+# 1. 資料探勘
+讀取資料
+
+
+```python
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('C:/Users/User/OneDrive - student.nsysu.edu.tw/Documents/Python/ML/2019nCov/2019nCov.csv')
+```
+
+計算每日成長人數
+
+
+```python
+成長人數 = [0]
+for i in range(len(df)-1):
+    成長人數 += [df['確診'][i+1]-df['確診'][i]]
+df['確診成長人數'] = 成長人數
+df
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>日期</th>
+      <th>確診</th>
+      <th>死亡</th>
+      <th>治癒</th>
+      <th>確診成長率</th>
+      <th>死亡率</th>
+      <th>治癒率</th>
+      <th>確診成長人數</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1月11日</td>
+      <td>41</td>
+      <td>1</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>0.024390</td>
+      <td>0.048780</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1月12日</td>
+      <td>41</td>
+      <td>1</td>
+      <td>6</td>
+      <td>0.000000</td>
+      <td>0.024390</td>
+      <td>0.146341</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1月13日</td>
+      <td>41</td>
+      <td>1</td>
+      <td>7</td>
+      <td>0.000000</td>
+      <td>0.024390</td>
+      <td>0.170732</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1月14日</td>
+      <td>41</td>
+      <td>1</td>
+      <td>7</td>
+      <td>0.000000</td>
+      <td>0.024390</td>
+      <td>0.170732</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1月15日</td>
+      <td>41</td>
+      <td>1</td>
+      <td>7</td>
+      <td>0.000000</td>
+      <td>0.024390</td>
+      <td>0.170732</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>1月16日</td>
+      <td>41</td>
+      <td>2</td>
+      <td>12</td>
+      <td>0.000000</td>
+      <td>0.048780</td>
+      <td>0.292683</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1月17日</td>
+      <td>45</td>
+      <td>2</td>
+      <td>15</td>
+      <td>0.097561</td>
+      <td>0.044444</td>
+      <td>0.333333</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>1月18日</td>
+      <td>62</td>
+      <td>2</td>
+      <td>19</td>
+      <td>0.377778</td>
+      <td>0.032258</td>
+      <td>0.306452</td>
+      <td>17</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>1月19日</td>
+      <td>121</td>
+      <td>3</td>
+      <td>24</td>
+      <td>0.951613</td>
+      <td>0.024793</td>
+      <td>0.198347</td>
+      <td>59</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>1月20日</td>
+      <td>198</td>
+      <td>3</td>
+      <td>25</td>
+      <td>0.636364</td>
+      <td>0.015152</td>
+      <td>0.126263</td>
+      <td>77</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>1月21日</td>
+      <td>291</td>
+      <td>3</td>
+      <td>25</td>
+      <td>0.469697</td>
+      <td>0.010309</td>
+      <td>0.085911</td>
+      <td>93</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>1月22日</td>
+      <td>440</td>
+      <td>9</td>
+      <td>25</td>
+      <td>0.512027</td>
+      <td>0.020455</td>
+      <td>0.056818</td>
+      <td>149</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>1月23日</td>
+      <td>571</td>
+      <td>17</td>
+      <td>25</td>
+      <td>0.297727</td>
+      <td>0.029772</td>
+      <td>0.043783</td>
+      <td>131</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>1月24日</td>
+      <td>830</td>
+      <td>25</td>
+      <td>34</td>
+      <td>0.453590</td>
+      <td>0.030120</td>
+      <td>0.040964</td>
+      <td>259</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>1月25日</td>
+      <td>1287</td>
+      <td>41</td>
+      <td>38</td>
+      <td>0.550602</td>
+      <td>0.031857</td>
+      <td>0.029526</td>
+      <td>457</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>1月26日</td>
+      <td>1975</td>
+      <td>56</td>
+      <td>49</td>
+      <td>0.534577</td>
+      <td>0.028354</td>
+      <td>0.024810</td>
+      <td>688</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>1月27日</td>
+      <td>2744</td>
+      <td>80</td>
+      <td>51</td>
+      <td>0.389367</td>
+      <td>0.029155</td>
+      <td>0.018586</td>
+      <td>769</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>1月28日</td>
+      <td>4515</td>
+      <td>106</td>
+      <td>60</td>
+      <td>0.645408</td>
+      <td>0.023477</td>
+      <td>0.013289</td>
+      <td>1771</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>1月29日</td>
+      <td>5974</td>
+      <td>132</td>
+      <td>103</td>
+      <td>0.323145</td>
+      <td>0.022096</td>
+      <td>0.017241</td>
+      <td>1459</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>1月30日</td>
+      <td>7711</td>
+      <td>170</td>
+      <td>124</td>
+      <td>0.290760</td>
+      <td>0.022046</td>
+      <td>0.016081</td>
+      <td>1737</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>1月31日</td>
+      <td>9692</td>
+      <td>213</td>
+      <td>171</td>
+      <td>0.256906</td>
+      <td>0.021977</td>
+      <td>0.017643</td>
+      <td>1981</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>2月1日</td>
+      <td>11791</td>
+      <td>259</td>
+      <td>243</td>
+      <td>0.216570</td>
+      <td>0.021966</td>
+      <td>0.020609</td>
+      <td>2099</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>2月2日</td>
+      <td>14380</td>
+      <td>304</td>
+      <td>328</td>
+      <td>0.219574</td>
+      <td>0.021140</td>
+      <td>0.022809</td>
+      <td>2589</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>2月3日</td>
+      <td>17205</td>
+      <td>361</td>
+      <td>475</td>
+      <td>0.196453</td>
+      <td>0.020982</td>
+      <td>0.027608</td>
+      <td>2825</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>2月4日</td>
+      <td>20438</td>
+      <td>425</td>
+      <td>632</td>
+      <td>0.187910</td>
+      <td>0.020795</td>
+      <td>0.030923</td>
+      <td>3233</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>2月5日</td>
+      <td>24324</td>
+      <td>490</td>
+      <td>892</td>
+      <td>0.190136</td>
+      <td>0.020145</td>
+      <td>0.036672</td>
+      <td>3886</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>2月6日</td>
+      <td>28018</td>
+      <td>563</td>
+      <td>1153</td>
+      <td>0.151866</td>
+      <td>0.020094</td>
+      <td>0.041152</td>
+      <td>3694</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>2月7日</td>
+      <td>31161</td>
+      <td>636</td>
+      <td>1540</td>
+      <td>0.112178</td>
+      <td>0.020410</td>
+      <td>0.049421</td>
+      <td>3143</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>2月8日</td>
+      <td>34546</td>
+      <td>722</td>
+      <td>2050</td>
+      <td>0.108629</td>
+      <td>0.020900</td>
+      <td>0.059341</td>
+      <td>3385</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>2月9日</td>
+      <td>37198</td>
+      <td>811</td>
+      <td>2649</td>
+      <td>0.076767</td>
+      <td>0.021802</td>
+      <td>0.071214</td>
+      <td>2652</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>2月10日</td>
+      <td>40171</td>
+      <td>903</td>
+      <td>3281</td>
+      <td>0.079924</td>
+      <td>0.022479</td>
+      <td>0.081676</td>
+      <td>2973</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>2月11日</td>
+      <td>42638</td>
+      <td>1016</td>
+      <td>3996</td>
+      <td>0.061412</td>
+      <td>0.023829</td>
+      <td>0.093719</td>
+      <td>2467</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>2月12日</td>
+      <td>44653</td>
+      <td>1113</td>
+      <td>4740</td>
+      <td>0.047258</td>
+      <td>0.024926</td>
+      <td>0.106152</td>
+      <td>2015</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>2月13日</td>
+      <td>59868</td>
+      <td>1367</td>
+      <td>5911</td>
+      <td>0.340739</td>
+      <td>0.022834</td>
+      <td>0.098734</td>
+      <td>15215</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+畫每日確診人數圖
+
+
+```python
+import matplotlib.pyplot as plt
+x = df.iloc[:,1:2]
+
+plt.plot(x)
+plt.xlabel("Date")
+plt.ylabel("Number of people")
+plt.title("Wuhan Pneumonia Cumulative Amount Plot")
+
+plt.show()
+```
+
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/output_5_0.png)
+
+
+
+畫每日肺炎成長率
+
+
+```python
+y = df.iloc[:,4:5]
+
+plt.plot(y)
+plt.xlabel("Date")
+plt.ylabel("Infected Growth Rate")
+plt.title("Wuhan Pneumonia Growth Rate Plot")
+
+plt.show()
+```
+
+
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/output_7_0.png)
+
+
+計算各項平均數值
+
+
+```python
+print('平均確診成長率：',np.mean(df['確診成長率']))
+print('平均死亡率：',np.mean(df['死亡率']))
+print('平均治癒率：',np.mean(df['治癒率']))
+print('平均確診成長人數：',np.mean(df['確診成長人數']))
+```
+
+    平均確診成長率： 0.2659557775454546  
+    平均死亡率： 0.024685260176470585  
+    平均治癒率： 0.09026695652941175  
+    平均確診成長人數： 1759.6176470588234  
+
+從數據上來看，死亡率確實很精準地落在百分之二左右，而成長人數因中共的確診方式在2/13時宣稱，因序列檢驗耗時太久，因此只要符合病徵以及MRI確認肺部有發炎症狀即確診，因此人數突然飆升。      
+
+# 2. The SIR epidemic model
+一年級有在統計模擬課程上稍微使用過SIR Model，因此這次利用前面的平均數，建立簡單的模擬模型，模擬感染平均狀況的每日人數變化。  
+這裡僅利用武漢的人口總數計算，因應中國當局以城市當作封閉單位，因此以一個單位內部傳染情況來做推算。  
+因此利用：  
+總人口數：$N$ = 10000000、  
+平均移除率(平均死亡率+平均治癒率)：$\gamma$ =  0.024685260176470585+0.09026695652941175 = 0.11495221670588233 
+假設感染接觸率：$\beta$ =  0.9、0.6、0.25  
+
+這裡假設幾種感染接觸率，這裡的接觸率我們假設三種情況，人口正常移動且無防護意識:0.9、人口減少移動且少部分有防疫意識:0.6、人口低流動且盡可能不接觸可能的感染者:0.25。  
+
+### Type 1:人口正常移動且無防護意識
+```python
+import numpy as np
+from scipy.integrate import odeint
+import matplotlib.pyplot as plt
+
+# Total population, N.
+N = 100000000
+# Initial number of infected and recovered individuals, I0 and R0.
+I0, R0 = 1, 0
+# Everyone else, S0, is susceptible to infection initially.
+S0 = N - I0 - R0
+# Contact rate, beta, and mean recovery rate, gamma, (in 1/days).
+beta, gamma = 0.9, 0.11495221670588233
+# A grid of time points (in days)
+t = np.linspace(0, 160, 160)
+
+# The SIR model differential equations.
+def deriv(y, t, N, beta, gamma):
+    S, I, R = y
+    dSdt = -beta * S * I / N
+    dIdt = beta * S * I / N - gamma * I
+    dRdt = gamma * I
+    return dSdt, dIdt, dRdt
+
+# Initial conditions vector
+y0 = S0, I0, R0
+# Integrate the SIR equations over the time grid, t.
+ret = odeint(deriv, y0, t, args=(N, beta, gamma))
+S, I, R = ret.T
+
+# Plot the data on three separate curves for S(t), I(t) and R(t)
+fig = plt.figure(facecolor='w')
+ax = fig.add_subplot(111)
+ax.plot(t, S/100000000, 'b', alpha=0.5, lw=2, label='Susceptible')
+ax.plot(t, I/100000000, 'r', alpha=0.5, lw=2, label='Infected')
+ax.plot(t, R/100000000, 'g', alpha=0.5, lw=2, label='Recovered with immunity')
+ax.set_xlabel('Time /days')
+ax.set_ylabel('Number (10000000s)')
+#ax.set_ylim(0,1.2)
+ax.yaxis.set_tick_params(length=0)
+ax.xaxis.set_tick_params(length=0)
+ax.grid(b=True, which='major', c='w', lw=2, ls='-')
+legend = ax.legend()
+legend.get_frame().set_alpha(0.5)
+for spine in ('top', 'right', 'bottom', 'left'):
+    ax.spines[spine].set_visible(False)
+plt.show()
+```
+
+
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/output_11_0.png)
+
+從上圖表可以看出，若對此病毒無任何作為時，可以在近一個月的時間將整個城市的人全面感染。
+
+### Type 2:人口減少移動且少部分有防疫意識
+```python
+beta = 0.5
+# Integrate the SIR equations over the time grid, t.
+ret = odeint(deriv, y0, t, args=(N, beta, gamma))
+S, I, R = ret.T
+# Plot the data on three separate curves for S(t), I(t) and R(t)
+fig = plt.figure(facecolor='w')
+ax = fig.add_subplot(111)
+ax.plot(t, S/100000000, 'b', alpha=0.5, lw=2, label='Susceptible')
+ax.plot(t, I/100000000, 'r', alpha=0.5, lw=2, label='Infected')
+ax.plot(t, R/100000000, 'g', alpha=0.5, lw=2, label='Recovered with immunity')
+ax.set_xlabel('Time /days')
+ax.set_ylabel('Number (10000000s)')
+#ax.set_ylim(0,1.2)
+ax.yaxis.set_tick_params(length=0)
+ax.xaxis.set_tick_params(length=0)
+ax.grid(b=True, which='major', c='w', lw=2, ls='-')
+legend = ax.legend()
+legend.get_frame().set_alpha(0.5)
+for spine in ('top', 'right', 'bottom', 'left'):
+    ax.spines[spine].set_visible(False)
+plt.show()
+```
+
+
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/output_12_0.png)
+
+在減少人口流動後，全面感染的時間將被拉長至兩個月，將有助於爭取疫苗或是特效藥的研發時間。  
+
+
+### Type 3:人口低流動且盡可能不接觸可能的感染者
+```python
+beta = 0.25
+# Integrate the SIR equations over the time grid, t.
+ret = odeint(deriv, y0, t, args=(N, beta, gamma))
+S, I, R = ret.T
+# Plot the data on three separate curves for S(t), I(t) and R(t)
+fig = plt.figure(facecolor='w')
+ax = fig.add_subplot(111)
+ax.plot(t, S/100000000, 'b', alpha=0.5, lw=2, label='Susceptible')
+ax.plot(t, I/100000000, 'r', alpha=0.5, lw=2, label='Infected')
+ax.plot(t, R/100000000, 'g', alpha=0.5, lw=2, label='Recovered with immunity')
+ax.set_xlabel('Time /days')
+ax.set_ylabel('Number (10000000s)')
+#ax.set_ylim(0,1.2)
+ax.yaxis.set_tick_params(length=0)
+ax.xaxis.set_tick_params(length=0)
+ax.grid(b=True, which='major', c='w', lw=2, ls='-')
+legend = ax.legend()
+legend.get_frame().set_alpha(0.5)
+for spine in ('top', 'right', 'bottom', 'left'):
+    ax.spines[spine].set_visible(False)
+plt.show()
+```
+
+
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/output_13_0.png)
+
+在具備有良好的全面控制下，將可有效的避免病毒的傳播 ，因此若要減緩甚至是阻止病毒的傳播，減少人口的接觸率將會是最直接最簡單的方式。  
+
+
+# 3. Benford's Law
+這裡我們來檢查一下偉大黨提供的數據是否有造假的疑慮，以下是excle上面執行的結果截圖：
+
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/ben1.jpg)
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/ben2.jpg)
+
+數字4出現的次數顯得有點突出，若是數據造假，落在數字4難道真的巧合嗎?不，我不這麼認為。  
+人口清洗的陰謀論、數字6之後出現的次數也相同，難道這是防疫中心想要表達64 64的訊息給廣大的萬萬子民嗎?  
+![](/post/2020-02-21-2019-ncov-data-simple-analysis_files/64.jpg)
+
+總之，希望這次疫情能夠順利結束，大家也能夠配合政府政策，減緩並阻止病毒的擴張，Peace!

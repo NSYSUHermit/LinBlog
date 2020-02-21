@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Posts</span>
-        <span>2020-02-19</span>
+        <span>2020-02-21</span>
         
         <span>1 / 7</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/21/2019-ncov-data-simple-analysis/">2019 nCov Data Simple Analysis</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-21</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/21/2019-ncov-data-simple-analysis/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-21-2019-ncov-data-simple-analysis_files/china.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    今年2020剛開始便被這個來自2019年傳出的2019n-Cov(俗稱的武漢肺炎病毒)鬧的人心惶惶，而在我們偉大的中國共產黨領導下，疫情也是如雨後春筍般的在中國甚至鄰近國家散播，而前陣子有個同學在偉大中國共產黨疫情通報網(link: http://www.nhc.gov.cn/xcs/yqtb/list_gzbd.shtml) 上，將疫情人數的數量做成表，並用excel繪製了一個簡單的圖表以及用Benford’s law檢查了資料是否有造假的可能，但因疫情假期還很長，因此變跟他要了這個(基本上是造假的)data，想說跑一些簡單的資料探勘看看會不會有有趣的結果。
+[&hellip;]&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -189,38 +220,6 @@ Train Set(CRE:Non): 6:19
 Validation Set(CRE:Non): 10:30
 接著我們將分為有使用OCGAN平衡數據集的資料以及未平衡數據集的資料進行分別建模，兩者皆使用SVM的方式建模，並且先透過LOOCV的方式在數據集Tuning模型，最後套入驗證集計算總準確率、f1 score、auc等，比較有無平衡的效果。
 [&hellip;]&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/gan">gan</a>
-  
-  
-  </div>
-  <h1><a href="/post/2020/01/16/ocgan-tuning/">OCGAN Tuning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2020-01-16</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2020/01/16/ocgan-tuning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2020-01-16-ocgan-tuning_files/1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    基本上生成樣本已經是可以達成的事情，目前就是調整gan各處的結構，如優化器、激活函數、損失函數等等，目前嘗試皆以randomforest(n=100)當作統一的模型。下圖是一般神經網路的結構：
-而生成對抗網路則有生成器與判別器兩個神經網路的串接，因此排列組合十分多種，且echo的次數與每個組合的效果並不一定相同，不一定回傳越多次效果越好，因此想先比較完大部分組合後再從中擇優，以下是將之前信用卡資料切分為train:test為1:1後的比較結果，比較傳統oversampling、undersampling與Non Sampling的效果，結果如下圖：
-接下來與gan進行比較，gan的各種組合下表&hellip;
     </a>
   </div>
 </section>

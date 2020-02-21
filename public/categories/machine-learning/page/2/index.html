@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>machine-learning</span>
-        <span>2020-02-19</span>
+        <span>2020-02-21</span>
         
         <span>2 / 3</span>
       
@@ -33,6 +33,40 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/12/fix-the-r-function/">Fix The R Function </a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-12</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/12/fix-the-r-function/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-12-fix-the-r-function_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜我做的那個function執行順序上跟老師所要求的有所不同，因此這次將結果修改為老師所要的執行方式。
+原先我以為是要先將所有資料的變數進行pca轉換後再進行分類器leave one out的訓練，因此是將訓練以及測試的資料同時PCA轉換，大致流程為下圖：
+因此訓練資料的正交化與測試資料的正交是同時進行的，因此與老師所要求的流程上不同。
+老師是希望先將資料切分為1:ALL-1，並以ALL-1的Training Set 來進行PCA轉換、訓練分類器，最後將測試資料乘上訓練用的PCA轉換矩陣，並將其結果帶入分類器上來驗證分類預測結果，以此循環進行LOOCV，流程大致如下圖：
+因此最大的差別&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -187,42 +221,6 @@
     
     不平衡資料 (Imbalanced Data)是很常見於結構化資料的情境之一。比如說我們有一筆保險客戶的資料，有非常多的客戶基本資料(如:居住地、學歷等等)，以及一個對應的反應變數:是否有投保，而這個變量有極大的可能多數為非投保狀態，這種情況就稱為Imbalanced Data，因為最近遇到這個類型的資料分析問題，因此從數篇文章中整理幾個常見的解決方法，這裡主要針對反應變數為binary classificaion的狀態。
 [&hellip;] 因為極度不平衡的資料，將導致我們在訓練分類模型的時候有過度去預測某一類的情況。比如說上述的保險資料，我們持有10萬筆客戶訓練資料，但僅有2000筆資&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/08/20/what-is-deep-learning/">What is deep learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-08-20</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/08/20/what-is-deep-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="https://miro.medium.com/max/1400/1*I-rTLtMaWeRG1dpaiUczNg.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    最近拜讀Keras之父-Francois Chollet所撰寫的deep learning with python。
-因此想撰寫一些讀後心得筆記，以留日後自己參考。
-[&hellip;] 很常遇到有人在討論深度學習與機器學習的差異，以及“深度”是深在哪裡。
-因此有撰寫這篇文章的想法，順便讓自己更清楚的知道這些名詞的差異。在談論何謂深度學習之前，我們要先知道人工智慧以及機器學習、深度學習的關係。
-應該許多人看過以下這張圖：
-因此不免俗的，先簡介這三者，再深入探討我們所要談論的“深度”學習。
-[&hellip;] 人工智慧大約於1950年代，當時電腦科學領域內所電腦是否能用來“思考”，在最開始的&hellip;
     </a>
   </div>
 </section>

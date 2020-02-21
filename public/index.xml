@@ -6,10 +6,19 @@
     <description>Recent content on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 19 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 21 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>2019 nCov Data Simple Analysis</title>
+      <link>/post/2020/02/21/2019-ncov-data-simple-analysis/</link>
+      <pubDate>Fri, 21 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/21/2019-ncov-data-simple-analysis/</guid>
+      <description>今年2020剛開始便被這個來自2019年傳出的2019n-Cov(俗稱的武漢肺炎病毒)鬧的人心惶惶，而在我們偉大的中國共產黨領導下，疫情也是</description>
+    </item>
     
     <item>
       <title>Find The Special Sample in CRE data</title>
