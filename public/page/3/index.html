@@ -23,7 +23,7 @@
       <div class="head-meta">
       
         <span>Lin&#39;s Blog</span>
-        <span>2020-02-21</span>
+        <span>2020-02-25</span>
         
         <span>3 / 7</span>
       
@@ -34,6 +34,40 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/12/fix-the-r-function/">Fix The R Function </a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-12</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/12/fix-the-r-function/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-12-fix-the-r-function_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜我做的那個function執行順序上跟老師所要求的有所不同，因此這次將結果修改為老師所要的執行方式。
+原先我以為是要先將所有資料的變數進行pca轉換後再進行分類器leave one out的訓練，因此是將訓練以及測試的資料同時PCA轉換，大致流程為下圖：
+因此訓練資料的正交化與測試資料的正交是同時進行的，因此與老師所要求的流程上不同。
+老師是希望先將資料切分為1:ALL-1，並以ALL-1的Training Set 來進行PCA轉換、訓練分類器，最後將測試資料乘上訓練用的PCA轉換矩陣，並將其結果帶入分類器上來驗證分類預測結果，以此循環進行LOOCV，流程大致如下圖：
+因此最大的差別&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -186,37 +220,6 @@ There is the paper resource link:&hellip;
     
     這次，我將使用一個來自kaggle的不平衡數據資料(link:https://www.kaggle.com/mlg-ulb/creditcardfraud/version/1).
 該數據集包含了歐洲持卡人2013年9月通過信用卡進行的交易。這些交易發生在兩天之內，在這裡我們有492筆詐騙資料以及284807正常交易資料。該數據集是非常不平衡的，其中陰性樣本（詐欺）佔所有交易的0.172％。它的變量包含數值輸入變量後PCA變換的結果。不幸的是，由於保密問題我們不能得到原始數據的更多背景信息。特徵V1，V2，…… V28與PCA獲得的主成分，還沒有被轉化與PCA的變量是“交易時間”和“交易金額”。&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">Practice in GAN with One Class Learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-14</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/14/practice-in-gan-with-one-class-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-14-practice-in-gan-with-one-class-learning_files/output_2_1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
-[&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
     </a>
   </div>
 </section>

@@ -6,10 +6,19 @@
     <description>Recent content in gan on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 18 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 25 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/gan/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Compare to OCGAN &amp; SMOTE &amp; ADASYN in CRE data Simulation</title>
+      <link>/post/2020/02/25/compare-to-ocgan-smote-adasyn-in-cre-data-simulation/</link>
+      <pubDate>Tue, 25 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/25/compare-to-ocgan-smote-adasyn-in-cre-data-simulation/</guid>
+      <description>與上禮拜那篇文章一樣，只是這次將資料改為CRE data，希望也有良好的表現。 1. 讀入資料 import pandas as pd import numpy as np from sklearn import datasets # import some data to play with df = pd.read_csv(&amp;#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv&amp;#39;) x = df.iloc[:,0:1471]</description>
+    </item>
     
     <item>
       <title> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</title>
