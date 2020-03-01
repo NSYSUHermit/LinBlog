@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>neural network</span>
-        <span>2020-02-25</span>
+        <span>2020-03-02</span>
         
         <span>2 / 2</span>
       
@@ -33,6 +33,42 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">WGAN Practice On Credit Card Data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-17</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_2_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    前幾篇我有提到WGAN在訓練過程中可以改善兩個神經網路loss很難調教的問題(很常判別器的loss下降，生成器的卻一直上升，或是情況相反)，因此我將在此篇裡使用WGAN的規則來修改神經網路的一些參數，條件如下：
+[&hellip;] The WGAN limits:
+1.判別器最後一層去掉sigmoid
+2.生成器和判別器的loss不取log
+3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
+4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
+[&hellip;] import pandas as pdimport numpy&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">

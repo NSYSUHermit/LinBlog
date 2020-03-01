@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>machine-learning</span>
-        <span>2020-02-25</span>
+        <span>2020-03-02</span>
         
         <span>2 / 4</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/python">Python</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/10/cre-data-features-selection/">CRE data features selection</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-10</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/10/cre-data-features-selection/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-10-cre-data-features-selection_files/figure-html/unnamed-chunk-3-1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次僅針對CRE data的模型變數選擇，主要以下面python的forward backward selection的方式進行挑選，主要方式為：將所有資料的百分之六十切出，進行變數篩選，並使用loocv的方式比較不同變數模型的準確度差異。
+[&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv&#39;)from&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -190,38 +221,6 @@ Logistic Regression主要優勢是在他算法快、存處資源低；缺點是�
     
     這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
 [&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/machine-learning">machine-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/10/02/one-class-learning/">One Class Learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-10-02</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/10/02/one-class-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-10-02-one-class-learning_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    在資料探勘中，異常檢測:anomaly detection對不符合預期模式或資料集中其他專案的專案、事件或觀測值的辨識。 通常異常專案會轉變成銀行欺詐、結構缺陷、醫療問題、文字錯誤等類型的問題。異常也被稱為離群值、新奇、噪聲、偏差和例外。
-特別是在檢測濫用與網路入侵時，有趣性物件往往不是罕見物件，但卻是超出預料的突發活動。這種模式不遵循通常統計定義中把異常點看作是罕見物件，於是許多異常檢測方法（特別是無監督的方法）將對此類資料失效，除非進行了合適的聚集。相反，群集分析演算法可能可以檢測出這些模式形成的微群集。
-有三大類異常檢測方法。在假設資料集中大多數實體都是正常的前提下，無監督異常檢測方法能&hellip;
     </a>
   </div>
 </section>

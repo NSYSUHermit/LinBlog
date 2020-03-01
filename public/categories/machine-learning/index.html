@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>machine-learning</span>
-        <span>2020-02-25</span>
+        <span>2020-03-02</span>
         
         <span>1 / 4</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/29/auto-encoder-for-anomaly-detection/">Auto Encoder for Anomaly Detection</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-29</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/29/auto-encoder-for-anomaly-detection/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-29-auto-encoder-for-anomaly-detection_files/1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜在撰寫論文的時候，因為有一段需要更詳細說明所謂的Anomaly Detection，因而發現了一個也可以進行相同工作的方法-“Auto Encoder”，且他號稱有著更佳的分類效果，因此就看了一些介紹此方法的文章以及實作，下面我將使用breast cancer data的前一百筆當作練習範本，嘗試建立一個Auto Encoder for Anomaly Detection。
+[&hellip;] Autoencoder是一種無監督式學習模型。本質上它使用了一個神經網絡來產生一個高維輸入的低維表示。 Autoencoder與主成分分析PCA類似，但是Autoencoder在使用非線性激活函&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -186,37 +217,6 @@ import pandas as pdimport numpy&hellip;
     
     This time I will use the scikit-learn module to bulid the classifiers,and I will use the randomforest&rsquo;s importance to choose the explanatory variables.
 [&hellip;] import pandas as pd import numpy as np df = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/python">Python</a>
-  
-  
-  </div>
-  <h1><a href="/post/2020/02/10/cre-data-features-selection/">CRE data features selection</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2020-02-10</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2020/02/10/cre-data-features-selection/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2020-02-10-cre-data-features-selection_files/figure-html/unnamed-chunk-3-1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次僅針對CRE data的模型變數選擇，主要以下面python的forward backward selection的方式進行挑選，主要方式為：將所有資料的百分之六十切出，進行變數篩選，並使用loocv的方式比較不同變數模型的準確度差異。
-[&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv&#39;)from&hellip;
     </a>
   </div>
 </section>

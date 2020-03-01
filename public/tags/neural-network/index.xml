@@ -6,10 +6,19 @@
     <description>Recent content in neural network on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 25 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 29 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/neural-network/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Auto Encoder for Anomaly Detection</title>
+      <link>/post/2020/02/29/auto-encoder-for-anomaly-detection/</link>
+      <pubDate>Sat, 29 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/02/29/auto-encoder-for-anomaly-detection/</guid>
+      <description>這禮拜在撰寫論文的時候，因為有一段需要更詳細說明所謂的Anomaly Detection，因而發現了一個也可以進行相同工作的方法-“Auto E</description>
+    </item>
     
     <item>
       <title>Compare to OCGAN &amp; SMOTE &amp; ADASYN in CRE data Simulation</title>

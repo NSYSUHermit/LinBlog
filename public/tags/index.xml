@@ -6,10 +6,19 @@
     <description>Recent content in Tags on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 25 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 29 Feb 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>neural network</title>
+      <link>/tags/neural-network/</link>
+      <pubDate>Sat, 29 Feb 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/tags/neural-network/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>classification</title>
@@ -17,15 +26,6 @@
       <pubDate>Tue, 25 Feb 2020 00:00:00 +0000</pubDate>
       
       <guid>/tags/classification/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>neural network</title>
-      <link>/tags/neural-network/</link>
-      <pubDate>Tue, 25 Feb 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/neural-network/</guid>
       <description></description>
     </item>
     
