@@ -306,6 +306,17 @@ pred_test = autoencoder.predict(X_test)
 pred_fraud = autoencoder.predict(X_fraud)
 
 # 計算還原誤差MSE和MAE
+mse_test = np.mean(np.power(X_test - pred_test, 2), axis=1)
+mse_fraud = np.mean(np.power(X_fraud - pred_fraud, 2), axis=1)
+mae_test = np.mean(np.abs(X_test - pred_test), axis=1)
+mae_fraud = np.mean(np.abs(X_fraud - pred_fraud), axis=1)
+mse_df = pd.DataFrame()
+mse_df[&#39;targets_names&#39;] = [0] * len(mse_test) + [1] * len(mse_fraud)
+mse_df[&#39;MSE&#39;] = np.hstack([mse_test, mse_fraud])
+mse_df[&#39;MAE&#39;] = np.hstack([mae_test, mae_fraud])
+mse_df = mse_df.sample(frac=1).reset_index(drop=True)
+
+# 計算還原誤差MSE和MAE
 markers = [&#39;o&#39;, &#39;^&#39;]
 markers = [&#39;o&#39;, &#39;^&#39;]
 colors = [&#39;dodgerblue&#39;, &#39;coral&#39;]
