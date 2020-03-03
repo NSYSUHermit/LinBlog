@@ -81,7 +81,11 @@
 <img src="/post/2020-02-29-auto-encoder-for-anomaly-detection_files/1.png" /></p>
 <p>而AutoEncoder的內部構造，說白了就是把輸入資料，通過數層的神經網路並輸出一份接近的資料。聽起來就是複製而已，但典型的AE還會有內部表示層(Internal Representation)，透過對一些維度限制、或加入雜訊到輸入資料，讓整個AE的結構更加複雜，整個流程就不是只有「複製輸入到輸出」，這樣單純而已了，其中最重要的就是輸出的數量(神經元)要跟輸入一樣。</p>
 <p>另外Autoencoder要如何做到無監督異常檢測?異常檢測(anomaly detection)通常分為有監督和無監督兩種情形。在無監督的情況下，我們沒有異常樣本用來學習，而算法的基本上假設是異常點服從不同的分佈。根據正常數據訓練出來的Autoencoder，能夠將正常樣本重建還原，但是卻無法將異於正常分佈的數據點較好地還原，導致還原誤差較大。</p>
-<p>如果樣本的特徵都是數值變量，我們可以用MSE或者MAE作為還原誤差。</p>
+<p>以下假設原先資料為<span class="math inline">\(X = (X_1,X_2,X_3,X_4,X_5,X_6,X_7,X_8,X_9,X_{10})\)</span><br />
+經過Autoencoder重建的結果為<span class="math inline">\(X^R = (X^R_1,X^R_2,X^R_3,X^R_4,X^R_5,X^R_6,X^R_7,X^R_8,X^R_9,X^R_{10})\)</span></p>
+<p>如果樣本的特徵都是數值變量，我們可以用MSE或者MAE作為還原誤差。<br />
+則還原誤差MSE為:<span class="math inline">\(\frac{1}{10} \sum_{i = 1}^{10}{(X_i-X^R_i)^2}\)</span><br />
+而還原誤差MAE為:<span class="math inline">\(\frac{1}{10} \sum_{i = 1}^{10}{|X_i-X^R_i|}\)</span></p>
 </div>
 <div id="import-data-standard-scaler" class="section level1">
 <h1>2.Import Data &amp; Standard Scaler</h1>
