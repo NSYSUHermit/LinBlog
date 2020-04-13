@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 29 Feb 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 13 Apr 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Buliding a Crawler for UserAgent website</title>
+      <link>/post/2020/04/13/buliding-a-crawler-for-useragent-website/</link>
+      <pubDate>Mon, 13 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/04/13/buliding-a-crawler-for-useragent-website/</guid>
+      <description>現在有許多網站使用UserAgent，主要是向用戶端發送用戶代理請求，讓用戶端提交一個特定的字串來標示自己的身份，以及相關的訊息，例如裝置、</description>
+    </item>
     
     <item>
       <title>Auto Encoder for Anomaly Detection</title>

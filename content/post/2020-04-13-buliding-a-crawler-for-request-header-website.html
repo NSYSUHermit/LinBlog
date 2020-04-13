@@ -1,0 +1,179 @@
+---
+title: Buliding a Crawler for UserAgent website
+author: Hermit
+date: '2020-04-13'
+slug: buliding-a-crawler-for-useragent-website
+categories:
+  - R
+  - Python
+tags:
+  - crawler
+---
+
+
+
+<p>現在有許多網站使用UserAgent，主要是向用戶端發送用戶代理請求，讓用戶端提交一個特定的字串來標示自己的身份，以及相關的訊息，例如裝置、作業系統、應用程式，來表明使用的身份。而服務端一接收到這樣的身份識別後，就可以做出相對應的動作，例如為PC與mobile使用者，導向至給適合你裝置類型的網頁，進而提升使用者體驗。而在Chrome裡面，輸入chrome://version/ 就會看到類似如下代碼：使用者代理程式 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko)。<br />
+<img src="/post/2020-04-13-buliding-a-crawler-for-request-header-website_files/1.jpg" /></p>
+<p>問題就在於爬蟲時我們訪問網站是直接進入該link，因此當網站對我們發送請求時，我們無法給予回應，多數網站便會將我們導向錯誤頁或是跳轉頁，使我們的爬蟲無法繼續進行，因此我們採取的手段便是給予一個假的用戶端資訊，讓網站能導向至我們想要前往的目的地。Python在使用request時在header加入資訊即可，如下：</p>
+<pre><code>import requests
+
+headers = {&#39;user-agent&#39;: &#39;Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36&#39;}
+r = requests.get(&quot;https://heavenlyfood.cn/view/outline.php?id=103&amp;sub=4&amp;message=1&quot;,headers=headers) #將此頁面的HTML GET下來
+print(r.text) #印出HTML
+</code></pre>
+<p>而在R之下，我們是在read_html時，加入useragent，也可以做到相同的事情</p>
+<pre><code># setting a fake user agent 
+uastring &lt;- &quot;Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36&quot;
+view_link &lt;- &quot;https://heavenlyfood.cn/view/menu.php?id=103&quot;
+id_link &lt;- read_html(html_session(view_link, user_agent(uastring)))</code></pre>
+<p>而這次我要爬的網站是之前的中國聖經網站，這次網站他加入了UserAgent，因此過往的爬蟲皆須加上一個header去回應她的request。另外這次需要使用類似branch的方式爬取，從網站上端的結構往下爬取，從最上端到下端分別為view/id/sub三層結構，而sub頁則有數篇文章，我需建立樹狀結構資料夾來存放這些端點的文章，並且按照一定的規則去做命名，最終爬下的網站結果如下四圖，分別為view層/id層/sub層/文章列表/文章格式：</p>
+<p>view層
+<img src="/post/2020-04-13-buliding-a-crawler-for-request-header-website_files/2.jpg" /><br />
+id層
+<img src="/post/2020-04-13-buliding-a-crawler-for-request-header-website_files/3.jpg" /><br />
+sub層<br />
+<img src="/post/2020-04-13-buliding-a-crawler-for-request-header-website_files/4.jpg" />
+文章列表<br />
+<img src="/post/2020-04-13-buliding-a-crawler-for-request-header-website_files/5.jpg" />
+文章格式<br />
+<img src="/post/2020-04-13-buliding-a-crawler-for-request-header-website_files/6.jpg" /></p>
+<p>下面附上code，懶得而外細講，說明幾乎都在註解上了，基本上就是id頁那個view_link的id換成101、102、103、104再向下執行便可：
+# import packages</p>
+<pre><code>if (!require(httr))install.packages(&quot;httr&quot;)
+library(httr)
+
+if (!require(rvest))install.packages(&quot;rvest&quot;)
+library(rvest)
+
+if (!require(ropencc))devtools::install_github(&quot;qinwf/ropencc&quot;)
+library(ropencc)
+
+# def simple to traditional
+trans &lt;- converter(S2TWP)
+
+# setting a fake user agent 
+uastring &lt;- &quot;Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36&quot;</code></pre>
+<div id="id-link" class="section level1">
+<h1>id頁抓取標題&amp; link</h1>
+<pre><code>view_link &lt;- &quot;https://heavenlyfood.cn/view/menu.php?id=104&quot;
+id_link &lt;- read_html(html_session(view_link, user_agent(uastring)))
+
+# 文章篇數
+msg_num &lt;- sum(as.integer(strsplit(html_text(html_nodes(id_link,&quot;div#title a#wt&quot;)),split=&quot;篇&quot;,fixed=T)))
+
+# 抓取branch文字
+w1 = &quot;TOC&quot;## TOC 
+w4 = strsplit(view_link,split=&quot;id=1&quot;,fixed=T)[[1]][2]## 03 
+w5 = run_convert(trans, html_text(html_nodes(id_link,&quot;div#chap1&quot;))[2])## 聖經的二十四條重要路線
+w6 = paste0(msg_num,&quot;篇&quot;) ## 150篇 
+w7 = &quot;0&quot; ## 0
+w8 = run_convert(trans, html_text(html_node(id_link,&quot;a#topwhite&quot;))[1])## 清明上河圖
+w = paste(w1,w4,w5,w6,w7,w8)
+ex = paste(&quot;說明&quot;,w4,w5,w6,w7,w8)
+bar&lt;- &quot;==========&quot;
+
+# 抓取sub章標題
+id1 &lt;- html_nodes(id_link,&quot;div#title font&quot;)
+sub_title_list &lt;- html_text(id1)
+sub_title &lt;- run_convert(trans, sub_title_list)
+
+# 抓取前一個branch link
+last_id &lt;- paste0(&quot;https://heavenlyfood.cn/view/&quot;,html_attr(html_nodes(id_link ,&quot;div#chap1 a#wtt&quot;) ,&quot;href&quot;))
+
+# create folder
+id_name &lt;- paste(w4,w5,w6,w7,w8)
+folder &lt;- paste0(&quot;./&quot;,id_name)
+dir.create(folder)
+
+# set wd
+id_path = paste0(getwd(),&quot;/&quot;,id_name)
+setwd(id_path)
+
+# 寫出id頁
+id_page &lt;- c(w,bar,last_id,sub_title,bar,bar)
+write.table(id_page,paste0(w,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# 寫出id說明頁
+ex_page &lt;- c(ex,bar,last_id,sub_title,bar,bar)
+write.table(ex_page,paste0(ex,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# 抓取sub link
+url &lt;- html_nodes(id_link,&quot;div#title a#wt&quot;)  
+sub_links &lt;- paste0(&quot;https://heavenlyfood.cn/view/&quot;,html_attr(html_nodes(id_link,&quot;div#title a#wt&quot;),&quot;href&quot;))</code></pre>
+</div>
+<div id="sublinkmsg" class="section level1">
+<h1>sub頁抓取標題&amp;link&amp;存msg</h1>
+<pre><code># 讀取sub頁面
+for(ii in 1:length(sub_links)){
+setwd(id_path)
+sub_link &lt;- sub_links[ii]
+link &lt;- sub_link
+sub &lt;- html_session(sub_link, user_agent(uastring))
+sub &lt;- read_html(sub)
+
+# 抓取文章link
+url &lt;- html_nodes(sub,&quot;div#title a#wtt&quot;)  
+urls &lt;- paste0(&quot;https://heavenlyfood.cn/view/&quot;,html_attr(html_nodes(sub,&quot;div#title a#wtt&quot;),&quot;href&quot;))
+
+# 抓取branch文字
+w1 = &quot;TOC&quot;## TOC 
+if(nchar(strsplit(link,split=&quot;&amp;sub=&quot;,fixed=T)[[1]][2])&lt;2){
+  w2 = paste0(&quot;0&quot;,strsplit(link,split=&quot;&amp;sub=&quot;,fixed=T)[[1]][2])
+  }else{w2 = strsplit(link,split=&quot;&amp;sub=&quot;,fixed=T)[[1]][2]}## 04 
+w3 = run_convert(trans, html_text(html_node(sub,&quot;div#title&quot;))[1])## 神聖分賜（10篇）
+w4 = strsplit(strsplit(link,split=&quot;id=1&quot;,fixed=T)[[1]][2],split=&quot;&amp;&quot;,fixed=T)[[1]][1]## 03 
+w5 = run_convert(trans, html_text(html_node(sub,&quot;div#chap1&quot;))[1])## 聖經的二十四條重要路線
+w6 = paste0(msg_num,&quot;篇&quot;) ## 150篇 
+w7 = &quot;0&quot; ## 0
+w8 = run_convert(trans, html_text(html_node(sub,&quot;a#topwhite&quot;))[1])## 清明上河圖
+w = paste(w1,w2,w3,w4,w5,w6,w7,w8)
+bar&lt;- &quot;==========&quot;
+
+# 抓取前一個branch link
+last_id &lt;- paste0(&quot;https://heavenlyfood.cn/view/&quot;,html_attr(html_nodes(sub,&quot;div#chap1 a#wtt&quot;) ,&quot;href&quot;))
+
+# 抓取文章標題
+sub1 &lt;- html_nodes(sub,&quot;div#title font&quot;)
+book_title_list &lt;- html_text(sub1)
+book_title &lt;- run_convert(trans, book_title_list[2:length(book_title_list)])
+
+# 抓取文章link
+url &lt;- html_nodes(sub,&quot;div#title a#wtt&quot;)  
+urls &lt;- paste0(&quot;https://heavenlyfood.cn/view/&quot;,html_attr(url,&quot;href&quot;))
+
+# create a folder
+folder &lt;- paste0(&quot;./&quot;,paste(w2,w3,w4,w5,w6,w7,w8))
+dir.create(folder)
+
+# set wd
+path = paste0(&quot;./&quot;,paste(w2,w3,w4,w5,w6,w7,w8))
+setwd(path)
+
+# 寫出sub頁
+sub_page &lt;- c(w,bar,last_id,book_title,bar,bar)
+write.table(sub_page,paste0(w,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# 寫出說明頁
+ex = paste(&quot;說明&quot;,w2,w3,w4,w5,w6,w7,w8)
+ex_page &lt;- c(ex,bar,last_id,book_title,bar,bar)
+write.table(ex_page,paste0(ex,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# message 文章儲存
+for(i in 1:length(book_title)){
+msg_link1 &lt;- urls[(3*i-2):(3*i)]
+## 綱目
+msg1 &lt;- read_html(html_session(msg_link1[1], user_agent(uastring)))
+cont1 &lt;- run_convert(trans,c(html_text(html_nodes(msg1,paste0(&quot;article div#c&quot;,1))),html_text(html_nodes(msg1,paste0(&quot;article div#c&quot;,2))),html_text(html_nodes(msg1,paste0(&quot;article div#c&quot;,3)))))
+## 信息摘錄
+msg2 &lt;- read_html(html_session(msg_link1[2], user_agent(uastring)))
+cont2 &lt;- run_convert(trans,html_text(html_nodes(msg2,&quot;div.cont&quot;),trim = TRUE))
+## 出處
+msg3 &lt;- read_html(html_session(msg_link1[3], user_agent(uastring)))
+cont3 &lt;- run_convert(trans,c(html_text(html_nodes(msg3,paste0(&quot;article div#c&quot;,1))),html_text(html_nodes(msg3,paste0(&quot;article div#c&quot;,2))),html_text(html_nodes(msg3,paste0(&quot;article div#c&quot;,3)))))
+## 整合匯出
+wi = i
+if(wi&lt;10){wi = paste0(&quot;0&quot;,i)}
+msg_w = paste(wi,book_title[i],w2,w3,w4,w5,w6,w7,w8)
+write.table(c(msg_w,&quot;&quot;,link,&quot;&quot;,bar,&quot;綱目&quot;,cont1,&quot;&quot;,bar,&quot;信息摘錄&quot;,cont2,&quot;&quot;,bar,&quot;出處&quot;,cont3,bar),paste0(msg_w,&quot;.txt&quot;),fileEncoding=&quot;UTF-8&quot;,row.names = FALSE,col.names = FALSE,quote = FALSE)}
+}</code></pre>
+</div>
