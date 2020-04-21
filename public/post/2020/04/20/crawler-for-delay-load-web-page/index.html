@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Crawler for delay load web page | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2020-04-20</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2020-04-20-crawler-for-delay-load-web-page.md">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/r">R</a>
+  
+  </div>
+
+  <h1><span class="title">Crawler for delay load web page</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/crawler">crawler</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+<p>這禮拜也有同網站的內容要爬(<a href="https://heavenlyfood.cn/books/index.php?id=4000">https://heavenlyfood.cn/books/index.php?id=4000</a>) ，其主要結構與上星期的篇章雷同，因此沿用上星期的code，只是在最後抓取文章文件的時候，有遇到一些問題，如下圖：<br />
+<img src="/post/2020-04-20-crawler-for-delay-load-web-page_files/1.JPG" alt="" /><br />
+如果有爬蟲經驗的人應該可以看出他文章主要是在一個名稱叫做div#c 這個nodes下存放，而我在整頁結構確認後，便使用R去執行html_nodes去抓這些節點，但經由文字提取的函數，卻抓不到任何文字。</p>
+
+<p>後來發現，文章文字的內容，並不在文章的這個連結內，而是頁面結構先載入，而後內容才進行加載，這個一般稱為delay-load的問題，主要指我們想爬取的內容並非第一時間就在網頁結構上，這會讓一般的爬蟲code失效。原先想要用python的套件來處理這個問題，後來觀察他network的情況後，發現文章載入的連結，如下圖：<br />
+<img src="/post/2020-04-20-crawler-for-delay-load-web-page_files/2.JPG" alt="" /><br />
+可以發現到它文章結構是在葉面開啟後接近4000毫秒才加載，因此我直接改成抓取這個連結內部的文字，便解決了這個網頁內容爬取的問題。</p>
+
+<p>最終存儲的結果：<br />
+<img src="/post/2020-04-20-crawler-for-delay-load-web-page_files/3.JPG" alt="" /></p>
+
+<p>下面附上這結構的code:</p>
+
+<h1 id="import-packages">import packages</h1>
+
+<pre><code class="language-r,eval">if (!require(httr))install.packages(&quot;httr&quot;)
+library(httr)
+
+if (!require(rvest))install.packages(&quot;rvest&quot;)
+library(rvest)
+
+if (!require(ropencc))devtools::install_github(&quot;qinwf/ropencc&quot;)
+library(ropencc)
+
+# def simple to traditional
+trans &lt;- converter(S2TWP)
+
+# setting a fake user agent 
+uastring &lt;- &quot;Mozilla/5.0 (Macintosh Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36&quot;
+</code></pre>
+
+<h1 id="contents-processing">Contents processing</h1>
+
+<pre><code class="language-r">library(stringr)
+# def string replace
+stringReplace &lt;- function(txt){
+  txt &lt;- str_replace_all(txt,&quot;([。：、，])[.]+([0-9]+)\U00A0&quot;,&quot;\\1\n \\2 &quot;)
+  txt &lt;- str_replace_all(txt,&quot;×&quot;,&quot;\n&quot;)
+  txt &lt;- gsub(&quot;。，&quot;, &quot;。&quot;, txt)
+  txt &lt;- gsub(&quot;。。&quot;, &quot;。&quot;, txt)
+  txt &lt;- gsub(&quot;。：&quot;, &quot;。：&quot;, txt)
+  txt &lt;- gsub(&quot;；。&quot;, &quot;；&quot;, txt)
+  txt &lt;- gsub(&quot;，：&quot;, &quot;，&quot;, txt)
+#  str_detect(text,&quot;([0-9]+)\\1\U00A0&quot;)
+  txt &lt;- gsub(&quot;\U00A0&quot;, &quot; &quot;, txt)
+  txt &lt;- gsub(&quot;\U53C4&quot;, &quot;叄&quot;, txt)
+  txt &lt;- str_replace_all(txt,&quot;\n+&quot;,&quot;\n\n&quot;)
+  return(txt)
+}
+</code></pre>
+
+<h1 id="id頁抓取標題-link">id頁抓取標題&amp; link</h1>
+
+<pre><code class="language-r">id = 4000
+view_link &lt;- paste0(&quot;https://heavenlyfood.cn/books/index.php?id=&quot;,id)
+id_link &lt;- read_html(html_session(view_link, user_agent(uastring)))
+
+# 文章篇數
+msg_num &lt;- length(html_text(html_nodes(id_link,&quot;div#menu a&quot;)))
+
+# 抓取branch文字 
+#46 哥林多前書 31 (1311) 第三十一篇 變化為著建造  
+w1 = &quot;TOC&quot;## TOC 
+w4 = strsplit(view_link,split=&quot;id=&quot;,fixed=T)[[1]][2]
+w5 = run_convert(trans, html_text(html_nodes(id_link,&quot;div#toptitle&quot;)))
+w6 = paste0(msg_num,&quot;篇&quot;)
+
+w = paste(w1,w4,w5,w6)
+ex = paste(&quot;說明&quot;,w4,w5,w6)
+bar&lt;- &quot;==========&quot;
+
+# 抓取sub章標題
+id1 &lt;- html_nodes(id_link,&quot;div#menu a&quot;)
+sub_title_list &lt;- html_text(id1)
+sub_title &lt;- run_convert(trans, sub_title_list)
+
+# create folder
+id_name &lt;- paste(w4,w5,w6)
+folder &lt;- paste0(&quot;./&quot;,id_name)
+dir.create(folder)
+
+# set wd
+id_path = paste0(getwd(),&quot;/&quot;,id_name)
+setwd(id_path)
+
+# 寫出id頁
+id_page &lt;- c(w,bar,view_link,sub_title,bar,bar)
+write.table(id_page,paste0(w,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# 寫出id說明頁
+ex_page &lt;- c(ex,bar,view_link,sub_title,bar,bar)
+write.table(ex_page,paste0(ex,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# 抓取sub link
+url &lt;- html_nodes(id_link,&quot;div#menu a&quot;)  
+sub_links &lt;- paste0(&quot;https://heavenlyfood.cn/&quot;,html_attr(html_nodes(id_link,&quot;div#menu a&quot;),&quot;href&quot;))
+</code></pre>
+
+<h1 id="sub頁抓取標題-link-存msg">sub頁抓取標題&amp;link&amp;存msg</h1>
+
+<pre><code class="language-r"># 讀取sub頁面
+for(ii in 1:length(sub_links)){
+setwd(id_path)
+sub_link &lt;- sub_links[ii]
+link &lt;- sub_link
+sub &lt;- html_session(sub_link, user_agent(uastring))
+sub &lt;- read_html(sub)
+
+# 抓取文章link
+url &lt;- html_nodes(sub,&quot;div#title&quot;)  
+urls &lt;- paste0(&quot;https://heavenlyfood.cn/view/&quot;,html_attr(html_nodes(sub,&quot;div#title a#wtt&quot;),&quot;href&quot;))
+
+# 抓取branch文字
+w1 = &quot;TOC&quot;## TOC 
+w2 = strsplit(link,split=&quot;sub=&quot;,fixed=T)[[1]][2]## 46 
+w3 = run_convert(trans, html_text(html_node(sub,&quot;div#chap1 a#mainwhite&quot;)))## 哥林多前書生命讀經
+w5 = run_convert(trans, html_text(html_nodes(id_link,&quot;div#toptitle&quot;)))## 生命讀經
+w6 = if(length(url)&lt;100){w6 = paste0(&quot;0&quot;,length(url),&quot;篇&quot;)}else{w6 = paste0(length(url),&quot;篇&quot;)}## 篇 
+w = paste(w1,w2,w3,w5,w6)
+bar&lt;- &quot;==========&quot;
+
+# 抓取文章標題
+sub1 &lt;- html_nodes(sub,&quot;div#title&quot;)
+book_title_list &lt;- html_text(sub1)
+book_title &lt;- run_convert(trans, book_title_list[1:length(book_title_list)])
+
+# 抓取文章link
+sub2 &lt;- html_nodes(sub,&quot;div#title  div a.content.link&quot;)
+urls &lt;- paste0(&quot;https://heavenlyfood.cn/books/&quot;,html_attr(sub2 ,&quot;href&quot;))
+
+# create a folder
+folder &lt;- paste0(&quot;./&quot;,paste(w2,w3,w5,w6))
+dir.create(folder)
+
+# set wd
+path = paste0(&quot;./&quot;,paste(w2,w3,w5,w6))
+setwd(path)
+
+# 寫出sub頁
+sub_page &lt;- c(w,bar,link,book_title,bar,bar)
+write.table(sub_page,paste0(w,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# 寫出說明頁
+ex = paste(&quot;說明&quot;,w2,w3,w5,w6)
+ex_page &lt;- c(ex,bar,link,book_title,bar,bar)
+write.table(ex_page,paste0(ex,&quot;.txt&quot;),row.names = FALSE,col.names = FALSE,quote = FALSE,fileEncoding=&quot;UTF-8&quot;)
+
+# message 文章儲存
+msg_link &lt;- &quot;https://heavenlyfood.cn/books/getContent.php?id=4000&amp;sub=46&amp;message=1&amp;contentData=Spritualbooks&amp;assist=&amp;study=1&amp;collect=&amp;q=&quot;
+
+for(i in 1:length(book_title_list)){
+msg_link &lt;- urls[i]
+msg_link &lt;- paste0(&quot;https://heavenlyfood.cn/books/getContent.php?id=&quot;,id,&quot;&amp;sub=&quot;,w2,&quot;&amp;message=&quot;,i,&quot;&amp;contentData=Spritualbooks&amp;assist=&amp;study=1&amp;collect=&amp;q=&quot;)
+
+msg1 &lt;- read_html(html_session(msg_link, user_agent(uastring)))
+cont1 &lt;- run_convert(trans,c(html_text(html_nodes(msg1,&quot;div.modal-body&quot;))))
+cont1 &lt;- stringReplace(cont1)
+## 整合匯出
+{if(i&lt;10){wi = paste0(&quot;00&quot;,i)}
+else if(100&gt;i &amp; i&gt;10){wi = paste0(&quot;0&quot;,i)}}
+
+{if(as.numeric(w2)&lt;10){w22 = paste0(&quot;00&quot;,as.numeric(w2))}
+else if(100&gt;as.numeric(w2) &amp; as.numeric(w2)&gt;10){w22 = paste0(&quot;0&quot;,as.numeric(w2))}}
+
+msg_w = paste(w22,w3,wi,book_title[i])
+write.table(c(msg_w,&quot;&quot;,link,&quot;&quot;,bar,cont1,bar),paste0(msg_w,&quot;.txt&quot;),fileEncoding=&quot;UTF-8&quot;,row.names = FALSE,col.names = FALSE,quote = FALSE)}
+}
+</code></pre>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2020/04/13/buliding-a-crawler-for-useragent-website/">Buliding a Crawler for UserAgent website &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+<script src="//yihui.name/js/math-code.js"></script>
+<script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+

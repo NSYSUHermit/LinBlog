@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>crawler</span>
-        <span>2020-04-13</span>
+        <span>2020-04-21</span>
         
         <span>1 / 1</span>
       
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/r">R</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/04/20/crawler-for-delay-load-web-page/">Crawler for delay load web page</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-04-20</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/04/20/crawler-for-delay-load-web-page/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-04-20-crawler-for-delay-load-web-page_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜也有同網站的內容要爬(https://heavenlyfood.cn/books/index.php?id=4000) ，其主要結構與上星期的篇章雷同，因此沿用上星期的code，只是在最後抓取文章文件的時候，有遇到一些問題，如下圖：
+如果有爬蟲經驗的人應該可以看出他文章主要是在一個名稱叫做div#c 這個nodes下存放，而我在整頁結構確認後，便使用R去執行html_nodes去抓這些節點，但經由文字提取的函數，卻抓不到任何文字。
+後來發現，文章文字的內容，並不在文章的這個連結內，而是頁面結構先載入，而後內容才進行加載，這個一般稱為delay-load的問題，主要指我們想爬取的內容並非第&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">

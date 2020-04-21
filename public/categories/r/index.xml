@@ -6,10 +6,19 @@
     <description>Recent content in R on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 13 Apr 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 20 Apr 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Crawler for delay load web page</title>
+      <link>/post/2020/04/20/crawler-for-delay-load-web-page/</link>
+      <pubDate>Mon, 20 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/04/20/crawler-for-delay-load-web-page/</guid>
+      <description>這禮拜也有同網站的內容要爬(https://heavenlyfood.cn/books/index.php?id=4000) ，其主要結構與上</description>
+    </item>
     
     <item>
       <title>Buliding a Crawler for UserAgent website</title>

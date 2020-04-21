@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Posts</span>
-        <span>2020-04-13</span>
+        <span>2020-04-21</span>
         
         <span>1 / 7</span>
       
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/r">R</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/04/20/crawler-for-delay-load-web-page/">Crawler for delay load web page</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-04-20</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/04/20/crawler-for-delay-load-web-page/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-04-20-crawler-for-delay-load-web-page_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜也有同網站的內容要爬(https://heavenlyfood.cn/books/index.php?id=4000) ，其主要結構與上星期的篇章雷同，因此沿用上星期的code，只是在最後抓取文章文件的時候，有遇到一些問題，如下圖：
+如果有爬蟲經驗的人應該可以看出他文章主要是在一個名稱叫做div#c 這個nodes下存放，而我在整頁結構確認後，便使用R去執行html_nodes去抓這些節點，但經由文字提取的函數，卻抓不到任何文字。
+後來發現，文章文字的內容，並不在文章的這個連結內，而是頁面結構先載入，而後內容才進行加載，這個一般稱為delay-load的問題，主要指我們想爬取的內容並非第&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -185,38 +217,6 @@
     
     上次在挑選變數並建立分類模型的loocv時(link :https://hermitlin.netlify.com/post/2020/02/14/cre-features-selection/) ，最高的準確率來自adaboost的結果，且落在使用60~70個randomforest importance的變數，但當時多個模型準確率為0.989473684，即存在一個樣本預測錯誤，因此想知道是否在這些模型中，預測錯誤的皆為同一筆樣本。本次將預測的結果先行挑出，並將錯誤的樣本index建立成表，以方便觀察多為那些樣本為容易預測失敗的樣本。
 [&hellip;] 先讀入資料與之前R&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/gan">gan</a>
-  
-  
-  </div>
-  <h1><a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/"> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2020-02-18</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2020-02-18-compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation_files/output_4_1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次我使用sklearn內建的資料集breast-cancer(原始資料來源：https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)) ，先將原資料以7:3比例建立一個的資料分類器出來，之後把其中一個類別挑出，並使用各種oversampling的方法來模擬樣本，並最終將模擬後的資料套回最初的模型當中，比較各方法產生的樣本能否在分類器當中回到原本的類別當中。
-[&hellip;] 讀取sklearn的資料並轉為dataframe：
-import pandas as pdimport numpy&hellip;
     </a>
   </div>
 </section>

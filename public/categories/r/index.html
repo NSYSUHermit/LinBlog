@@ -22,9 +22,9 @@
       <div class="head-meta">
       
         <span>R</span>
-        <span>2020-04-13</span>
+        <span>2020-04-21</span>
         
-        <span>1 / 2</span>
+        <span>1 / 3</span>
       
       </div>
     </nav>
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/r">R</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/04/20/crawler-for-delay-load-web-page/">Crawler for delay load web page</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-04-20</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/04/20/crawler-for-delay-load-web-page/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-04-20-crawler-for-delay-load-web-page_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜也有同網站的內容要爬(https://heavenlyfood.cn/books/index.php?id=4000) ，其主要結構與上星期的篇章雷同，因此沿用上星期的code，只是在最後抓取文章文件的時候，有遇到一些問題，如下圖：
+如果有爬蟲經驗的人應該可以看出他文章主要是在一個名稱叫做div#c 這個nodes下存放，而我在整頁結構確認後，便使用R去執行html_nodes去抓這些節點，但經由文字提取的函數，卻抓不到任何文字。
+後來發現，文章文字的內容，並不在文章的這個連結內，而是頁面結構先載入，而後內容才進行加載，這個一般稱為delay-load的問題，主要指我們想爬取的內容並非第&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -193,38 +225,6 @@
   </div>
 </section>
 
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/machine-learning">machine-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/10/02/one-class-learning/">One Class Learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-10-02</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/10/02/one-class-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-10-02-one-class-learning_files/1.JPG" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    在資料探勘中，異常檢測:anomaly detection對不符合預期模式或資料集中其他專案的專案、事件或觀測值的辨識。 通常異常專案會轉變成銀行欺詐、結構缺陷、醫療問題、文字錯誤等類型的問題。異常也被稱為離群值、新奇、噪聲、偏差和例外。
-特別是在檢測濫用與網路入侵時，有趣性物件往往不是罕見物件，但卻是超出預料的突發活動。這種模式不遵循通常統計定義中把異常點看作是罕見物件，於是許多異常檢測方法（特別是無監督的方法）將對此類資料失效，除非進行了合適的聚集。相反，群集分析演算法可能可以檢測出這些模式形成的微群集。
-有三大類異常檢測方法。在假設資料集中大多數實體都是正常的前提下，無監督異常檢測方法能&hellip;
-    </a>
-  </div>
-</section>
-
 </main>
 <nav>
 
@@ -262,12 +262,23 @@
     <li class="page-item"><a class="page-link" href="/categories/r/page/2/">2</a></li>
     
     
+    
+    
+    
+    
+        
+        
+    
+    
+    <li class="page-item"><a class="page-link" href="/categories/r/page/3/">3</a></li>
+    
+    
     <li class="page-item">
     <a href="/categories/r/page/2/" class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
     </li>
     
     <li class="page-item">
-        <a href="/categories/r/page/2/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
+        <a href="/categories/r/page/3/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
     </li>
     
 </ul>
