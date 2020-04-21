@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Google api on Lin&#39;s Blog</title>
+    <link>/tags/google-api/</link>
+    <description>Recent content in Google api on Lin&#39;s Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 21 Apr 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/google-api/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Location selection research for Nursing home</title>
+      <link>/post/2020/04/21/location-selection-research-for-nursing-home/</link>
+      <pubDate>Tue, 21 Apr 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/04/21/location-selection-research-for-nursing-home/</guid>
+      <description>這學期有參加一個內政部的數據競賽，主要是想做老幼托育的選址策略， 在現今台灣社會上越來越多三明治族（三明治族指得是，上有父母、下有孩子，自己又</description>
+    </item>
+    
+  </channel>
+</rss>

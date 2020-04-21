@@ -38,6 +38,38 @@
   <div class="categories">
   
   
+    <a href="/categories/gan">gan</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/"> Compare to OCGAN &amp; SMOTE &amp; ADASYN in breast cancer data Simulation</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-18</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/18/compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-18-compare-to-ocgan-smote-adasyn-in-breast-cancer-data-simulation_files/output_4_1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次我使用sklearn內建的資料集breast-cancer(原始資料來源：https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)) ，先將原資料以7:3比例建立一個的資料分類器出來，之後把其中一個類別挑出，並使用各種oversampling的方法來模擬樣本，並最終將模擬後的資料套回最初的模型當中，比較各方法產生的樣本能否在分類器當中回到原本的類別當中。
+[&hellip;] 讀取sklearn的資料並轉為dataframe：
+import pandas as pdimport numpy&hellip;
+    </a>
+  </div>
+</section>
+
+<section class="article-list">
+  <div class="categories">
+  
+  
     <a href="/categories/machine-learning">machine-learning</a>
   
   
@@ -194,36 +226,6 @@ Validation Set(CRE:Non): 10:30
 3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
 4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
 [&hellip;] import pandas as pdimport numpy&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/python">Python</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/28/the-crawler-code-in-my-internship/">The Crawler Code in my internship.</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-28</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/28/the-crawler-code-in-my-internship/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-28-the-crawler-code-in-my-internship_files/1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    In this summer vacation, I was become a intern engineer in a internet service company. In fact, our company is an eshops price comparison platform. Here is the website link:https://biggo.com.tw/ . They crawler the products information in different eshops like Amazon, PChome etc. Build a SQL system&hellip;
     </a>
   </div>
 </section>
