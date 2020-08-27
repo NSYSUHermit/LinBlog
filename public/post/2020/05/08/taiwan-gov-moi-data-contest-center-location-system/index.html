@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>Taiwan Gov Moi Data Contest -  Center Location System | Lin&#39;s Blog</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link href="//cdn.bootcss.com/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+
+  </head>
+
+  <body class="page">
+    <nav class="header">
+      <div class="banner">
+<a href="/" class="text">
+&Lfr;&Ifr;&Nfr;'&Sfr; &Bfr;&Lfr;&Ofr;&Gfr;
+</a>
+</div>
+
+      <div class="head-meta">
+      
+        <span><a href="/">&larr; Back to Home</a></span>
+        <span class="date">2020-05-08</span>
+        
+        
+        
+          
+        
+        
+        
+        <span><a href="https://github.com/yihui/hugo-xmag/edit/master/exampleSite/content/post/2020-05-08-taiwan-gov-moi-data-contest-center-location-system.Rmd">Edit this page &rarr;</a></span>
+        
+        
+      
+      </div>
+    </nav>
+
+<div class="container">
+<article>
+<div class="article-meta">
+
+  <div class="categories">
+  
+    <a href="/categories/r">R</a>
+  
+  </div>
+
+  <h1><span class="title">Taiwan Gov Moi Data Contest -  Center Location System</span></h1>
+
+  
+  <h3 class="author">Hermit
+</h3>
+  
+
+  
+  <p>Tags: <a href="/tags/google-api">Google api</a>
+  </p>
+  
+  
+
+</div>
+
+
+
+<main>
+
+
+
+<pre class="r"><code>##########################import modules &amp; packages##########################
+library(reticulate)
+library(xml2)
+library(rvest)
+library(jsonlite)
+library(sf)</code></pre>
+<pre><code>## Linking to GEOS 3.6.1, GDAL 2.2.3, PROJ 4.9.3</code></pre>
+<pre class="r"><code>library(data.table)
+apiKey =&quot;AIzaSyBwMa0N_fzP9WtCPpVufYzBfcMi6etyTMQ&quot;
+googlemaps &lt;- import(&quot;googlemaps&quot;)
+gmaps = googlemaps$Client(key=apiKey)
+
+#ltd = read_sf(&quot;D:/$/data/rscript/TOWN_MOI_1090324.shp&quot;)
+ltd = readRDS(&quot;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/Contests/2020gov_contest_data/used_data/ltd.rds&quot;)
+#price = fread(&quot;D:/$/data/rscript/house_price1.csv&quot;)[,c(6:9,11)]
+price = readRDS(&quot;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/Contests/2020gov_contest_data/used_data/price.rds&quot;)
+city = data.frame(&quot;city&quot; = c(&quot;宜蘭縣&quot;,&quot;花蓮縣&quot;,&quot;金門縣&quot;,&quot;南投縣&quot;,&quot;屏東縣&quot;,&quot;苗栗縣&quot;,&quot;桃園市&quot;,&quot;高雄市&quot;,&quot;基隆市&quot;,&quot;連江縣&quot;,
+                             &quot;雲林縣&quot;,&quot;新北市&quot;,&quot;新竹市&quot;,&quot;新竹縣&quot;,&quot;嘉義市&quot;,&quot;嘉義縣&quot;,&quot;彰化縣&quot;,&quot;臺中市&quot;,&quot;臺北市&quot;,&quot;臺東縣&quot;,
+                             &quot;臺南市&quot;,&quot;澎湖縣&quot;),
+                  &quot;num&quot; = c(1,4,7,10,13,16,19,21,2,5,8,11,14,17,20,22,3,6,9,12,15,18),StringsAsFactors=FALSE)
+town = function(x){
+  as.character(data.frame(table(ltd$TOWNNAME[which(ltd$COUNTYNAME==paste0(x))]))[,1])
+}
+
+name = c(&quot;一般診所&quot;,&quot;地區醫院&quot;,&quot;醫學中心&quot;,&quot;公園&quot;,&quot;圖書館&quot;,&quot;捷運站&quot;,&quot;公車站&quot;)
+
+
+##########################funcion def######################################
+# Function for min.max normalize
+nor.min.max &lt;- function(x) {
+  if (is.numeric(x) == FALSE) {
+    stop(&quot;Please input numeric for x&quot;)
+  }
+  x.min &lt;- min(x)
+  x.max &lt;- max(x)
+  x &lt;- (x - x.min) / (x.max - x.min)
+  return (x)
+}
+
+# Function for count place 
+ltd_count_num &lt;- function(latitude,longitude,keyword,radius){
+  # Geocoding an address        
+  query_result = gmaps$places_nearby(keyword=keyword,location = c(latitude,longitude), radius=radius)
+  return(length(query_result$results))
+}
+
+# Function for find locate lon&amp;lan function
+find_ltd &lt;- function(locate){
+  urls &lt;- paste0(&quot;https://maps.googleapis.com/maps/api/geocode/xml?address=&quot;,locate,&quot;&amp;language=zh-TW&amp;key=&quot;,apiKey)
+  id_link &lt;- read_html(urls)
+  lat_lon &lt;- c(as.numeric(html_text(html_nodes(id_link,&quot;geometry location lat&quot;))),as.numeric(html_text(html_nodes(id_link,&quot;geometry location lng&quot;))))
+  return(lat_lon)
+}
+
+# Function for find town place function
+ltd_town_find &lt;- function(latitude,longitude){
+  urls &lt;- paste0(&quot;https://maps.googleapis.com/maps/api/geocode/xml?latlng=&quot;,latitude,&quot;,&quot;,longitude,&quot;&amp;language=zh-TW&amp;key=&quot;,apiKey)
+  id_link &lt;- read_html(urls)
+  nodes &lt;- html_nodes(id_link,&quot;result address_component&quot;)
+  return(html_text(html_nodes(nodes[grep(&quot;administrative_area_level_3&quot;,html_text(nodes))],&quot;short_name&quot;))[1])
+}
+
+# Function for find village place
+ltd_vill_find &lt;- function(latitude,longitude){
+  urls &lt;- paste0(&quot;https://maps.googleapis.com/maps/api/geocode/xml?latlng=&quot;,latitude,&quot;,&quot;,longitude,&quot;&amp;language=zh-TW&amp;key=&quot;,apiKey)
+  id_link &lt;- read_html(urls)
+  nodes &lt;- html_nodes(id_link,&quot;result address_component&quot;)
+  return(html_text(html_nodes(nodes[grep(&quot;administrative_area_level_4&quot;,html_text(nodes))],&quot;short_name&quot;))[1])
+}
+
+# Function for get the boundary ltds of town
+get_bound_ltd &lt;- function(city,town){
+  d = ltd[which(ltd$COUNTYNAME== city &amp; ltd$TOWNNAME == town),][[8]][[1]][[1]][[1]]
+  return(as.data.frame(d))
+}
+
+# Function for calculate the town ltds
+get_town_ltd &lt;- function(city,town,distance){
+  ## lat &amp; lon difference setting 
+  lat_d = distance*0.000009090909
+  lon_d = distance*0.00001
+  ## get town ltd point
+  d = ltd[which(ltd$COUNTYNAME== city &amp; ltd$TOWNNAME == town),][[8]][[1]][[1]][[1]]
+  ## count all range town ltd point
+  lon_line &lt;- seq(min(d[,1]),max(d[,1]),by = lon_d/2)[seq(2,length(seq(min(d[,1]),max(d[,1]),by = lon_d/2)),2)]
+  lat_line &lt;- seq(min(d[,2]),max(d[,2]),by = lat_d/2)[seq(2,length(seq(min(d[,2]),max(d[,2]),by = lat_d/2)),2)]
+  locations &lt;- expand.grid(lat_line,lon_line)
+  loc_num = vector()
+  t1&lt;-Sys.time()
+  ## check ltd points in town or not
+  for(i in c(1:nrow(locations))){
+    loc_num = c(loc_num,ltd_town_find(locations$Var1[i],locations$Var2[i]) == town)
+    t2 &lt;- Sys.time()
+    time &lt;- t2-t1
+    print(paste0(&quot;Town Ltd Completion:&quot;,i/nrow(locations),&quot;. Time cost:&quot;,time))
+  }
+  loc_num[is.na(loc_num)]= FALSE
+  ## return true town ltd point
+  return(locations[which(loc_num == TRUE),])
+}
+
+# Function for find ltd house price
+latlng_price &lt;- function(lat1,lon1,city){
+  #price_use &lt;- price[which(price[,6] == city &amp; str_detect(price$township,township)==TRUE),]
+  price_use &lt;- price[which(price$town ==city),]
+  price_use$d = apply(data.frame(1:nrow(price_use)),2,function(x){return((lon1-price_use$lon[x])^2+(lat1-price_use$lat[x])^2)})
+                #(lon1-price_use$lon)^2+(lat1-price_use$lat)^2
+  price_use &lt;- price_use[order(price_use$d),]
+  return(mean(price_use[1:5,5]))
+}
+
+# Function for calculate the town informations
+town_ltd_info &lt;- function(city,town,distance,num1,num2,num3,num4,num5,num6,num7,num8){
+  town_info &lt;- get_town_ltd(city,town,distance)
+  village = clinc =hospital =hospital_center = park=library=mrt_station=bus_stop=nursing =vector()
+  for(i in c(1:nrow(town_info))){
+    village[i] &lt;- ltd_vill_find(town_info$Var1[i],town_info$Var2[i])
+    if(num1 == 0){clinc[i] = 0}
+    else{clinc[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;clinic&quot;,num1)}
+    if(num2 == 0){hospital[i] = 0}
+    else{hospital[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;hospital&quot;,num2)}
+    if(num3 == 0){hospital_center[i] = 0}
+    else{hospital_center[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;hospital center&quot;,num3)}
+    if(num4 == 0){park[i] = 0}
+    else{park[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;park&quot;,num4)}
+    if(num5 == 0){library[i] = 0}
+    else{library[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;library&quot;,num5)}
+    if(num6 == 0){mrt_station[i] = 0}
+    else{mrt_station[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;mrt station&quot;,num6)}
+    if(num7 == 0){bus_stop[i] = 0}
+    else{bus_stop[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;bus stop&quot;,num7)}
+    if(num8 == 0){nursing[i] = 0}
+    else{nursing[i] &lt;- ltd_count_num(town_info$Var1[i],town_info$Var2[i],&quot;nursing&quot;,num8)}
+  }
+  town_info[&#39;city&#39;] &lt;- city
+  town_info[&#39;village&#39;] &lt;- village
+  town_info[&#39;clinc&#39;] = clinc
+  town_info[&#39;hospital&#39;] = hospital
+  town_info[&#39;hospital_center&#39;] = hospital_center
+  town_info[&#39;park&#39;] = park
+  town_info[&#39;library&#39;] = library
+  town_info[&#39;mrt_station&#39;] = mrt_station
+  town_info[&#39;bus_stop&#39;] = bus_stop
+  town_info$nursing =nursing
+  
+  #dep &lt;- read.csv(&quot;D:/$/data/rscript/2020Data_final.csv&quot;)
+  dep = readRDS(&quot;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/Contests/2020gov_contest_data/used_data/dep.rds&quot;)
+  dep &lt;- dep[,-c(1,2,4,5)]
+  dep[&#39;village&#39;] &lt;- dep[,2]
+  dep[&#39;city&#39;] &lt;- dep[,1]
+  #colnames(dep)[1:2] = c(&#39;city&#39;,&#39;village&#39;)
+  dep &lt;- dep[,-c(1,2)]
+  df &lt;- merge(town_info, dep)
+  return(df)
+}
+
+#Function for draw the results
+town_location_draw &lt;- function(city,town,distance,num1,num2,num3,num4,num5,num6,num7,num8){
+  library(dplyr)
+  library(leaflet)
+  library(purrr)
+  library(BBmisc)
+
+  df3 &lt;- town_ltd_info(city,town,distance,num1,num2,num3,num4,num5,num6,num7,num8)
+  bdd &lt;- get_bound_ltd(city,town)
+  rc2 &lt;- colorRampPalette(colors = c(&quot;#52B74B&quot;,&quot;#FF0000&quot;), space = &quot;Lab&quot;)(20)
+  mypal &lt;- colorNumeric(palette =rc2, domain = df3$index)
+  num= apply(df3,1,function(x){latlng_price(df3$Var1[x],df3$Var2[x],city)})
+  df3$info &lt;- paste(sep = &quot;&lt;br/&gt;&quot;,
+                    &quot;診所個數:&quot;,df3$clinc,
+                    &quot;地區醫院個數:&quot;,df3$hospital,
+                    &quot;醫學中心個數:&quot;,df3$hospital_center,
+                    &quot;公園個數:&quot;,df3$park,
+                    &quot;圖書館個數:&quot;,df3$library,
+                    &quot;捷運站出口個數:&quot;,df3$mrt_station,
+                    &quot;公車站牌個數:&quot;,df3$bus_stop,
+                    &quot;範圍內平均地價:&quot;,num,
+                    &quot;養老院數量:&quot;,df3$nursing,
+                    &quot;110老化指數:&quot;,df3$city)
+  lat_d = distance*0.000009090909
+  lon_d = distance*0.00001
+  leaflet(df3) %&gt;% addTiles() %&gt;%
+    addPolygons(lng = bdd$V1,
+                lat = bdd$V2,
+                fillOpacity = 0,
+                weight = 1,
+                color = &quot;red&quot;,
+                popup = ~as.factor(df3$city))%&gt;%
+    #setView(lng=find_ltd(locate)[2],lat=find_ltd(locate)[1],zoom=14)%&gt;%
+    addMarkers(lng = ~Var2, lat = ~Var1,popup = ~as.factor(df3$village),clusterOptions = markerClusterOptions())%&gt;%
+    addRectangles(
+      lng1=~Var2-lon_d/2, lat1=~Var1-lat_d/2,
+      lng2=~Var2+lon_d/2, lat2=~Var1+lat_d/2,
+      fillOpacity = 0.5,
+                    fillColor = ~mypal(df3$index),
+                    color = &quot;blue&quot;,
+                    weight = 1,
+                    group = NULL,
+                    popup = ~as.factor(df3$info))%&gt;%
+            addLegend(position = &quot;bottomright&quot;, pal = mypal, values = df3$index,
+                                                             title = &quot;選址條件指標&quot;,
+                                                             opacity = 1)
+}</code></pre>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="post-nav">
+  <span class="nav-prev"></span>
+  <span class="nav-next"><a href="/post/2020/04/21/location-selection-research-for-nursing-home/">Location selection research for Nursing home &rarr;</a></span>
+</nav>
+
+
+
+</article>
+</div>
+
+<script async src="//yihui.name/js/center-img.js"></script>
+
+<footer>
+
+<div class="footer">
+  <ul class="menu">
+    
+    <li><a href="/"><span data-hover="Home">Home</span></a></li>
+    
+    <li><a href="/categories/"><span data-hover="Categories">Categories</span></a></li>
+    
+    <li><a href="/tags/"><span data-hover="Tags">Tags</span></a></li>
+    
+    <li><a href="/about/"><span data-hover="Blogdown">Blogdown</span></a></li>
+    
+  </ul>
+  
+  <div class="copyright">&copy; <a href="/about1/">Lin</a> | <a href="https://github.com/NSYSUHermit">Github</a> | <a href="https://rpubs.com/JupiterHenry">Rpubs</a></div>
+  
+</div>
+</footer>
+
+
+<script src="//yihui.name/js/math-code.js"></script>
+<script async src="//mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="//cdn.bootcss.com/highlight.js/9.12.0/languages/r.min.js"></script>
+<script>
+hljs.configure({languages: []});
+hljs.initHighlightingOnLoad();
+</script>
+
+
+
+
+</body>
+</html>
+

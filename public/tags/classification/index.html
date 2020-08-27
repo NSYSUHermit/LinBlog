@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>classification</span>
-        <span>2020-04-21</span>
+        <span>2020-08-28</span>
         
         <span>1 / 4</span>
       
@@ -33,6 +33,46 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/08/28/ghalat-machine-learning/">Ghalat Machine Learning</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-08-28</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/08/28/ghalat-machine-learning/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-08-28-ghalat-machine-learning_files/output_13_1.png" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次來測試自動化機器學習套件：Ghalat Machine Learning，
+主要針對回歸問題與分類問題的自動化學習。
+目前套件具有以下功能：
+1.自動特徵工程
+2.自動選擇機器學習和神經網路模型
+3.自動超參數調校
+4.排序模型效果（根據交叉驗證分數）
+5.推薦最佳模型
+我將使用UCI breast cancer dataset(sklearn dataset)來測試此套件for分類的效果以及使用情況。
+套件作者Github：https://github.com/Muhammad4hmed/Ghalat-Machine-Learning
+Pypl套件說明：&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -186,40 +226,6 @@ import pandas as pdimport numpy&hellip;
     
     這次僅針對CRE data的模型變數選擇，主要以下面python的forward backward selection的方式進行挑選，主要方式為：將所有資料的百分之六十切出，進行變數篩選，並使用loocv的方式比較不同變數模型的準確度差異。
 [&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive - student.nsysu.edu.tw/Educations/NSYSU/fu_chung/bacterial/123.csv&#39;)from&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/gan">gan</a>
-  
-  
-  </div>
-  <h1><a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">OCGAN Pratice: CRE Bateria data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2020-02-04</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2020/02/04/ocgan-pratice-cre-bateria-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2020-02-04-ocgan-pratice-cre-bateria-data_files/output_1_1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次使用之前分析過的CRE資料，來嘗試使用OCGAN，但因原先資料CRE:NON比數為46:49，為了達到不平衡的效果，因此最後採用16:49的比例，從46個CRE中取隨機16個，而資料的訓練集以及驗證集比例為下：
-Train Set(CRE:Non): 6:19
-Validation Set(CRE:Non): 10:30
-接著我們將分為有使用OCGAN平衡數據集的資料以及未平衡數據集的資料進行分別建模，兩者皆使用SVM的方式建模，並且先透過LOOCV的方式在數據集Tuning模型，最後套入驗證集計算總準確率、f1 score、auc等，比較有無平衡的效果。
-[&hellip;]&hellip;
     </a>
   </div>
 </section>

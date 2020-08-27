@@ -4,7 +4,65 @@
   
   <url>
     <loc>/categories/</loc>
-    <lastmod>2020-04-21T00:00:00+00:00</lastmod>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/post/2020/08/28/ghalat-machine-learning/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/categories/python/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/classification/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/categories/deep-learning/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/categories/machine-learning/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/neural-network/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/regression/</loc>
+    <lastmod>2020-08-28T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -15,35 +73,12 @@
   </url>
   
   <url>
-    <loc>/</loc>
-    <lastmod>2020-04-21T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/post/2020/04/21/location-selection-research-for-nursing-home/</loc>
     <lastmod>2020-04-21T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/post/</loc>
-    <lastmod>2020-04-21T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/categories/python/</loc>
-    <lastmod>2020-04-21T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>/categories/r/</loc>
-    <lastmod>2020-04-21T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
     <lastmod>2020-04-21T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
@@ -70,32 +105,8 @@
   </url>
   
   <url>
-    <loc>/categories/deep-learning/</loc>
-    <lastmod>2020-02-29T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/categories/machine-learning/</loc>
-    <lastmod>2020-02-29T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>/tags/neural-network/</loc>
-    <lastmod>2020-02-29T00:00:00+00:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>/post/2020/02/25/compare-to-ocgan-smote-adasyn-in-cre-data-simulation/</loc>
     <lastmod>2020-02-25T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/classification/</loc>
-    <lastmod>2020-02-25T00:00:00+00:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -262,13 +273,13 @@
   </url>
   
   <url>
-    <loc>/categories/git/</loc>
+    <loc>/tags/git/</loc>
     <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/tags/git/</loc>
+    <loc>/categories/git/</loc>
     <lastmod>2019-08-16T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
@@ -286,12 +297,6 @@
   <url>
     <loc>/post/2019/08/06/mlb-win-rate-regression/</loc>
     <lastmod>2019-08-06T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/regression/</loc>
-    <lastmod>2019-08-06T00:00:00+00:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>

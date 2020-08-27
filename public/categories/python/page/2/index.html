@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Python</span>
-        <span>2020-04-21</span>
+        <span>2020-08-28</span>
         
         <span>2 / 4</span>
       
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/machine-learning">machine-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2020/02/19/find-the-special-sample-in-cre-data/">Find The Special Sample in CRE data</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2020-02-19</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2020/02/19/find-the-special-sample-in-cre-data/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2020-02-19-find-the-special-sample-in-cre-data_files/output_16_0.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    上次在挑選變數並建立分類模型的loocv時(link :https://hermitlin.netlify.com/post/2020/02/14/cre-features-selection/) ，最高的準確率來自adaboost的結果，且落在使用60~70個randomforest importance的變數，但當時多個模型準確率為0.989473684，即存在一個樣本預測錯誤，因此想知道是否在這些模型中，預測錯誤的皆為同一筆樣本。本次將預測的結果先行挑出，並將錯誤的樣本index建立成表，以方便觀察多為那些樣本為容易預測失敗的樣本。
+[&hellip;] 先讀入資料與之前R&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -190,42 +221,6 @@ Validation Set(CRE:Non): 10:30
     基本上生成樣本已經是可以達成的事情，目前就是調整gan各處的結構，如優化器、激活函數、損失函數等等，目前嘗試皆以randomforest(n=100)當作統一的模型。下圖是一般神經網路的結構：
 而生成對抗網路則有生成器與判別器兩個神經網路的串接，因此排列組合十分多種，且echo的次數與每個組合的效果並不一定相同，不一定回傳越多次效果越好，因此想先比較完大部分組合後再從中擇優，以下是將之前信用卡資料切分為train:test為1:1後的比較結果，比較傳統oversampling、undersampling與Non Sampling的效果，結果如下圖：
 接下來與gan進行比較，gan的各種組合下表&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">WGAN Practice On Credit Card Data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-12-17</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/12/17/wgan-practice-on-credit-card-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-12-17-wgan-practice-on-credit-card-data_files/output_2_1.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    前幾篇我有提到WGAN在訓練過程中可以改善兩個神經網路loss很難調教的問題(很常判別器的loss下降，生成器的卻一直上升，或是情況相反)，因此我將在此篇裡使用WGAN的規則來修改神經網路的一些參數，條件如下：
-[&hellip;] The WGAN limits:
-1.判別器最後一層去掉sigmoid
-2.生成器和判別器的loss不取log
-3.每次更新判別器的參數之後把它們的絕對值截斷到不超過一個固定常數c
-4.不要用基於動量的優化算法（包括momentum和Adam），推薦RMSProp，SGD也行
-[&hellip;] import pandas as pdimport numpy&hellip;
     </a>
   </div>
 </section>

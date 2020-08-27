@@ -6,10 +6,19 @@
     <description>Recent content in Python on Lin&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 21 Apr 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 28 Aug 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/python/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Ghalat Machine Learning</title>
+      <link>/post/2020/08/28/ghalat-machine-learning/</link>
+      <pubDate>Fri, 28 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/08/28/ghalat-machine-learning/</guid>
+      <description>Intro: GML 這次來測試自動化機器學習套件：Ghalat Machine Learning， 主要針對回歸問題與分類問題的自動化學習。 目前套件具有以下功能： 1.自動特徵</description>
+    </item>
     
     <item>
       <title>Location selection research for Nursing home</title>

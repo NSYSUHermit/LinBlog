@@ -22,7 +22,7 @@
       <div class="head-meta">
       
         <span>Posts</span>
-        <span>2020-04-21</span>
+        <span>2020-08-28</span>
         
         <span>4 / 8</span>
       
@@ -33,6 +33,38 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/r">R</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/10/the-r-function-definition-for-cre-bacteria-data-analysis/">The R Function Definition for CRE Bacteria Data Analysis</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-10</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/10/the-r-function-definition-for-cre-bacteria-data-analysis/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-10-the-r-function-definition-for-cre-bacteria-data-analysis_files/1.JPG" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這次是跟上次使用相同的資料，只是變成要定義一個規定格式的function，剛好上次的code裡面logistic regression的分類器有寫錯的部分，因此可以順便趁這次的機會修改之前錯誤的地方，部分內容可參考以前那篇blog(CRE Bacteria Data Analysis: https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/)
+一樣我會將資料先進行倒轉，並且為前46個樣本上cre的標籤，後49則上非cre的標籤。
+主要差異為，這次要進行pca，因此再倒轉資料時，並未挑選重要的前50個變&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -184,37 +216,6 @@ There is the paper resource link:&hellip;
     
     這次我將使用先前東海大學大數據競賽的初賽資料，也就是熱成化加工的數據資料，而該資料中一共有8類，我將資料的第5與8類挑選出來，並僅取3筆第5類資料與136筆第8類資料作為訓練資料，而驗證資料則為9筆第5類資料與136筆第8類資料作為測試資料，因此我們的目標是使用生成對抗網路來生成第5類資料以達到資料平衡後進行後續的分類分析。
 [&hellip;] import pandas as pdimport numpy as npdf = pd.read_csv(&#39;C:/Users/User/OneDrive -&hellip;
-    </a>
-  </div>
-</section>
-
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/09/gan-with-one-class-learning/">GAN with One Class Learning</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-09</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/09/gan-with-one-class-learning/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-09-gan-with-one-class-learning_files/1.jpg" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    先前幾次我嘗試使用生成對抗網路產生一系列資料，但我們知道GAN的訓練很難調整，除非將生成資料直接拿去訓練比照結果，否則很難知道這次生成樣本的品質(這裡的品質是指有時候樣本過少時，我們產生所需的假資料是否能完美的當作一般樣本進行後續分析)，因此我想透過一些外部機制來當作衡量生成器生成的品質驗證，後來思考其實這有點像是異常檢測，若是先將真實資料做一個一元的異常檢測分類器，我們便可將GAN產生的資料用此當作二次確認(第一次確認是在GAN當中的判別器)，構想圖如下：
-我們將想要生成的某類資料匯入後，先建構一個一元分類器，並將所有資料點都包含於正常資料。接著將原資料匯入GAN當中，經過幾次迭代後，我們&hellip;
     </a>
   </div>
 </section>

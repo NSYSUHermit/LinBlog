@@ -22,9 +22,9 @@
       <div class="head-meta">
       
         <span>deep-learning</span>
-        <span>2020-04-21</span>
+        <span>2020-08-28</span>
         
-        <span>2 / 3</span>
+        <span>2 / 4</span>
       
       </div>
     </nav>
@@ -33,6 +33,37 @@
 <div class="container">
 <main class="list">
 
+
+<section class="article-list">
+  <div class="categories">
+  
+  
+    <a href="/categories/deep-learning">deep-learning</a>
+  
+  
+  </div>
+  <h1><a href="/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/">Paper Review [OCGAN: One-class Novelty Detection Using GANs with Constrained Latent Representations]</a></h1>
+  <div class="date-author">
+    <span class="author">Hermit
+</span> / 
+    <span class="date">2019-12-23</span>
+  </div>
+  <div class="summary">
+    <a href="/post/2019/12/23/paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations/">
+    
+    
+    
+    <div class="thumbnail"><img src="/post/2019-12-23-paper-review-ocgan-one-class-novelty-detection-using-gans-with-constrained-latent-representations_files/1.jpg" alt="Thumbnail" /></div>
+    
+    
+    
+      
+    
+    這禮拜看完一篇有關生成對抗網路與One Class Learning 結合的論文(Source Link:https://arxiv.org/abs/1903.08550) ，其名稱為&lt;&gt;，因此主要方法與我目前在用的內容有關。
+作者提出了一種稱為OCGAN的檢測模型，其目的是確定是否樣本來自同一個種類。作者的方案是基於使用auto-encoder network來學習神經網路單類樣本的潛在表示。而本篇文章的模型可明確限制潛在空間。為了實現這一目標，首先迫使潛在空間通過以tanh的激活函數引入編碼器的輸出。其次，利用adversariallyr鑑別潛在空間，確保同類的編碼表示類似於從&hellip;
+    </a>
+  </div>
+</section>
 
 <section class="article-list">
   <div class="categories">
@@ -194,36 +225,6 @@ There is the paper resource link:&hellip;
   </div>
 </section>
 
-<section class="article-list">
-  <div class="categories">
-  
-  
-    <a href="/categories/deep-learning">deep-learning</a>
-  
-  
-  </div>
-  <h1><a href="/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/">Using GAN to generate some non image data with CRE bateria data</a></h1>
-  <div class="date-author">
-    <span class="author">Hermit
-</span> / 
-    <span class="date">2019-11-06</span>
-  </div>
-  <div class="summary">
-    <a href="/post/2019/11/06/using-gan-to-generate-some-non-image-data-with-cre-bateria-data/">
-    
-    
-    
-    <div class="thumbnail"><img src="/post/2019-11-06-using-gan-to-generate-some-non-image-data-with-cre-bateria-data_files/output_3_0.png" alt="Thumbnail" /></div>
-    
-    
-    
-      
-    
-    這次我將修改前次的生成對抗網路，希望能夠調整為一個自動生成樣本的神經網路。我這次將使用以前曾經使用過的CRE Bacteria data(https://hermitlin.netlify.com/post/2019/04/24/cre-bacteria-data-analysis/ )。我先建立一個簡單的分類模型，一將使用p_value前五個維度當作解釋變數，先建立一個簡單的分類模型，並將第一類的46個當作樣本輸入至生成對抗網路，調整訓練參數，且試圖讓神經網路能夠產生第一類別的資料。最後，經由生成器生成的資料我將匯入原先的分類模型，觀察是否能產生類似於第一類別的資料，並最終計算其生成準確&hellip;
-    </a>
-  </div>
-</section>
-
 </main>
 <nav>
 
@@ -272,12 +273,23 @@ There is the paper resource link:&hellip;
     <li class="page-item"><a class="page-link" href="/categories/deep-learning/page/3/">3</a></li>
     
     
+    
+    
+    
+    
+        
+        
+    
+    
+    <li class="page-item"><a class="page-link" href="/categories/deep-learning/page/4/">4</a></li>
+    
+    
     <li class="page-item">
     <a href="/categories/deep-learning/page/3/" class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
     </li>
     
     <li class="page-item">
-        <a href="/categories/deep-learning/page/3/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
+        <a href="/categories/deep-learning/page/4/" class="page-link" aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
     </li>
     
 </ul>
